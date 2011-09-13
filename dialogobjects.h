@@ -44,6 +44,7 @@ public:
     void initModels(std::string unique);
     ObjectListModel *listModel() { return objectModel; }
 
+    void gotDataEvent(const qmf::ConsoleEvent& event);
 public slots:
     void connectionChanged(bool isConnected);
     void clear();

@@ -37,6 +37,9 @@
 #include "qmf-event.h"
 
 static QModelIndex defaultIndex;
+
+Q_DECLARE_METATYPE(qmf::ConsoleEvent);
+
 class QmfThread : public QThread {
     Q_OBJECT
 
@@ -60,6 +63,7 @@ signals:
     void doneAddingExchanges(uint);
 
     void qmfError(const QString&);
+    void receivedResponse(QObject *target, const qmf::ConsoleEvent& event);
 
 protected:
     void run();

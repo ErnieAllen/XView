@@ -97,6 +97,20 @@ void DialogObjects::selected(const QModelIndex &index)
     objectModel->selected(index);
 }
 
+void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event)
+{
+    uint32_t pcount = event.getDataCount();
+    for (uint32_t idx = 0; idx < pcount; idx++) {
+        objectModel->addObject(event.getData(idx), event.getCorrelator());
+    }
+    // select 1st item if none are selected
+    if (event.isFinal()) {
+        if (!(ui->objectListView->selectionModel()->hasSelection()))
+            ui->objectListView->setCurrentIndex(objectModel->index(0, 0));
+        emit finalAdded();
+    }
+}
+
 // Handle the query response from the QUERY_OBJECT for qmf objects
 bool DialogObjects::event(QEvent *e)
 {

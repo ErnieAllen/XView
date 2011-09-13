@@ -36,6 +36,7 @@ XView::XView(QWidget *parent) :
 
     // allow qmf types to be passed in signals
     qRegisterMetaType<qmf::Data>();
+    qRegisterMetaType<qmf::ConsoleEvent>();
     qRegisterMetaType<QItemSelection>();
 
     //
@@ -53,6 +54,7 @@ XView::XView(QWidget *parent) :
     setupStatusBar();
     connect(qmf, SIGNAL(connectionStatusChanged(QString)), label_connection_status, SLOT(setText(QString)));
 
+    connect(qmf, SIGNAL(receivedResponse(QObject*,qmf::ConsoleEvent)), this, SLOT(dispatchResponse(QObject*,qmf::ConsoleEvent)));
     // menu actions to open and close the broker connection
     connect(ui->actionOpen_localhost, SIGNAL(triggered()), qmf, SLOT(connect_localhost()));
     connect(ui->actionClose, SIGNAL(triggered()), qmf, SLOT(disconnect()));
@@ -162,6 +164,7 @@ void XView::setupStatusBar() {
 // When the response is received, send an event to the object's dialog
 void XView::queryObjects(const std::string& qmf_class, DialogObjects* dialog)
 {
+    dialog->listModel()->clear();
     qmf->queryBroker(qmf_class, dialog, dialog->eventType);
 }
 
@@ -195,6 +198,12 @@ void XView::queryQueues()
 void XView::querySubscriptions()
 {
     queryObjects("subscription", subscriptionsDialog);
+}
+
+void XView::dispatchResponse(QObject *target, const qmf::ConsoleEvent& event)
+{
+    DialogObjects *dialog = (DialogObjects *)target;
+    dialog->gotDataEvent(event);
 }
 
 // process command line arguments

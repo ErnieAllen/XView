@@ -217,8 +217,11 @@ void QmfThread::dispatchQueryResults(qmf::ConsoleEvent& event)
                             iter != query_queue.end(); iter++) {
         const Query& qq(*iter);
         if (qq.correlator == correlator) {
-            QmfEvent qmfe(qq.t, event);
-            QApplication::sendEvent(qq.object, &qmfe);
+            emit receivedResponse(qq.object, event);
+
+            // this was causing intermittent problems
+            //QmfEvent qmfe(qq.t, event);
+            //QApplication::sendEvent(qq.object, &qmfe);
             if (event.isFinal())
                 query_queue.erase(iter);
             break;
