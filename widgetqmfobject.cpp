@@ -76,6 +76,9 @@ void WidgetQmfObject::setEnabled(bool enabled)
 {
     QWidget::setEnabled(enabled);
     ui->pushButton->setEnabled(enabled);
+
+    if (!enabled)
+        reset();
 }
 
 // This is exposed so the main window can setup a connect between the
@@ -109,15 +112,13 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
 {
     ui->pushButton->move(width() /2 - ui->pushButton->width() / 2, ui->pushButton->y());
 
-    int mid = mid_paint();
     if (_current) {
         int y = ui->pushButton->height();
         ui->labelName->move(0, y);
-        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, mid / 2 - 20);
+        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, reservedY() + 20);
     } else {
         ui->comboBox->move(0, reservedY() + 60);
-        //ui->labelIndex->move(0, ui->comboBox->y() + ui->comboBox->height() + 4);
-        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, mid + 20);
+        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, ui->comboBox->y() + ui->comboBox->height() + 4);
     }
     ui->labelName->resize(width(), ui->labelName->height());
     ui->comboBox->resize(width(), ui->comboBox->height());
@@ -128,7 +129,6 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
 
     // move the Related label
     int x = qMax(0, width() / 2 - ui->labelRelated->width() / 2);
-    //ui->labelRelated->move(x, reservedY() + 30);
     ui->labelIndex->move(x, reservedY() + 30);
 
 }
@@ -397,6 +397,7 @@ void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget
 
     setArrow(a);
     ui->labelName->hide();
+    ui->labelIndex->show();
 
     std::string field = "name";
     if (widget_type == "widgetBindings")
@@ -427,7 +428,6 @@ void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget
 void WidgetQmfObject::initRelated()
 {
     if (!_current) {
-        //ui->labelRelated->show();
 
         if (ui->comboBox->currentIndex() == -1) {
             if (ui->comboBox->model()->rowCount() > 0) {
@@ -447,6 +447,7 @@ void WidgetQmfObject::relatedIndexChanged(int i)
     if (i < 0) {
         ui->labelIndex->setText(QString("No %1").arg(ui->labelRelated->text().toLower()));
         ui->comboBox->hide();
+        ui->tableWidget->hide();
         return;
     }
     int rows = ui->comboBox->model()->rowCount();
@@ -456,6 +457,7 @@ void WidgetQmfObject::relatedIndexChanged(int i)
         QString indexText = QString("%1 of %2 %3").arg(row).arg(rows).arg(ui->labelRelated->text().toLower());
         ui->labelIndex->setText(indexText);
         ui->labelIndex->show();
+        ui->tableWidget->show();
     }
 
     QModelIndex source_row = related->mapToSource(related->index(i, 0));

@@ -6,66 +6,54 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>552</width>
-    <height>300</height>
+    <width>658</width>
+    <height>380</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>XView</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-  <layout class="QGridLayout" name="gridLayout_3">
-   <item row="0" column="0">
-   <widget class="QSplitter" name="splitter">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>551</width>
-      <height>231</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-    <widget class="QListView" name="exchangeListView">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="showDropIndicator" stdset="0">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QTableView" name="exchangeTableView">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="showDropIndicator" stdset="0">
-      <bool>false</bool>
-     </property>
-     <attribute name="horizontalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="horizontalHeaderStretchLastSection">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-    </widget>
-   </widget>
-   </item>
-   </layout>
-  </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>552</width>
-     <height>29</height>
-    </rect>
+   <property name="minimumSize">
+    <size>
+     <width>640</width>
+     <height>300</height>
+    </size>
    </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="WidgetExchanges" name="widgetExchanges" native="true">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="WidgetBindings" name="widgetBindings" native="true">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="WidgetQueues" name="widgetQueues" native="true">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="WidgetSubscriptions" name="widgetSubscriptions" native="true">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -76,8 +64,173 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>658</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_localhost"/>
+    <addaction name="actionOpen_URL"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuMode">
+    <property name="title">
+     <string>Mode</string>
+    </property>
+    <addaction name="actionMessages"/>
+    <addaction name="actionBytes"/>
+    <addaction name="separator"/>
+    <addaction name="actionMessage_rate"/>
+    <addaction name="actionByte_rate"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuMode"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <action name="actionOpen_localhost">
+   <property name="text">
+    <string>Open localhost</string>
+   </property>
+  </action>
+  <action name="actionOpen_URL">
+   <property name="text">
+    <string>Open URL...</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About...</string>
+   </property>
+  </action>
+  <action name="actionMessages">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Messages</string>
+   </property>
+   <property name="toolTip">
+    <string>Show number of messages</string>
+   </property>
+   <property name="statusTip">
+    <string>Show number of messages</string>
+   </property>
+  </action>
+  <action name="actionBytes">
+   <property name="text">
+    <string>Bytes</string>
+   </property>
+   <property name="toolTip">
+    <string>Show number of bytes</string>
+   </property>
+   <property name="statusTip">
+    <string>Show number of bytes</string>
+   </property>
+  </action>
+  <action name="actionMessage_rate">
+   <property name="text">
+    <string>Message rate</string>
+   </property>
+   <property name="toolTip">
+    <string>Show number of messages per second</string>
+   </property>
+   <property name="statusTip">
+    <string>Show number of messages per second</string>
+   </property>
+  </action>
+  <action name="actionByte_rate">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Byte rate</string>
+   </property>
+   <property name="toolTip">
+    <string>Show number of bytes per second</string>
+   </property>
+   <property name="statusTip">
+    <string>Show number of bytes per second</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>WidgetBindings</class>
+   <extends>QWidget</extends>
+   <header location="global">widgetbindings.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WidgetExchanges</class>
+   <extends>QWidget</extends>
+   <header location="global">widgetexchanges.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WidgetQueues</class>
+   <extends>QWidget</extends>
+   <header location="global">widgetqueues.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WidgetSubscriptions</class>
+   <extends>QWidget</extends>
+   <header location="global">widgetsubscriptions.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>XView</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>275</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

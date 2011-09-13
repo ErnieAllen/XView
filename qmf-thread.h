@@ -25,6 +25,7 @@
 #include <QLineEdit>
 #include <QStringList>
 #include <QModelIndex>
+#include <QEvent>
 
 #include <qpid/messaging/Connection.h>
 #include <qmf/ConsoleSession.h>
@@ -33,6 +34,7 @@
 #include <qmf/Data.h>
 #include <sstream>
 #include <deque>
+#include "qmf-event.h"
 
 static QModelIndex defaultIndex;
 class QmfThread : public QThread {
@@ -41,16 +43,14 @@ class QmfThread : public QThread {
 public:
     QmfThread(QObject* parent);
     void cancel();
-    void getQueueHeaders(const QString&);
-    void queueRemoveMessage(const QString&, const qpid::types::Variant::Map&);
-    qmf::ConsoleEvent fetchBody(const qpid::types::Variant::Map&);
 
+    void queryBroker(const std::string& qmf_class,
+                                QObject* object,
+                                QEvent::Type event_type);
 public slots:
     void connect_localhost();
     void disconnect();
     void connect_url(const QString&, const QString&, const QString&);
-    void pauseRefreshes(bool);
-    void showBody(const QModelIndex&, const qmf::ConsoleEvent &, const qpid::types::Variant::Map &);
 
 
 signals:
@@ -58,10 +58,6 @@ signals:
     void isConnected(bool);
     void addExchange(const qmf::Data&, uint);
     void doneAddingExchanges(uint);
-    void headerAdded(uint);
-    void gotMessageHeaders(const qmf::ConsoleEvent&, const qpid::types::Variant::Map&);
-    void gotMessageBody(const qmf::ConsoleEvent&, const qpid::types::Variant::Map&, const QModelIndex&);
-    void removedMessage(const qmf::ConsoleEvent&, const qpid::types::Variant::Map&);
 
     void qmfError(const QString&);
 
@@ -89,27 +85,19 @@ private:
     bool pausedRefreshes;
     command_queue_t command_queue;
 
-    struct Callback {
+    // support for async queries
+    struct Query {
         uint32_t correlator;
-        std::string method;
-        qpid::types::Variant::Map args;
-        QModelIndex index;
+        QObject* object;
+        QEvent::Type t;
 
-        Callback(std::string _m, const qpid::types::Variant::Map& _a, const QModelIndex& _i) : correlator(0),
-            method(_m), args(_a), index(_i) {}
+        Query(QObject* _o, QEvent::Type _t) : correlator(0),
+            object(_o), t(_t) {}
     };
+    typedef std::deque<Query> query_queue_t;
+    query_queue_t query_queue;
+    void dispatchQueryResults(qmf::ConsoleEvent& event);
 
-    typedef std::deque<Callback> callback_queue_t;
-
-    callback_queue_t callback_queue;
-
-    void callCallback(const qmf::ConsoleEvent&);
-    void emitCallback(const Callback& cb, const qmf::ConsoleEvent& event);
-    void addCallback(qmf::Agent, const std::string&,
-                                const qpid::types::Variant::Map&,
-                                const qmf::DataAddr&,
-                                const std::string&,
-                                const QModelIndex& = defaultIndex);
 
     // remember the broker object so we can make qmf calls
     qmf::Data brokerData;

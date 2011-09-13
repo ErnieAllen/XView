@@ -1,5 +1,5 @@
-#ifndef _qe_object_detail_model_h
-#define _qe_object_detail_model_h
+#ifndef _exchange_model_h
+#define _exchange_model_h
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,44 +19,17 @@
  * under the License.
  */
 
-#include <QAbstractListModel>
-#include <QModelIndex>
-#include <QList>
-#include <qmf/Data.h>
-#include <sstream>
-#include <string>
+#include "object-model.h"
 
 
-class ExchangeListModel : public QAbstractListModel {
+class ExchangeListModel : public ObjectListModel {
     Q_OBJECT
 
 public:
-    ExchangeListModel(QObject* parent = 0);
+    ExchangeListModel(QObject* parent = 0, std::string unique = "name");
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-
-
-public slots:
-    void addExchange(const qmf::Data&, uint);
-    void connectionChanged(bool isConnected);
-    void clear();
-    void selected(const QModelIndex &index);
-
-signals:
-    void exchangeSelected(const qmf::Data& exchange);
-
-protected:
-
-private:
-
-    // the data for the queues in the display list
-    typedef QList<qmf::Data> DataList;
-    DataList    dataList;
 };
-
-std::ostream& operator<<(std::ostream& out, const qmf::Data& queue);
 
 #endif
 

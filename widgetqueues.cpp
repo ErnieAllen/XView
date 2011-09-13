@@ -34,6 +34,7 @@ WidgetQueues::~WidgetQueues()
 
 void WidgetQueues::paintEvent(QPaintEvent *e)
 {
+
     QRectF queueRects[4] = {
         QRect(0.0, 0.0, width()-12*3, 30.0),
         QRect(width()-12*3, 0.0, 12, 30.0),

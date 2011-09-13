@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <string>
+#include <QtGui/QApplication>
 
 using std::cout;
 using std::endl;
@@ -90,11 +91,13 @@ void QmfThread::run()
                         // get the broker object so we can make calls
                         event = agent.query(qmf::Query(qmf::QUERY_OBJECT, "broker", "org.apache.qpid.broker"));
                         pcount = event.getDataCount();
-                        if (pcount == 1)
+                        if (pcount == 1) {
                             brokerData = event.getData(0);
+                            emit isConnected(true);
+                        }
 
                         // get the exchanges for this broker
-                        agent.queryAsync(qmf::Query(qmf::QUERY_OBJECT, "exchange", "org.apache.qpid.broker"));
+                        //agent.queryAsync(qmf::Query(qmf::QUERY_OBJECT, "exchange", "org.apache.qpid.broker"));
                     }
                     break;
 
@@ -103,18 +106,10 @@ void QmfThread::run()
                     break;
 
                 case qmf::CONSOLE_QUERY_RESPONSE :
-                    // Handle the query response from the QUERY_OBJECT for exchanges
-                    // Currently, this is the only async query called
-                    pcount = event.getDataCount();
-                    for (uint32_t idx = 0; idx < pcount; idx++) {
-                        emit addExchange(event.getData(idx), event.getCorrelator());
-                    }
-                    if (event.isFinal())
-                        emit doneAddingExchanges(event.getCorrelator());
+                    dispatchQueryResults(event);
                     break;
 
                 case qmf::CONSOLE_METHOD_RESPONSE :
-                    callCallback(event);
                    break;
                 case qmf::CONSOLE_EXCEPTION :
                    if (event.getDataCount() > 0) {
@@ -168,7 +163,7 @@ void QmfThread::run()
                             sess.setAgentFilter("[eq, _product, [quote, 'qpidd']]");
                         } catch (std::exception&) {}
                         connected = true;
-                        emit isConnected(true);
+                        //emit isConnected(true);
 
                         std::stringstream line;
                         line << "Operational (URL: " << command.url << ")";
@@ -191,134 +186,45 @@ void QmfThread::run()
     }
 }
 
-// Call an async method
+// Send a query
 // Remember the correlator for the call and associate it
-// with the args used to make the call and a signal that
-// will be emitted when the call completes.
-void QmfThread::addCallback(qmf::Agent agent, const std::string& method,
-                            const qpid::types::Variant::Map& args,
-                            const qmf::DataAddr& dataAddr,
-                            const std::string &signal,
-                            const QModelIndex& index)
+// with the args used to make the call and an object that
+// will be notified when the call completes.
+void QmfThread::queryBroker(const std::string& qmf_class,
+                            QObject* object,
+                            QEvent::Type event_type)
 {
     QMutexLocker locker(&lock);
 
-    callback_queue.push_back(Callback(signal, args, index));
-    callback_queue.back().correlator = agent.callMethodAsync(method, args, dataAddr);
+    query_queue.push_back(Query(object, event_type));
+    qmf::Agent agent = sess.getConnectedBrokerAgent();
+    query_queue.back().correlator = agent.queryAsync(
+                qmf::Query(qmf::QUERY_OBJECT, qmf_class, "org.apache.qpid.broker"));
 
     cond.wakeOne();
 }
 
 // Called when a qmf::CONSOLE_METHOD_RESPONSE type event comes in.
-// Find the event correlator and call the associated function
-void QmfThread::callCallback(const qmf::ConsoleEvent& event)
+// Find the event correlator and send a custom event to the
+// ossociated QOBJECT
+void QmfThread::dispatchQueryResults(qmf::ConsoleEvent& event)
 {
     QMutexLocker locker(&lock);
 
     uint32_t correlator = event.getCorrelator();
 
-    for (callback_queue_t::iterator iter=callback_queue.begin();
-                            iter != callback_queue.end(); iter++) {
-        const Callback& cb(*iter);
-        if (cb.correlator == correlator) {
-            emitCallback(cb, event);
-            callback_queue.erase(iter);
+    for (query_queue_t::iterator iter=query_queue.begin();
+                            iter != query_queue.end(); iter++) {
+        const Query& qq(*iter);
+        if (qq.correlator == correlator) {
+            QmfEvent qmfe(qq.t, event);
+            QApplication::sendEvent(qq.object, &qmfe);
+            if (event.isFinal())
+                query_queue.erase(iter);
             break;
         }
     }
     cond.wakeOne();
 }
 
-// Resolve the association between the method string stored in the callback_queue
-// and a signal function.
-void QmfThread::emitCallback(const Callback& cb, const qmf::ConsoleEvent& event)
-{
-    if (cb.method == SIGNAL(gotMessageHeaders())) {
-        emit gotMessageHeaders(event, cb.args);
-    } else if (cb.method == SIGNAL(gotMessageBody())) {
-        emit gotMessageBody(event, cb.args, cb.index);
-    } else if (cb.method == SIGNAL(removedMessage())) {
-        emit removedMessage(event, cb.args);
-    }
-}
 
-void QmfThread::getQueueHeaders(const QString& name)
-{
-    qpid::types::Variant::Map map;
-    map["name"] = name.toStdString();
-    // get the list of message header ids
-    qmf::Agent agent = brokerData.getAgent();
-    qmf::ConsoleEvent event = agent.callMethod("queueGetIdList", map, brokerData.getAddr());
-
-    if (event.getType() == qmf::CONSOLE_METHOD_RESPONSE) {
-
-        uint messageId = 0;
-        qpid::types::Variant::Map callMap;
-
-        callMap["name"] = name.toStdString();
-
-        // get the list of ids
-        const qpid::types::Variant::Map& args(event.getArguments());
-        qpid::types::Variant::Map::const_iterator iter = args.begin();
-        if (iter != args.end()) {
-           qpid::types::Variant::List sublist = (iter->second).asList();
-           // for each header id, get the message header
-           for (qpid::types::Variant::List::const_iterator subIter = sublist.begin();
-                 subIter != sublist.end(); subIter++) {
-                messageId = *subIter;
-
-                callMap["id"] = messageId;
-                // submit an asyncronous call to get the header
-                // and request that the gotMessageHeaders signal be emitted when ready
-                addCallback(agent, "queueGetMessageHeader", callMap, brokerData.getAddr(),
-                            SIGNAL(gotMessageHeaders()));
-            }
-        }
-    }
-}
-
-void QmfThread::queueRemoveMessage(const QString& name, const qpid::types::Variant::Map& args)
-{
-    Q_UNUSED(name);
-    qmf::Agent agent = brokerData.getAgent();
-
-    // submit an asyncronous call to remove the message
-    // and request that the removedMessage signal be emitted when ready
-    addCallback(agent, "queueRemoveMessage", args, brokerData.getAddr(),
-                SIGNAL(removedMessage()));
-}
-
-// SLOT: Show the current message body
-void QmfThread::showBody(const QModelIndex& index, const qmf::ConsoleEvent &event, const qpid::types::Variant::Map &args)
-{
-    qmf::Agent agent = brokerData.getAgent();
-
-    // get the expected body content type
-    const qpid::types::Variant::Map& headerMap(event.getArguments());
-    qpid::types::Variant::Map::const_iterator iter = headerMap.begin();
-    const qpid::types::Variant::Map& headerAttributes(iter->second.asMap());
-    iter = headerAttributes.find("ContentType");
-
-    std::string contentType;
-
-    if (iter != headerAttributes.end())
-        contentType = iter->second.asString();
-
-    qpid::types::Variant::Map map(args);
-    // remember the content type so we can decode the response properly
-    map["ContentType"] = contentType;
-    // make the call
-    addCallback(agent, "queueGetMessageBody", map, brokerData.getAddr(),
-                SIGNAL(gotMessageBody()), index);
-}
-
-qmf::ConsoleEvent QmfThread::fetchBody(const qpid::types::Variant::Map& args)
-{
-    qmf::Agent agent = brokerData.getAgent();
-    return agent.callMethod("queueGetMessageBody", args, brokerData.getAddr());
-}
-
-void QmfThread::pauseRefreshes(bool checked)
-{
-    pausedRefreshes = checked;
-}

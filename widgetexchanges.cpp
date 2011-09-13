@@ -37,6 +37,7 @@ WidgetExchanges::~WidgetExchanges()
 
 void WidgetExchanges::paintEvent(QPaintEvent *e)
 {
+
     // points that define an arrow
     static const QPoint arrowPoints[] = {
         QPoint(10,  -10),

@@ -19,31 +19,16 @@
  * under the License.
  */
 
-#include <QAbstractTableModel>
-#include <QModelIndex>
-#include <QStringList>
-#include <qmf/Data.h>
-#include <sstream>
-#include <string>
+#include "object-details.h"
 
-class ExchangeDetailsModel : public QAbstractTableModel {
+class ExchangeDetailsModel : public ObjectDetailsModel {
     Q_OBJECT
 
 public:
     ExchangeDetailsModel(QObject* parent = 0);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-public slots:
-    void showExchangeDetail(const qmf::Data&);
-    void clear();
-
-private:
-    QStringList keys;
-    QStringList values;
 };
 
 #endif

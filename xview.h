@@ -22,14 +22,17 @@
 
 #include <QtGui>
 #include "qmf-thread.h"
-#include "exchange-model.h"
-#include "exchange-details.h"
+#include "dialogopen.h"
+#include "dialogabout.h"
+#include "dialogobjects.h"
+#include "dialogexchanges.h"
 
 namespace Ui {
     class XView;
 }
 
 Q_DECLARE_METATYPE(qmf::Data);
+Q_DECLARE_METATYPE(QItemSelection);
 
 class XView : public QMainWindow
 {
@@ -44,14 +47,26 @@ public:
 private:
     Ui::XView *ui;
 
+    DialogOpen*      openDialog;
+    DialogAbout*     aboutDialog;
+    DialogObjects*   bindingsDialog;
+    DialogExchanges* exchangesDialog;
+    DialogObjects*   queuesDialog;
+    DialogObjects*   subscriptionsDialog;
+
     QmfThread* qmf;
     QLabel *label_connection_prompt;
     QLabel *label_connection_status;
 
-    ExchangeListModel *exchangeModel;
-    ExchangeDetailsModel *exchangeDetailsModel;
-
     void setupStatusBar();
+    void queryObjects(const std::string& qmf_class, DialogObjects* dialog);
+
+private slots:
+    void queryExchanges();
+    void queryBindings();
+    void queryQueues();
+    void querySubscriptions();
+
 };
 
 #endif // XVIEW_H

@@ -34,6 +34,7 @@ WidgetSubscriptions::~WidgetSubscriptions()
 
 void WidgetSubscriptions::paintEvent(QPaintEvent *e)
 {
+
     QPointF points[6] = {
         QPointF(0.0, 0.0),
         QPointF(10.0, -10.0),

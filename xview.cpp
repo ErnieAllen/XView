@@ -36,6 +36,13 @@ XView::XView(QWidget *parent) :
 
     // allow qmf types to be passed in signals
     qRegisterMetaType<qmf::Data>();
+    qRegisterMetaType<QItemSelection>();
+
+    //
+    // Restore the window size and location
+    //
+    QSettings settings;
+    restoreGeometry(settings.value("mainWindowGeometry").toByteArray());
 
     //
     // Create the thread object that maintains communication with the messaging plane.
@@ -46,19 +53,100 @@ XView::XView(QWidget *parent) :
     setupStatusBar();
     connect(qmf, SIGNAL(connectionStatusChanged(QString)), label_connection_status, SLOT(setText(QString)));
 
-    exchangeModel = new ExchangeListModel(this);
-    ui->exchangeListView->setModel(exchangeModel);
+    // menu actions to open and close the broker connection
+    connect(ui->actionOpen_localhost, SIGNAL(triggered()), qmf, SLOT(connect_localhost()));
+    connect(ui->actionClose, SIGNAL(triggered()), qmf, SLOT(disconnect()));
 
-    connect(qmf, SIGNAL(addExchange(qmf::Data,uint)), exchangeModel, SLOT(addExchange(qmf::Data,uint)));
+    //
+    // Create the dialog boxes
+    //
+    openDialog = new DialogOpen(this);
+    // when the menu item is selected, show the dialog
+    connect(ui->actionOpen_URL, SIGNAL(triggered()), openDialog, SLOT(show()));
+    // when the dialog is accepted, open the URL
+    connect(openDialog, SIGNAL(dialogOpenAccepted(QString,QString,QString)), qmf, SLOT(connect_url(QString,QString,QString)));
 
-    exchangeDetailsModel = new ExchangeDetailsModel(this);
-    ui->exchangeTableView->setModel(exchangeDetailsModel);
+    aboutDialog = new DialogAbout(this);
+    // when the menu item is selected, show the dialog
+    connect(ui->actionAbout, SIGNAL(triggered()), aboutDialog, SLOT(show()));
 
+    // make direct connections between the sections to simplify
+    // the logistics of showing related objects
+    ui->widgetExchanges->rightBuddy = ui->widgetBindings;
+    ui->widgetExchanges->peers.append(ui->widgetQueues);
+    ui->widgetExchanges->peers.append(ui->widgetSubscriptions);
 
-    // this is the internal object that controls the queue table selection
-    QItemSelectionModel* itemSelector = ui->exchangeListView->selectionModel();
-    connect(itemSelector, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)), exchangeModel, SLOT(selected(QModelIndex)));
-    connect(exchangeModel, SIGNAL(exchangeSelected(qmf::Data)), exchangeDetailsModel, SLOT(showExchangeDetail(qmf::Data)));
+    ui->widgetBindings->leftBuddy= ui->widgetExchanges;
+    ui->widgetBindings->rightBuddy = ui->widgetQueues;
+    ui->widgetBindings->peers.append(ui->widgetSubscriptions);
+
+    ui->widgetQueues->leftBuddy = ui->widgetBindings;
+    ui->widgetQueues->rightBuddy = ui->widgetSubscriptions;
+    ui->widgetQueues->peers.append(ui->widgetExchanges);
+
+    ui->widgetSubscriptions->leftBuddy = ui->widgetQueues;
+    ui->widgetSubscriptions->peers.append(ui->widgetBindings);
+    ui->widgetSubscriptions->peers.append(ui->widgetExchanges);
+
+    connect(ui->widgetBindings, SIGNAL(needData()),
+            this, SLOT(queryBindings()));
+    connect(ui->widgetExchanges, SIGNAL(needData()),
+            this, SLOT(queryExchanges()));
+    connect(ui->widgetQueues, SIGNAL(needData()),
+            this, SLOT(queryQueues()));
+    connect(ui->widgetSubscriptions, SIGNAL(needData()),
+            this, SLOT(querySubscriptions()));
+
+    exchangesDialog = new DialogExchanges(this, "exchanges");
+    exchangesDialog->initModels("name");
+    // pass the list of exchanges to the widget
+    ui->widgetExchanges->setRelatedModel(exchangesDialog->listModel(), this);
+
+    connect(exchangesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
+            ui->widgetExchanges, SLOT(setCurrentObject(qmf::Data)));
+    connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), this, SLOT(queryExchanges()));
+    connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), exchangesDialog, SLOT(exec()));
+    connect(exchangesDialog, SIGNAL(finalAdded()), ui->widgetExchanges, SLOT(initRelated()));
+
+    bindingsDialog = new DialogObjects(this, "bindings");
+    bindingsDialog->initModels("bindingKey");
+    ui->widgetBindings->setRelatedModel(bindingsDialog->listModel(), this);
+    connect(bindingsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
+            ui->widgetBindings, SLOT(setCurrentObject(qmf::Data)));
+    connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), this, SLOT(queryBindings()));
+    connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), bindingsDialog, SLOT(exec()));
+    connect(bindingsDialog, SIGNAL(finalAdded()), ui->widgetBindings, SLOT(initRelated()));
+
+    queuesDialog = new DialogObjects(this, "queues");
+    queuesDialog->initModels("name");
+    ui->widgetQueues->setRelatedModel(queuesDialog->listModel(), this);
+    connect(queuesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
+            ui->widgetQueues, SLOT(setCurrentObject(qmf::Data)));
+    connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), this, SLOT(queryQueues()));
+    connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), queuesDialog, SLOT(exec()));
+    connect(queuesDialog, SIGNAL(finalAdded()), ui->widgetQueues, SLOT(initRelated()));
+
+    subscriptionsDialog = new DialogObjects(this, "subscriptions");
+    subscriptionsDialog->initModels("name");
+    ui->widgetSubscriptions->setRelatedModel(subscriptionsDialog->listModel(), this);
+    connect(subscriptionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
+            ui->widgetSubscriptions, SLOT(setCurrentObject(qmf::Data)));
+    connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), this, SLOT(querySubscriptions()));
+    connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), subscriptionsDialog, SLOT(exec()));
+    connect(subscriptionsDialog, SIGNAL(finalAdded()), ui->widgetSubscriptions, SLOT(initRelated()));
+
+    //
+    // Create linkages to enable and disable main-window components based on the connection status.
+    //
+    connect(qmf, SIGNAL(isConnected(bool)), ui->actionOpen_localhost,    SLOT(setDisabled(bool)));
+    connect(qmf, SIGNAL(isConnected(bool)), ui->actionOpen_URL,          SLOT(setDisabled(bool)));
+    connect(qmf, SIGNAL(isConnected(bool)), ui->actionClose,             SLOT(setEnabled(bool)));
+
+    connect(qmf, SIGNAL(isConnected(bool)), ui->widgetExchanges,         SLOT(setEnabled(bool)));
+    connect(qmf, SIGNAL(isConnected(bool)), ui->widgetBindings,          SLOT(setEnabled(bool)));
+    connect(qmf, SIGNAL(isConnected(bool)), ui->widgetQueues,            SLOT(setEnabled(bool)));
+    connect(qmf, SIGNAL(isConnected(bool)), ui->widgetSubscriptions,     SLOT(setEnabled(bool)));
+
 }
 
 // Display the connection status in the status bar
@@ -70,6 +158,44 @@ void XView::setupStatusBar() {
     statusBar()->addWidget(label_connection_status);
 }
 
+// Send an async query to get the list of objects
+// When the response is received, send an event to the object's dialog
+void XView::queryObjects(const std::string& qmf_class, DialogObjects* dialog)
+{
+    qmf->queryBroker(qmf_class, dialog, dialog->eventType);
+}
+
+// SLOT: triggered when Exchange Dialog is displayed
+// Send an async query to get the list of exchanges
+// When the response is received, send an event to the exchange dialog
+void XView::queryExchanges()
+{
+    queryObjects("exchange", exchangesDialog);
+}
+
+// SLOT: triggered when Bindings Dialog is displayed
+// Send an async query to get the list of bindings
+// When the response is received, send an event to the bindings dialog
+void XView::queryBindings()
+{
+    queryObjects("binding", bindingsDialog);
+}
+
+// SLOT: triggered when Queues Dialog is displayed
+// Send an async query to get the list of queues
+// When the response is received, send an event to the queues dialog
+void XView::queryQueues()
+{
+    queryObjects("queue", queuesDialog);
+}
+
+// SLOT: triggered when Subscriptions Dialog is displayed
+// Send an async query to get the list of Subscriptions
+// When the response is received, send an event to the Subscriptions dialog
+void XView::querySubscriptions()
+{
+    queryObjects("subscription", subscriptionsDialog);
+}
 
 // process command line arguments
 void XView::init(int argc, char *argv[])
@@ -97,6 +223,16 @@ XView::~XView()
     QSettings settings;
     settings.setValue("mainWindowGeometry", saveGeometry());
     settings.setValue("mainWindowState", saveState());
+
+    delete openDialog;
+    delete aboutDialog;
+    delete bindingsDialog;
+    delete exchangesDialog;
+    delete queuesDialog;
+    delete subscriptionsDialog;
+
+    delete label_connection_status;
+    delete label_connection_prompt;
 
     qmf->cancel();
     qmf->wait();

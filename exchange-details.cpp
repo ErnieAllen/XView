@@ -23,53 +23,10 @@
 using std::cout;
 using std::endl;
 
-ExchangeDetailsModel::ExchangeDetailsModel(QObject* parent) : QAbstractTableModel(parent)
+ExchangeDetailsModel::ExchangeDetailsModel(QObject* parent) : ObjectDetailsModel(parent)
 {
     // Intentionally Left Blank
 }
-
-
-void ExchangeDetailsModel::showExchangeDetail(const qmf::Data& exchange)
-{
-    if (!exchange.isValid())
-        return;
-
-    clear();
-
-    const qpid::types::Variant::Map& attrs(exchange.getProperties());
-
-    beginInsertRows(QModelIndex(), 0, attrs.size() - 1);
-    for (qpid::types::Variant::Map::const_iterator iter = attrs.begin();
-         iter != attrs.end(); iter++) {
-        keys << QString(iter->first.c_str());
-        values << QString(iter->second.asString().c_str());
-    }
-    endInsertRows();
-}
-
-
-void ExchangeDetailsModel::clear()
-{
-    beginRemoveRows(QModelIndex(), 0, keys.size() - 1);
-    keys.clear();
-    values.clear();
-    endRemoveRows();
-}
-
-
-int ExchangeDetailsModel::rowCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return (int) keys.size();
-}
-
-
-int ExchangeDetailsModel::columnCount(const QModelIndex &parent) const
-{
-    Q_UNUSED(parent);
-    return 2;
-}
-
 
 QVariant ExchangeDetailsModel::data(const QModelIndex &index, int role) const
 {
@@ -89,17 +46,5 @@ QVariant ExchangeDetailsModel::data(const QModelIndex &index, int role) const
         return values.at(index.row());
     }
     return 0;
-}
-
-
-QVariant ExchangeDetailsModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
-    switch (section) {
-    case 0: return QString("Key");
-    case 1: return QString("Value");
-    }
-
-    return QVariant();
 }
 
