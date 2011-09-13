@@ -253,6 +253,10 @@ void WidgetQmfObject::keyPressEvent ( QKeyEvent * event )
             ui->comboBox->setCurrentIndex(row + 1);
         }
         break;
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+        ui->pushButton->animateClick();
+        break;
     default:
         QWidget::keyPressEvent(event);
     }
