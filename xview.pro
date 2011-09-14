@@ -55,4 +55,8 @@ FORMS    += xview.ui \
 
 OTHER_FILES += \
     license.txt \
-    README.txt
+    README.txt \
+    CMakeLists.txt
+
+RESOURCES += \
+    xview.qrc

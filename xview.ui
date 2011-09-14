@@ -21,7 +21,7 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0">
+    <item row="1" column="0">
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
        <widget class="WidgetExchanges" name="widgetExchanges" native="true">
@@ -54,14 +54,6 @@
      </layout>
     </item>
    </layout>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menubar">
@@ -151,6 +143,9 @@
    </property>
   </action>
   <action name="actionBytes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Bytes</string>
    </property>
@@ -162,6 +157,9 @@
    </property>
   </action>
   <action name="actionMessage_rate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Message rate</string>
    </property>
@@ -174,7 +172,7 @@
   </action>
   <action name="actionByte_rate">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Byte rate</string>

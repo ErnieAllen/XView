@@ -53,6 +53,8 @@ private:
     DialogExchanges* exchangesDialog;
     DialogObjects*   queuesDialog;
     DialogObjects*   subscriptionsDialog;
+    QActionGroup*    actionGroup;
+    QToolBar *       modeToolBar;
 
     QmfThread* qmf;
     QLabel *label_connection_prompt;

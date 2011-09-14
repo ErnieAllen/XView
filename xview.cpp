@@ -90,6 +90,8 @@ XView::XView(QWidget *parent) :
     ui->widgetSubscriptions->peers.append(ui->widgetBindings);
     ui->widgetSubscriptions->peers.append(ui->widgetExchanges);
 
+    // when the sections request data, send the request
+    // over to qmf
     connect(ui->widgetBindings, SIGNAL(needData()),
             this, SLOT(queryBindings()));
     connect(ui->widgetExchanges, SIGNAL(needData()),
@@ -99,11 +101,12 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetSubscriptions, SIGNAL(needData()),
             this, SLOT(querySubscriptions()));
 
+
+    // The dialog boxes share the same data-model with the widgets
+    // Create the dialog boxes and pass their model to the widgets
     exchangesDialog = new DialogExchanges(this, "exchanges");
     exchangesDialog->initModels("name");
-    // pass the list of exchanges to the widget
     ui->widgetExchanges->setRelatedModel(exchangesDialog->listModel(), this);
-
     connect(exchangesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetExchanges, SLOT(setCurrentObject(qmf::Data)));
     connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), this, SLOT(queryExchanges()));
@@ -158,6 +161,19 @@ void XView::setupStatusBar() {
     label_connection_prompt->setText("Connection status: ");
     statusBar()->addWidget(label_connection_prompt);
     statusBar()->addWidget(label_connection_status);
+
+    ui->actionMessages->setIcon(QIcon(":/images/messages.png"));
+    ui->actionBytes->setIcon(QIcon(":/images/bytes.png"));
+    actionGroup = new QActionGroup(this);
+    actionGroup->addAction(ui->actionMessages);
+    actionGroup->addAction(ui->actionBytes);
+    actionGroup->addAction(ui->actionMessage_rate);
+    actionGroup->addAction(ui->actionByte_rate);
+
+    modeToolBar = addToolBar(tr("Modes"));
+    modeToolBar->setObjectName("Mode");
+    modeToolBar->addActions(actionGroup->actions());
+    modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 }
 
 // Send an async query to get the list of objects
@@ -200,6 +216,8 @@ void XView::querySubscriptions()
     queryObjects("subscription", subscriptionsDialog);
 }
 
+// SLOT: Triggered when a qmf query response is received
+// Send the received event over to the appropriate dialog box
 void XView::dispatchResponse(QObject *target, const qmf::ConsoleEvent& event)
 {
     DialogObjects *dialog = (DialogObjects *)target;
@@ -242,6 +260,9 @@ XView::~XView()
 
     delete label_connection_status;
     delete label_connection_prompt;
+
+    delete actionGroup;
+    delete modeToolBar;
 
     qmf->cancel();
     qmf->wait();

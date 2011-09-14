@@ -30,7 +30,7 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     ui->setupUi(this);
 
     _current = false;
-    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setColumnCount(3);
     QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(4);
     shadow->setColor(QColor(200, 200, 200, 180));
@@ -355,6 +355,7 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     int row = 0;
     int maxValWidth = 0;
     int maxNameWidth = 0;
+    int maxModeWidth = 0;
     QFontMetrics fm(ui->tableWidget->font());
     QColor color(255, 255, 220);
 
@@ -372,17 +373,23 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
             maxValWidth = qMax(maxValWidth, fm.width(newItem->text()));
             ui->tableWidget->setItem(row, 0, newItem);
 
+            newItem = new QTableWidgetItem(QString("messages"));
+            newItem->setBackgroundColor(color);
+            maxModeWidth = qMax(maxModeWidth, fm.width(newItem->text()));
+            ui->tableWidget->setItem(row, 1, newItem);
+
             newItem = new QTableWidgetItem((*column_iter).header);
             newItem->setBackgroundColor(color);;
             maxNameWidth = qMax(maxNameWidth, fm.width(newItem->text()));
-            ui->tableWidget->setItem(row, 1, newItem);
+            ui->tableWidget->setItem(row, 2, newItem);
         }
         ++row;
         ++column_iter;
     }
-    ui->tableWidget->resize(maxValWidth + maxNameWidth + 16, fm.height() * row);
+    ui->tableWidget->resize(maxModeWidth + maxValWidth + maxNameWidth + 24, fm.height() * row);
     ui->tableWidget->setColumnWidth(0, maxValWidth + 8);
-    ui->tableWidget->setColumnWidth(1, maxNameWidth + 8);
+    ui->tableWidget->setColumnWidth(1, maxModeWidth + 6);
+    ui->tableWidget->setColumnWidth(2, maxNameWidth + 8);
 
     // force a resize event so the table is drawn in the correct place
     QResizeEvent event(size(), size());

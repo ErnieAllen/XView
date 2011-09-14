@@ -24,7 +24,7 @@ WidgetQueues::WidgetQueues(QWidget *parent) :
     WidgetQmfObject(parent)
 {
     this->setSectionName(QString("Queues"));
-    summaryColumns.append(Column("msgDepth", "depth", Qt::AlignRight, "N"));
+    summaryColumns.append(Column("msgDepth", "deep", Qt::AlignRight, "N"));
     setRelatedText("Related queues");
 }
 
