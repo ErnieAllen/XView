@@ -86,17 +86,13 @@ void DialogObjects::connectionChanged(bool isConnected)
     objectDetailsModel->connectionChanged(isConnected);
 }
 
-void DialogObjects::clear()
-{
-    objectModel->clear();
-    objectDetailsModel->clear();
-}
-
 void DialogObjects::selected(const QModelIndex &index)
 {
     objectModel->selected(index);
 }
 
+// The async request to get the data has completed
+// Add the objects to the model
 void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event)
 {
     uint32_t pcount = event.getDataCount();
@@ -107,10 +103,11 @@ void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event)
     if (event.isFinal()) {
         if (!(ui->objectListView->selectionModel()->hasSelection()))
             ui->objectListView->setCurrentIndex(objectModel->index(0, 0));
+        dataRefreshed();
         emit finalAdded();
     }
 }
-
+/*
 // Handle the query response from the QUERY_OBJECT for qmf objects
 bool DialogObjects::event(QEvent *e)
 {
@@ -130,6 +127,16 @@ bool DialogObjects::event(QEvent *e)
         return true;
     }
     return QDialog::event(e);
+}
+*/
+void DialogObjects::dataRefreshed()
+{
+    QModelIndex current = ui->objectListView->selectionModel()->currentIndex();
+
+    // if the dialogbox is open, we want to show the updated object details
+    objectModel->selected(current);
+
+    emit objectRefreshed(objectModel->getSelected(current), objectName());
 }
 
 void DialogObjects::accept()
