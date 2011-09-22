@@ -31,7 +31,7 @@ using std::cout;
 using std::endl;
 
 QmfThread::QmfThread(QObject* parent) :
-    QThread(parent), cancelled(false), connected(false)
+    QThread(parent), cancelled(false), connected(false), disconnecting(false)
 {
     // Intentionally Left Blank
 }
@@ -122,27 +122,37 @@ void QmfThread::run()
                 }
 
             }
+            else {
+                if (connected)
+                    emit qmfTimer();
+            }
 
             {
                 QMutexLocker locker(&lock);
                 if (command_queue.size() > 0) {
                     Command command(command_queue.front());
-                    command_queue.pop_front();
-                    if (!command.connect) {
-                        emit connectionStatusChanged("QMF Session Closing...");
-                        sess.close();
-                        emit connectionStatusChanged("Closing...");
-                        conn.close();
-                        emit connectionStatusChanged("Closed");
-                        connected = false;
-                        emit isConnected(false);
+                    disconnecting = true;
+
+                    // make sure there are no pending queries before disconnecting
+                    if (query_queue.size() == 0) {
+                        command_queue.pop_front();
+                        if (!command.connect) {
+                            emit connectionStatusChanged("QMF Session Closing...");
+                            sess.close();
+                            emit connectionStatusChanged("Closing...");
+                            conn.close();
+                            emit connectionStatusChanged("Closed");
+                            connected = false;
+                            emit isConnected(false);
+                        }
                     }
                 }
             }
         } else {
             QMutexLocker locker(&lock);
-            if (command_queue.size() == 0)
+            if (command_queue.size() == 0) {
                 cond.wait(&lock, 1000);
+            }
             if (command_queue.size() > 0) {
                 Command command(command_queue.front());
                 command_queue.pop_front();
@@ -160,6 +170,7 @@ void QmfThread::run()
                             sess.setAgentFilter("[eq, _product, [quote, 'qpidd']]");
                         } catch (std::exception&) {}
                         connected = true;
+                        disconnecting = false;
                         //emit isConnected(true);
 
                         std::stringstream line;
@@ -170,9 +181,6 @@ void QmfThread::run()
                         line << "QMF Session Failed: " << ex.what();
                         emit connectionStatusChanged(line.str().c_str());
                     }
-            }  else {
-                if (connected)
-                    emit qmfTimer();
             }
         }
 
@@ -194,7 +202,8 @@ void QmfThread::queryBroker(const std::string& qmf_class,
                             QObject* object,
                             QEvent::Type event_type)
 {
-    if (!connected)
+    // don't try to send a query if we are connecting or disconnecting
+    if ((command_queue.size() > 0) || (!connected) || (disconnecting))
         return;
 
     QMutexLocker locker(&lock);
@@ -232,5 +241,3 @@ void QmfThread::dispatchQueryResults(qmf::ConsoleEvent& event)
     }
     cond.wakeOne();
 }
-
-

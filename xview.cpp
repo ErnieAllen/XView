@@ -208,7 +208,6 @@ void XView::queryCurrent()
 // When the response is received, send an event to the object's dialog
 void XView::queryObjects(const std::string& qmf_class, DialogObjects* dialog)
 {
-    //dialog->listModel()->clear();
     qmf->queryBroker(qmf_class, dialog, dialog->eventType);
 }
 

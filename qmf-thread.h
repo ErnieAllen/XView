@@ -87,6 +87,7 @@ private:
     qmf::ConsoleSession sess;
     bool cancelled;
     bool connected;
+    bool disconnecting;
     bool pausedRefreshes;
     command_queue_t command_queue;
 
