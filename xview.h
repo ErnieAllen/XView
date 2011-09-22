@@ -69,6 +69,7 @@ private slots:
     void queryQueues();
     void querySubscriptions();
     void dispatchResponse(QObject *target, const qmf::ConsoleEvent& event);
+    void queryCurrent();
 
 };
 

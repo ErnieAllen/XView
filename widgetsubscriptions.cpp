@@ -49,7 +49,7 @@ void WidgetSubscriptions::paintEvent(QPaintEvent *e)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QColor subColor(Qt::black);
+    QColor subColor(backgroundColor);
     QPen   subPen(subColor);
     subPen.setWidth(2);
     QBrush subBrush(Qt::white);

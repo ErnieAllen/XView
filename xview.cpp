@@ -55,6 +55,8 @@ XView::XView(QWidget *parent) :
     connect(qmf, SIGNAL(connectionStatusChanged(QString)), label_connection_status, SLOT(setText(QString)));
 
     connect(qmf, SIGNAL(receivedResponse(QObject*,qmf::ConsoleEvent)), this, SLOT(dispatchResponse(QObject*,qmf::ConsoleEvent)));
+    connect(qmf, SIGNAL(qmfTimer()), this, SLOT(queryCurrent()));
+
     // menu actions to open and close the broker connection
     connect(ui->actionOpen_localhost, SIGNAL(triggered()), qmf, SLOT(connect_localhost()));
     connect(ui->actionClose, SIGNAL(triggered()), qmf, SLOT(disconnect()));
@@ -109,6 +111,8 @@ XView::XView(QWidget *parent) :
     ui->widgetExchanges->setRelatedModel(exchangesDialog->listModel(), this);
     connect(exchangesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetExchanges, SLOT(setCurrentObject(qmf::Data)));
+    connect(exchangesDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
+            ui->widgetExchanges, SLOT(showData(qmf::Data)));
     connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), this, SLOT(queryExchanges()));
     connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), exchangesDialog, SLOT(exec()));
     connect(exchangesDialog, SIGNAL(finalAdded()), ui->widgetExchanges, SLOT(initRelated()));
@@ -118,6 +122,8 @@ XView::XView(QWidget *parent) :
     ui->widgetBindings->setRelatedModel(bindingsDialog->listModel(), this);
     connect(bindingsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetBindings, SLOT(setCurrentObject(qmf::Data)));
+    connect(bindingsDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
+            ui->widgetBindings, SLOT(showData(qmf::Data)));
     connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), this, SLOT(queryBindings()));
     connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), bindingsDialog, SLOT(exec()));
     connect(bindingsDialog, SIGNAL(finalAdded()), ui->widgetBindings, SLOT(initRelated()));
@@ -127,6 +133,8 @@ XView::XView(QWidget *parent) :
     ui->widgetQueues->setRelatedModel(queuesDialog->listModel(), this);
     connect(queuesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetQueues, SLOT(setCurrentObject(qmf::Data)));
+    connect(queuesDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
+            ui->widgetQueues, SLOT(showData(qmf::Data)));
     connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), this, SLOT(queryQueues()));
     connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), queuesDialog, SLOT(exec()));
     connect(queuesDialog, SIGNAL(finalAdded()), ui->widgetQueues, SLOT(initRelated()));
@@ -136,6 +144,8 @@ XView::XView(QWidget *parent) :
     ui->widgetSubscriptions->setRelatedModel(subscriptionsDialog->listModel(), this);
     connect(subscriptionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetSubscriptions, SLOT(setCurrentObject(qmf::Data)));
+    connect(subscriptionsDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
+            ui->widgetSubscriptions, SLOT(showData(qmf::Data)));
     connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), this, SLOT(querySubscriptions()));
     connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), subscriptionsDialog, SLOT(exec()));
     connect(subscriptionsDialog, SIGNAL(finalAdded()), ui->widgetSubscriptions, SLOT(initRelated()));
@@ -176,11 +186,25 @@ void XView::setupStatusBar() {
     modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 }
 
+// SLOT Triggered when the qmf thread has been idle for 2 seconds
+// If there is a current object in a widget, refresh it
+void XView::queryCurrent()
+{
+    if (ui->widgetBindings->current())
+        queryBindings();
+    else if (ui->widgetExchanges->current())
+        queryExchanges();
+    else if (ui->widgetQueues->current())
+        queryQueues();
+    else if (ui->widgetSubscriptions->current())
+        querySubscriptions();
+}
+
 // Send an async query to get the list of objects
 // When the response is received, send an event to the object's dialog
 void XView::queryObjects(const std::string& qmf_class, DialogObjects* dialog)
 {
-    dialog->listModel()->clear();
+    //dialog->listModel()->clear();
     qmf->queryBroker(qmf_class, dialog, dialog->eventType);
 }
 

@@ -124,8 +124,9 @@ void QmfThread::run()
                     break;
                 }
 
+            } else {
+                emit qmfTimer();
             }
-
             {
                 QMutexLocker locker(&lock);
                 if (command_queue.size() > 0) {

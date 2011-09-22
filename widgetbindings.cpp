@@ -37,7 +37,7 @@ void WidgetBindings::paintEvent(QPaintEvent *e)
  {
     QRectF link1(0.0, 0.0, 20.0, 10.0);
     QRectF link2(18.0, 3.0, 20.0, 5.0);
-    QColor linkColor(0, 0, 0);
+    QColor linkColor(backgroundColor);
     QColor linkColor2(255, 255, 255);
     QPen   linkPen(linkColor);
     QPen   linkPen2(linkColor2);

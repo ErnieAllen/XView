@@ -66,6 +66,7 @@ public:
 
 public slots:
     void setCurrentObject(const qmf::Data& object);
+    void showData(const qmf::Data& object);
     void setEnabled(bool enabled);
     void initRelated();
 
@@ -102,6 +103,8 @@ protected:
 
     qmf::Data data;
     RelatedFilterProxyModel *related;
+
+    QColor backgroundColor;
 
 signals:
     void needData();

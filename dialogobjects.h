@@ -38,7 +38,7 @@ public:
     explicit DialogObjects(QWidget *parent = 0, const std::string &s = "");
     ~DialogObjects();
 
-    bool event(QEvent *e);
+    //bool event(QEvent *e);
     QEvent::Type eventType;
 
     void initModels(std::string unique);
@@ -50,6 +50,7 @@ public slots:
     void clear();
     void selected(const QModelIndex &index);
     void accept();
+    void dataRefreshed();
 
 protected:
     void initConnections();
@@ -58,7 +59,10 @@ protected:
     ObjectDetailsModel *objectDetailsModel;
 
 signals:
+    // user selected an object
     void setCurrentObject(const qmf::Data&, const QString &);
+    // automatic data refresh
+    void objectRefreshed(const qmf::Data&, const QString &);
     void finalAdded();
 
 private:

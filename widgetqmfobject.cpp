@@ -25,6 +25,7 @@
 
 WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     QWidget(parent),
+    backgroundColor(200, 200, 200),
     ui(new Ui::WidgetQmfObject)
 {
     ui->setupUi(this);
@@ -117,8 +118,8 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
         ui->labelName->move(0, y);
         ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, reservedY() + 20);
     } else {
-        ui->comboBox->move(0, reservedY() + 60);
-        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, ui->comboBox->y() + ui->comboBox->height() + 4);
+        ui->comboBox->move(0, reservedY());
+        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, ui->comboBox->y() + ui->comboBox->height() + 46);
     }
     ui->labelName->resize(width(), ui->labelName->height());
     ui->comboBox->resize(width(), ui->comboBox->height());
@@ -129,7 +130,7 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
 
     // move the Related label
     int x = qMax(0, width() / 2 - ui->labelRelated->width() / 2);
-    ui->labelIndex->move(x, reservedY() + 30);
+    ui->labelIndex->move(x, reservedY() + 40);
 
 }
 
@@ -206,7 +207,7 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
         painter.setBrush(arrowBrush);
 
         // move the points down a bit
-        painter.translate(0, reservedY() + 40);
+        painter.translate(0, reservedY() + ui->comboBox->height() + 20);
 
         // the points are defined as a right arrow
         // so if we want to show them as a left arrow,
@@ -309,7 +310,7 @@ void WidgetQmfObject::reset()
     related->setRelatedData("", "");
     related->clearFilter();
     ui->comboBox->hide();
-    ui->comboBox->clear();
+    //ui->comboBox->clear();
     _arrow = arrowNone;
 }
 
@@ -321,6 +322,21 @@ void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
     reset();
     setFocus();
     this->setCurrent(true);
+    showData(object);
+}
+
+// SLOT triggered when an automatic background update
+// has completed.
+// Also called after an ohject is made current.
+// If there is a current object, update it's data a
+// refresh the related widgets
+void WidgetQmfObject::showData(const qmf::Data& object)
+{
+    if (!object.isValid())
+        return;
+
+    if (!_current)
+        return;
 
     ui->labelName->show();
     ui->tableWidget->show();
@@ -442,6 +458,7 @@ void WidgetQmfObject::initRelated()
 
         if (ui->comboBox->currentIndex() == -1) {
             if (ui->comboBox->model()->rowCount() > 0) {
+                // setting the index should automatically trigger a relatedIndexChanged
                 ui->comboBox->setCurrentIndex(0);
                 return;
             }

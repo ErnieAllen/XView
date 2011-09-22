@@ -51,7 +51,7 @@ void WidgetExchanges::paintEvent(QPaintEvent *e)
 
     WidgetQmfObject::paintEvent(e);
 
-    QColor exchangeColor(Qt::black);
+    QColor exchangeColor(200, 200, 200);
     QPen exchangePen(exchangeColor);
     exchangePen.setWidth(2);
     QBrush exchangeBrush(Qt::white);

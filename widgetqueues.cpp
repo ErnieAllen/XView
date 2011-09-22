@@ -47,7 +47,7 @@ void WidgetQueues::paintEvent(QPaintEvent *e)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QColor queueColor(0, 0, 0);
+    QColor queueColor(backgroundColor);
     QPen   queuePen(queueColor);
     QBrush queueBrush(Qt::white);
     queuePen.setWidth(2);

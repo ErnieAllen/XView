@@ -64,6 +64,7 @@ signals:
 
     void qmfError(const QString&);
     void receivedResponse(QObject *target, const qmf::ConsoleEvent& event);
+    void qmfTimer();
 
 protected:
     void run();
