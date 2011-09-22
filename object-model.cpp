@@ -128,6 +128,7 @@ void ObjectListModel::selected(const QModelIndex &index)
 {
     if (index.isValid()) {
         const qmf::Data& object = dataList.at(index.row());
+        // show the details for this object in the dialog's object table
         emit objectSelected(object);
     }
 }

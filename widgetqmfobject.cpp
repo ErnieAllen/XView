@@ -176,7 +176,7 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
     if (this->_current) {
         painter.save();
 
-        QColor backColor(222, 222, 222, 240);
+        QColor backColor(200, 200, 255);
         int border_width = 10;
         QPen currentPen(backColor);
         currentPen.setWidth(border_width);
@@ -320,6 +320,7 @@ void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
         return;
 
     reset();
+    resetOthers();
     setFocus();
     this->setCurrent(true);
     showData(object);
@@ -345,12 +346,21 @@ void WidgetQmfObject::showData(const qmf::Data& object)
     fillTableWidget(object);
 
     if (leftBuddy) {
-        leftBuddy->reset();
         leftBuddy->showRelated(object, objectName(), arrowLeft);
     }
     if (rightBuddy) {
-        rightBuddy->reset();
         rightBuddy->showRelated(object, objectName(), arrowRight);
+    }
+}
+
+
+void WidgetQmfObject::resetOthers()
+{
+    if (leftBuddy) {
+        leftBuddy->reset();
+    }
+    if (rightBuddy) {
+        rightBuddy->reset();
     }
     QList<WidgetQmfObject *>::const_iterator peers_iter = peers.constBegin();
     while (peers_iter != peers.constEnd()) {
