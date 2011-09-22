@@ -47,7 +47,6 @@ public:
     void gotDataEvent(const qmf::ConsoleEvent& event);
 public slots:
     void connectionChanged(bool isConnected);
-    void clear();
     void selected(const QModelIndex &index);
     void accept();
     void dataRefreshed();

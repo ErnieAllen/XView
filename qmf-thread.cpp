@@ -95,9 +95,6 @@ void QmfThread::run()
                             brokerData = event.getData(0);
                             emit isConnected(true);
                         }
-
-                        // get the exchanges for this broker
-                        //agent.queryAsync(qmf::Query(qmf::QUERY_OBJECT, "exchange", "org.apache.qpid.broker"));
                     }
                     break;
 
@@ -124,9 +121,8 @@ void QmfThread::run()
                     break;
                 }
 
-            } else {
-                emit qmfTimer();
             }
+
             {
                 QMutexLocker locker(&lock);
                 if (command_queue.size() > 0) {
@@ -174,6 +170,9 @@ void QmfThread::run()
                         line << "QMF Session Failed: " << ex.what();
                         emit connectionStatusChanged(line.str().c_str());
                     }
+            }  else {
+                if (connected)
+                    emit qmfTimer();
             }
         }
 
@@ -195,6 +194,9 @@ void QmfThread::queryBroker(const std::string& qmf_class,
                             QObject* object,
                             QEvent::Type event_type)
 {
+    if (!connected)
+        return;
+
     QMutexLocker locker(&lock);
 
     query_queue.push_back(Query(object, event_type));
