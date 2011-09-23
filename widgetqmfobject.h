@@ -78,10 +78,6 @@ protected:
     void keyPressEvent ( QKeyEvent * event );
     virtual void showRelated(const qmf::Data& object, const QString& widget_name, ArrowDirection a);
 
-    // expose the table and label so they can be moved by the derived classes
-    QLabel * labelName();
-    QTableWidget* tableWidget();
-
     int reservedY(); // amount reserved at top of widget for button and label
     int mid_paint(); // use this as a common mid point for painting
     virtual QString unique_property(); // allow derived classes to override object name

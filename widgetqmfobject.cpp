@@ -89,11 +89,6 @@ QPushButton* WidgetQmfObject::pushButton()
     return ui->pushButton;
 }
 
-QLabel* WidgetQmfObject::labelName()
-{
-    return ui->labelName;
-}
-
 int WidgetQmfObject::reservedY()
 {
     return  ui->labelName->height() + ui->pushButton->height();
@@ -102,11 +97,6 @@ int WidgetQmfObject::reservedY()
 int WidgetQmfObject::mid_paint()
 {
     return (reservedY() + height()) / 2;
-}
-
-QTableWidget* WidgetQmfObject::tableWidget()
-{
-    return ui->tableWidget;
 }
 
 void WidgetQmfObject::resizeEvent(QResizeEvent *)

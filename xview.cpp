@@ -194,13 +194,13 @@ void XView::setupStatusBar() {
 // If there is a current object in a widget, refresh it
 void XView::queryCurrent()
 {
-    if (ui->widgetBindings->current())
+    if (ui->widgetBindings->current() || bindingsDialog->isVisible())
         queryBindings();
-    else if (ui->widgetExchanges->current())
+    else if (ui->widgetExchanges->current() || exchangesDialog->isVisible())
         queryExchanges();
-    else if (ui->widgetQueues->current())
+    else if (ui->widgetQueues->current() || queuesDialog->isVisible())
         queryQueues();
-    else if (ui->widgetSubscriptions->current())
+    else if (ui->widgetSubscriptions->current() || subscriptionsDialog->isVisible())
         querySubscriptions();
 }
 
