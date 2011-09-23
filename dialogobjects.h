@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include <QSettings>
+#include <QSortFilterProxyModel>
 #include "object-model.h"
 #include "object-details.h"
 #include "qmf-event.h"
@@ -47,9 +48,9 @@ public:
     void gotDataEvent(const qmf::ConsoleEvent& event);
 public slots:
     void connectionChanged(bool isConnected);
-    void selected(const QModelIndex &index);
     void accept();
     void dataRefreshed();
+    void selected(const QModelIndex &index);
 
 protected:
     void initConnections();
@@ -68,6 +69,7 @@ private:
     Ui::DialogObjects *ui;
     void saveSettings();
     void restoreSettings();
+    QSortFilterProxyModel *proxyModel;
 
 private slots:
     void resizeDetail();

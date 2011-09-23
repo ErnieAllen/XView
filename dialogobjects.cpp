@@ -47,11 +47,19 @@ void DialogObjects::initModels(std::string unique)
 
 void DialogObjects::initConnections()
 {
-    ui->objectListView->setModel(objectModel);
+
+    //ui->objectListView->setModel(objectModel);
+    proxyModel = new QSortFilterProxyModel(this);
+    proxyModel->setSourceModel(objectModel);
+    //proxyModel->setDynamicSortFilter(true);
+    proxyModel->setFilterKeyColumn(0);
+    ui->objectListView->setModel(proxyModel);
+    connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), proxyModel, SLOT(setFilterFixedString(QString)));
+
     ui->objectTableView->setModel(objectDetailsModel);
 
     connect(ui->objectListView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-            objectModel, SLOT(selected(QModelIndex)));
+            this, SLOT(selected(QModelIndex)));
     connect(objectModel, SIGNAL(objectSelected(qmf::Data)),
             objectDetailsModel, SLOT(showObjectDetail(qmf::Data)));
 
@@ -67,6 +75,8 @@ DialogObjects::~DialogObjects()
         delete objectModel;
     if (objectDetailsModel)
         delete objectDetailsModel;
+    if (proxyModel)
+        delete proxyModel;
 }
 
 // SLOT triggered after the object details have been added
@@ -86,11 +96,15 @@ void DialogObjects::connectionChanged(bool isConnected)
     objectDetailsModel->connectionChanged(isConnected);
 }
 
+// SLOT triggered when user highlights an item in the list
+// Translate to a filtered index and show the details
 void DialogObjects::selected(const QModelIndex &index)
 {
-    objectModel->selected(index);
+    if (index.isValid()) {
+        QModelIndex filteredIndex = proxyModel->mapToSource(index);
+        objectModel->selected(filteredIndex);
+    }
 }
-
 // The async request to get the data has completed
 // Add the objects to the model
 void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event)
@@ -133,17 +147,21 @@ void DialogObjects::dataRefreshed()
 {
     QModelIndex current = ui->objectListView->selectionModel()->currentIndex();
 
-    // if the dialogbox is open, we want to show the updated object details
-    objectModel->selected(current);
-
-    emit objectRefreshed(objectModel->getSelected(current), objectName());
+    if (current.isValid()) {
+        QModelIndex filteredIndex = proxyModel->mapToSource(current);
+        // if the dialogbox is open, we want to show the updated object details
+        objectModel->selected(filteredIndex);
+        emit objectRefreshed(objectModel->getSelected(filteredIndex), objectName());
+    }
 }
-
 void DialogObjects::accept()
 {
     // get the currently selected object in the list
     QModelIndex index = ui->objectListView->selectionModel()->currentIndex();
-    emit setCurrentObject(objectModel->getSelected(index), objectName());
+    if (index.isValid()) {
+        QModelIndex filteredIndex = proxyModel->mapToSource(index);
+        emit setCurrentObject(objectModel->getSelected(filteredIndex), objectName());
+    }
     close();
 }
 
