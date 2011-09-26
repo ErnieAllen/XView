@@ -170,6 +170,9 @@ void DialogObjects::saveSettings() {
 
     settings.beginGroup(objectName());
     settings.setValue("Geometry", saveGeometry());
+    settings.setValue("splitterSizes", ui->splitter->saveState());
+    settings.setValue("tableState", ui->objectTableView->horizontalHeader()->saveState());
+    settings.setValue("tableGeometry", ui->objectTableView->horizontalHeader()->saveGeometry());
     settings.endGroup();
 
 }
@@ -179,5 +182,8 @@ void DialogObjects::restoreSettings() {
 
     settings.beginGroup(this->objectName());
     restoreGeometry(settings.value("Geometry").toByteArray());
+    ui->splitter->restoreState(settings.value("splitterSizes").toByteArray());
+    ui->objectTableView->horizontalHeader()->restoreState(settings.value("tableState").toByteArray());
+    ui->objectTableView->horizontalHeader()->restoreGeometry(settings.value("tableGeometry").toByteArray());
     settings.endGroup();
 }
