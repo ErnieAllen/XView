@@ -70,6 +70,10 @@ private slots:
     void querySubscriptions();
     void dispatchResponse(QObject *target, const qmf::ConsoleEvent& event);
     void queryCurrent();
+    void setMessageMode();
+    void setByteMode();
+    void setMessageRateMode();
+    void setByteRateMode();
 
 };
 

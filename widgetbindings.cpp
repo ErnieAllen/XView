@@ -24,7 +24,7 @@ WidgetBindings::WidgetBindings(QWidget *parent) :
     WidgetQmfObject(parent)
 {
     this->setSectionName(QString("Bindings"));
-    summaryColumns.append(Column("msgMatched", "matched", Qt::AlignRight, "N"));
+    summaryColumns.append(Column("msgMatched", "matched", Qt::AlignRight, "N", modeMessages));
     unique = "bindingKey";
     setRelatedText("Related bindings");
 }

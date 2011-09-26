@@ -24,7 +24,7 @@ WidgetSubscriptions::WidgetSubscriptions(QWidget *parent) :
     WidgetQmfObject(parent)
 {
     this->setSectionName(QString("Subscriptions"));
-    summaryColumns.append(Column("delivered", "delivered", Qt::AlignRight, "N"));
+    summaryColumns.append(Column("delivered", "delivered", Qt::AlignRight, "N", modeMessages));
     setRelatedText("Related subscriptions");
 }
 

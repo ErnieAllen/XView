@@ -104,6 +104,12 @@ XView::XView(QWidget *parent) :
             this, SLOT(querySubscriptions()));
 
 
+    connect(ui->actionMessages,     SIGNAL(triggered()), this, SLOT(setMessageMode()));
+    connect(ui->actionBytes,        SIGNAL(triggered()), this, SLOT(setByteMode()));
+    connect(ui->actionMessage_rate, SIGNAL(triggered()), this, SLOT(setMessageRateMode()));
+    connect(ui->actionByte_rate,    SIGNAL(triggered()), this, SLOT(setByteRateMode()));
+
+
     // The dialog boxes share the same data-model with the widgets
     // Create the dialog boxes and pass their model to the widgets
     exchangesDialog = new DialogExchanges(this, "exchanges");
@@ -181,13 +187,13 @@ void XView::setupStatusBar() {
     actionGroup = new QActionGroup(this);
     actionGroup->addAction(ui->actionMessages);
     actionGroup->addAction(ui->actionBytes);
-    actionGroup->addAction(ui->actionMessage_rate);
-    actionGroup->addAction(ui->actionByte_rate);
+    //actionGroup->addAction(ui->actionMessage_rate);
+    //actionGroup->addAction(ui->actionByte_rate);
 
     modeToolBar = addToolBar(tr("Modes"));
     modeToolBar->setObjectName("Mode");
     modeToolBar->addActions(actionGroup->actions());
-    modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    //modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 }
 
 // SLOT Triggered when the qmf thread has been idle for 2 seconds
@@ -250,6 +256,40 @@ void XView::dispatchResponse(QObject *target, const qmf::ConsoleEvent& event)
     DialogObjects *dialog = (DialogObjects *)target;
     dialog->gotDataEvent(event);
 }
+
+void XView::setMessageMode()
+{
+    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeMessages);
+    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeMessages);
+    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeMessages);
+    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeMessages);
+}
+
+void XView::setByteMode()
+{
+    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeBytes);
+    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeBytes);
+    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeBytes);
+    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeBytes);
+}
+void XView::setMessageRateMode()
+{
+    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeMessageRate);
+    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeMessageRate);
+    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeMessageRate);
+    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeMessageRate);
+}
+void XView::setByteRateMode()
+{
+    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeByteRate);
+    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeByteRate);
+    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeByteRate);
+    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeByteRate);
+}
+
+void XView::setByteMode();
+void XView::setMessageRateMode();
+void XView::setByteRateMode();
 
 // process command line arguments
 void XView::init(int argc, char *argv[])

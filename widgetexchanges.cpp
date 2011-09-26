@@ -24,9 +24,14 @@ WidgetExchanges::WidgetExchanges(QWidget *parent) :
     WidgetQmfObject(parent)
 {
     this->setSectionName(QString("Exchanges"));
-    summaryColumns.append(Column("msgRoutes", "routed", Qt::AlignRight, "N"));
-    summaryColumns.append(Column("msgReceives", "received", Qt::AlignRight, "N"));
-    summaryColumns.append(Column("msgDrops", "dropped", Qt::AlignRight, "N"));
+    summaryColumns.append(Column("msgRoutes", "routed", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgReceives", "received", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgDrops", "dropped", Qt::AlignRight, "N", modeMessages));
+
+    summaryColumns.append(Column("byteRoutes", "routed", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("byteReceives", "received", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("byteDrops", "dropped", Qt::AlignRight, "N", modeBytes));
+
     setRelatedText("Related exchanges");
 
 }

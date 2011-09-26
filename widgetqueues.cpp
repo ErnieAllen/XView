@@ -24,7 +24,22 @@ WidgetQueues::WidgetQueues(QWidget *parent) :
     WidgetQmfObject(parent)
 {
     this->setSectionName(QString("Queues"));
-    summaryColumns.append(Column("msgDepth", "deep", Qt::AlignRight, "N"));
+    summaryColumns.append(Column("msgDepth", "deep", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgPersistDequeues", "persist dequeues", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgPersistEnqueues", "persist enqueues", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgTotalDequeues", "total dequeues", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgTotalEnqueues", "total enqueues", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgTxnDequeues", "transaction dequeues", Qt::AlignRight, "N", modeMessages));
+    summaryColumns.append(Column("msgTxnEnqueues", "transaction enqueues", Qt::AlignRight, "N", modeMessages));
+
+    summaryColumns.append(Column("byteDepth", "deep", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("bytePersistDequeues", "persist dequeues", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("bytePersistEnqueues", "persist enqueues", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("byteTotalDequeues", "total dequeues", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("byteTotalEnqueues", "total enqueues", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("byteTxnDequeues", "transaction dequeues", Qt::AlignRight, "N", modeBytes));
+    summaryColumns.append(Column("byteTxnEnqueues", "transaction enqueues", Qt::AlignRight, "N", modeBytes));
+
     setRelatedText("Related queues");
 }
 

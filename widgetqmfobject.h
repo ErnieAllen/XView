@@ -44,6 +44,12 @@ public:
         arrowLeft,
         arrowRight
     };
+    enum StatMode {
+        modeMessages,
+        modeBytes,
+        modeMessageRate,
+        modeByteRate
+    };
 
     explicit WidgetQmfObject(QWidget *parent = 0);
     ~WidgetQmfObject();
@@ -66,6 +72,7 @@ public:
 
 public slots:
     void setCurrentObject(const qmf::Data& object);
+    void setCurrentMode(StatMode);
     void showData(const qmf::Data& object);
     void setEnabled(bool enabled);
     void initRelated();
@@ -89,9 +96,10 @@ protected:
         QString         header;
         Qt::Alignment   alignment;
         std::string     format;
+        StatMode        mode;
 
-        Column(const std::string& _n, const char* _h, Qt::Alignment _a, const std::string& _f) :
-            name(_n), header(_h), alignment(_a), format(_f) {}
+        Column(const std::string& _n, const char* _h, Qt::Alignment _a, const std::string& _f, StatMode _m) :
+            name(_n), header(_h), alignment(_a), format(_f), mode(_m) {}
     };
     typedef QList<Column> ObjectColumnList;
     ObjectColumnList summaryColumns;
@@ -101,6 +109,7 @@ protected:
     RelatedFilterProxyModel *related;
 
     QColor backgroundColor;
+    StatMode currentMode;
 
 signals:
     void needData();

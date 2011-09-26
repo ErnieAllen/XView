@@ -31,6 +31,7 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     ui->setupUi(this);
 
     _current = false;
+    currentMode = modeMessages;
     ui->tableWidget->setColumnCount(3);
     QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(4);
@@ -304,6 +305,12 @@ void WidgetQmfObject::reset()
     _arrow = arrowNone;
 }
 
+void WidgetQmfObject::setCurrentMode(StatMode mode)
+{
+    currentMode = mode;
+    fillTableWidget(data);
+}
+
 void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
 {
     if (!object.isValid())
@@ -373,36 +380,47 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     int maxNameWidth = 0;
     int maxModeWidth = 0;
     QFontMetrics fm(ui->tableWidget->font());
-    QColor color(255, 255, 220);
+
+    static const QColor colors[] = {
+        QColor(255, 255, 220),
+        QColor(220, 255, 220),
+        QColor(255, 220, 255),
+        QColor(220, 255, 255)};
 
     const qpid::types::Variant::Map& props(object.getProperties());
     qpid::types::Variant::Map::const_iterator iter;
 
+    ui->tableWidget->clear();
     QList<Column>::const_iterator column_iter = summaryColumns.constBegin();
     while (column_iter != summaryColumns.constEnd()) {
 
         iter = props.find((*column_iter).name);
-        if (iter != props.end()) {
+        if ((iter != props.end()) && (*column_iter).mode == currentMode) {
             newItem = new QTableWidgetItem(QString(iter->second.asString().c_str()));
-            newItem->setBackgroundColor(color);;
+            newItem->setBackgroundColor(colors[currentMode]);;
             newItem->setTextAlignment((*column_iter).alignment);
             maxValWidth = qMax(maxValWidth, fm.width(newItem->text()));
             ui->tableWidget->setItem(row, 0, newItem);
 
-            newItem = new QTableWidgetItem(QString("messages"));
-            newItem->setBackgroundColor(color);
+            if (currentMode == this->modeBytes)
+                newItem = new QTableWidgetItem(QString("bytes"));
+            else
+                newItem = new QTableWidgetItem(QString("messages"));
+
+            newItem->setBackgroundColor(colors[currentMode]);
             maxModeWidth = qMax(maxModeWidth, fm.width(newItem->text()));
             ui->tableWidget->setItem(row, 1, newItem);
 
             newItem = new QTableWidgetItem((*column_iter).header);
-            newItem->setBackgroundColor(color);;
+            newItem->setBackgroundColor(colors[currentMode]);;
             maxNameWidth = qMax(maxNameWidth, fm.width(newItem->text()));
             ui->tableWidget->setItem(row, 2, newItem);
+
+            ++row;
         }
-        ++row;
         ++column_iter;
     }
-    ui->tableWidget->resize(maxModeWidth + maxValWidth + maxNameWidth + 24, fm.height() * row);
+    ui->tableWidget->resize(maxModeWidth + maxValWidth + maxNameWidth + 24, fm.height() * row - row/3);
     ui->tableWidget->setColumnWidth(0, maxValWidth + 8);
     ui->tableWidget->setColumnWidth(1, maxModeWidth + 6);
     ui->tableWidget->setColumnWidth(2, maxNameWidth + 8);
