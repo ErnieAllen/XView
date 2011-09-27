@@ -48,10 +48,8 @@ void DialogObjects::initModels(std::string unique)
 void DialogObjects::initConnections()
 {
 
-    //ui->objectListView->setModel(objectModel);
     proxyModel = new QSortFilterProxyModel(this);
     proxyModel->setSourceModel(objectModel);
-    //proxyModel->setDynamicSortFilter(true);
     proxyModel->setFilterKeyColumn(0);
     ui->objectListView->setModel(proxyModel);
     connect(ui->filterLineEdit, SIGNAL(textChanged(QString)), proxyModel, SLOT(setFilterFixedString(QString)));
@@ -115,6 +113,7 @@ void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event)
     }
     // select 1st item if none are selected
     if (event.isFinal()) {
+        objectModel->refresh(event.getCorrelator());
         if (!(ui->objectListView->selectionModel()->hasSelection()))
             ui->objectListView->setCurrentIndex(objectModel->index(0, 0));
         dataRefreshed();

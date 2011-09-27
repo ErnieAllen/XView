@@ -44,16 +44,40 @@ void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
         if (name.isEqualTo(existing.getProperty(uniqueProperty))) {
 
             qpid::types::Variant::Map map = qpid::types::Variant::Map(object.getProperties());
+            map["correlator"] = correlator;
             existing.overwriteProperties(map);
             return;
         }
     }
 
-    // this is a new object
+    qmf::Data o = qmf::Data(object);
+    qpid::types::Variant corr =  qpid::types::Variant(correlator);
+    o.setProperty("correlator", corr);
+
+    // this is a new queue
     int last = dataList.size();
     beginInsertRows(QModelIndex(), last, last);
-    dataList.append(object);
+    dataList.append(o);
     endInsertRows();
+
+}
+
+void ObjectListModel::refresh(uint correlator)
+{
+    // remove any old queues that were not added/updated with this correlator
+    for (int idx=0; idx<dataList.size(); idx++) {
+        uint corr = dataList.at(idx).getProperty("correlator").asUint32();
+        if (corr != correlator) {
+            beginRemoveRows( QModelIndex(), idx, idx );
+            dataList.removeAt(idx--);
+            endRemoveRows();
+        }
+    }
+
+    // force a refresh of the display
+    QModelIndex topLeft = index(0, 0);
+    QModelIndex bottomRight = index(dataList.size() - 1, 2);
+    emit dataChanged ( topLeft, bottomRight );
 }
 
 

@@ -38,6 +38,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
     std::string fieldValue(int row, const std::string& field);
     const qmf::Data& qmfData(int row);
+    void refresh(uint correlator);
 
 public slots:
     void addObject(const qmf::Data&, uint);
