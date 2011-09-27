@@ -121,6 +121,7 @@ private:
     void setLabelName();
     void fillTableWidget(const qmf::Data& object);
     void resetOthers();
+    QString value(const qpid::types::Variant::Map::const_iterator& iter, const qpid::types::Variant::Map::const_iterator& uname);
 
     bool _current; // draw with highlighted background
     ArrowDirection _arrow;   // direction to draw a background arrow 0->none 1->left 2->right

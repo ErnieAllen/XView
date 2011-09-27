@@ -22,6 +22,8 @@
 #include <QAbstractListModel>
 #include <QModelIndex>
 #include <QList>
+#include <QHash>
+#include <QDateTime>
 #include <qmf/Data.h>
 #include <sstream>
 #include <string>
@@ -40,6 +42,20 @@ public:
     const qmf::Data& qmfData(int row);
     void refresh(uint correlator);
 
+    //typedef QMap<QDateTime, qmf::Data> Sample;
+    // a sample node
+    struct Sample {
+        QDateTime dateTime;
+        qmf::Data data;
+
+        Sample(const qmf::Data& _data) :
+                dateTime(QDateTime::currentDateTime()), data(_data) {}
+    };
+
+    typedef QHash<QString, Sample> Samples;
+
+    const Samples& samples() { return samplesData; }
+
 public slots:
     void addObject(const qmf::Data&, uint);
     void connectionChanged(bool isConnected);
@@ -57,6 +73,10 @@ protected:
     DataList    dataList;
 
     std::string uniqueProperty;
+
+private:
+    // historical data for rates and charting
+    Samples samplesData;
 };
 
 std::ostream& operator<<(std::ostream& out, const qmf::Data& queue);

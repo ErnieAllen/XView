@@ -184,14 +184,17 @@ void XView::setupStatusBar() {
 
     ui->actionMessages->setIcon(QIcon(":/images/messages.png"));
     ui->actionBytes->setIcon(QIcon(":/images/bytes.png"));
+    ui->actionMessage_rate->setIcon(QIcon(":/images/msgrate.png"));
+    ui->actionByte_rate->setIcon(QIcon(":/images/byterate.png"));
     actionGroup = new QActionGroup(this);
     actionGroup->addAction(ui->actionMessages);
     actionGroup->addAction(ui->actionBytes);
-    //actionGroup->addAction(ui->actionMessage_rate);
-    //actionGroup->addAction(ui->actionByte_rate);
+    actionGroup->addAction(ui->actionMessage_rate);
+    actionGroup->addAction(ui->actionByte_rate);
 
     modeToolBar = addToolBar(tr("Modes"));
     modeToolBar->setObjectName("Mode");
+    modeToolBar->setIconSize(QSize(32,32));
     modeToolBar->addActions(actionGroup->actions());
     //modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 }

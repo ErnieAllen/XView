@@ -382,27 +382,31 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     QFontMetrics fm(ui->tableWidget->font());
 
     static const QColor colors[] = {
-        QColor(255, 255, 220),
-        QColor(220, 255, 220),
-        QColor(255, 220, 255),
-        QColor(220, 255, 255)};
+        QColor(255, 255, 220), // yellow  (messages)
+        QColor(220, 255, 220), // green   (bytes)
+        QColor(255, 220, 255), // magenta (message rate)
+        QColor(220, 255, 255)};// cyan    (byte rate)
 
     const qpid::types::Variant::Map& props(object.getProperties());
     qpid::types::Variant::Map::const_iterator iter;
 
     ui->tableWidget->clear();
     QList<Column>::const_iterator column_iter = summaryColumns.constBegin();
+
+    // loop through all the columns we might want to display
     while (column_iter != summaryColumns.constEnd()) {
 
+        // find the column in the current data
         iter = props.find((*column_iter).name);
-        if ((iter != props.end()) && (*column_iter).mode == currentMode) {
-            newItem = new QTableWidgetItem(QString(iter->second.asString().c_str()));
-            newItem->setBackgroundColor(colors[currentMode]);;
+        bool show = (*column_iter).mode == currentMode;
+        if ((iter != props.end()) && show) {
+            newItem = new QTableWidgetItem(value(iter, props.find(unique)));
+            newItem->setBackgroundColor(colors[currentMode]);
             newItem->setTextAlignment((*column_iter).alignment);
             maxValWidth = qMax(maxValWidth, fm.width(newItem->text()));
             ui->tableWidget->setItem(row, 0, newItem);
 
-            if (currentMode == this->modeBytes)
+            if (currentMode == modeBytes || currentMode == modeByteRate)
                 newItem = new QTableWidgetItem(QString("bytes"));
             else
                 newItem = new QTableWidgetItem(QString("messages"));
@@ -429,6 +433,35 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     QResizeEvent event(size(), size());
     QApplication::sendEvent(this, &event);
 
+}
+
+QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& iter, const qpid::types::Variant::Map::const_iterator& uname)
+{
+    if ((currentMode == this->modeMessages) || (currentMode == this->modeBytes))
+        return QString(iter->second.asString().c_str());
+
+    ObjectListModel *pModel = (ObjectListModel *)related->sourceModel();
+    ObjectListModel::Samples samples = pModel->samples();
+
+    QString name(uname->second.asString().c_str());
+    QHash<QString, ObjectListModel::Sample>::iterator i = samples.find(name);
+    if (i != samples.end()) {
+        ObjectListModel::Sample sample1 = i.value();
+        ++i;
+        if (i != samples.end()) {
+            ObjectListModel::Sample sample2 = i.value();
+            int elapsedSecs = sample2.dateTime.secsTo(sample1.dateTime);
+            if (elapsedSecs > 0) {
+                uint val1 = sample1.data.getProperty(iter->first).asUint32();
+                uint val2 = sample2.data.getProperty(iter->first).asUint32();
+                uint delta = val1 - val2;
+                float rate = delta / elapsedSecs;
+                QString ret;
+                return ret.setNum(rate);
+            }
+        }
+    }
+    return QString("--");
 }
 
 void WidgetQmfObject::setSectionName(const QString &name)

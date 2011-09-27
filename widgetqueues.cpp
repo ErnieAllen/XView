@@ -40,6 +40,20 @@ WidgetQueues::WidgetQueues(QWidget *parent) :
     summaryColumns.append(Column("byteTxnDequeues", "transaction dequeues", Qt::AlignRight, "N", modeBytes));
     summaryColumns.append(Column("byteTxnEnqueues", "transaction enqueues", Qt::AlignRight, "N", modeBytes));
 
+    summaryColumns.append(Column("msgPersistDequeues", "persist dequeues / sec", Qt::AlignRight, "N", modeMessageRate));
+    summaryColumns.append(Column("msgPersistEnqueues", "persist enqueues / sec", Qt::AlignRight, "N", modeMessageRate));
+    summaryColumns.append(Column("msgTotalDequeues", "total dequeues / sec", Qt::AlignRight, "N", modeMessageRate));
+    summaryColumns.append(Column("msgTotalEnqueues", "total enqueues / sec", Qt::AlignRight, "N", modeMessageRate));
+    summaryColumns.append(Column("msgTxnDequeues", "transaction dequeues / sec", Qt::AlignRight, "N", modeMessageRate));
+    summaryColumns.append(Column("msgTxnEnqueues", "transaction enqueues / sec", Qt::AlignRight, "N", modeMessageRate));
+
+    summaryColumns.append(Column("bytePersistDequeues", "persist dequeues / sec", Qt::AlignRight, "N", modeByteRate));
+    summaryColumns.append(Column("bytePersistEnqueues", "persist enqueues / sec", Qt::AlignRight, "N", modeByteRate));
+    summaryColumns.append(Column("byteTotalDequeues", "total dequeues / sec", Qt::AlignRight, "N", modeByteRate));
+    summaryColumns.append(Column("byteTotalEnqueues", "total enqueues / sec", Qt::AlignRight, "N", modeByteRate));
+    summaryColumns.append(Column("byteTxnDequeues", "transaction dequeues / sec", Qt::AlignRight, "N", modeByteRate));
+    summaryColumns.append(Column("byteTxnEnqueues", "transaction enqueues / sec", Qt::AlignRight, "N", modeByteRate));
+
     setRelatedText("Related queues");
 }
 

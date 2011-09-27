@@ -32,6 +32,14 @@ WidgetExchanges::WidgetExchanges(QWidget *parent) :
     summaryColumns.append(Column("byteReceives", "received", Qt::AlignRight, "N", modeBytes));
     summaryColumns.append(Column("byteDrops", "dropped", Qt::AlignRight, "N", modeBytes));
 
+    summaryColumns.append(Column("msgRoutes", "routed / sec", Qt::AlignRight, "N", modeMessageRate));
+    summaryColumns.append(Column("msgReceives", "received / sec", Qt::AlignRight, "N", modeMessageRate));
+    summaryColumns.append(Column("msgDrops", "dropped / sec", Qt::AlignRight, "N", modeMessageRate));
+
+    summaryColumns.append(Column("byteRoutes", "routed / sec", Qt::AlignRight, "N", modeByteRate));
+    summaryColumns.append(Column("byteReceives", "received / sec", Qt::AlignRight, "N", modeByteRate));
+    summaryColumns.append(Column("byteDrops", "dropped / sec", Qt::AlignRight, "N", modeByteRate));
+
     setRelatedText("Related exchanges");
 
 }

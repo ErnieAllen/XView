@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>images/messages.png</file>
         <file>images/bytes.png</file>
+        <file>images/msgrate.png</file>
+        <file>images/byterate.png</file>
     </qresource>
 </RCC>

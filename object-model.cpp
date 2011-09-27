@@ -36,9 +36,15 @@ void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
     if (!object.isValid())
         return;
 
-    // see if the object already exists in the list
+    // get the uniqueu property for this object
     const qpid::types::Variant& name = object.getProperty(uniqueProperty);
 
+    // create a new sample
+    Sample sample(object);
+    //sample[QDateTime::currentDateTime()] = object;
+    samplesData.insertMulti(QString(name.asString().c_str()), sample);
+
+    // see if the object exists in the list
     for (int idx=0; idx<dataList.size(); idx++) {
         qmf::Data existing = dataList.at(idx);
         if (name.isEqualTo(existing.getProperty(uniqueProperty))) {
@@ -59,7 +65,6 @@ void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
     beginInsertRows(QModelIndex(), last, last);
     dataList.append(o);
     endInsertRows();
-
 }
 
 void ObjectListModel::refresh(uint correlator)
@@ -68,6 +73,11 @@ void ObjectListModel::refresh(uint correlator)
     for (int idx=0; idx<dataList.size(); idx++) {
         uint corr = dataList.at(idx).getProperty("correlator").asUint32();
         if (corr != correlator) {
+            // clear out the old samples
+            QString name(dataList.at(idx).getProperty(uniqueProperty).asString().c_str());
+            if (samplesData.contains(name))
+                samplesData.remove(name);
+
             beginRemoveRows( QModelIndex(), idx, idx );
             dataList.removeAt(idx--);
             endRemoveRows();
