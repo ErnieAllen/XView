@@ -38,11 +38,14 @@ void ObjectDetailsModel::showObjectDetail(const qmf::Data& object)
 
     const qpid::types::Variant::Map& attrs(object.getProperties());
 
-    beginInsertRows(QModelIndex(), 0, attrs.size() - 1);
+    beginInsertRows(QModelIndex(), 0, attrs.size() - 2);
     for (qpid::types::Variant::Map::const_iterator iter = attrs.begin();
          iter != attrs.end(); iter++) {
-        keys << QString(iter->first.c_str());
-        values << QString(iter->second.asString().c_str());
+         // We manually added the correlator to the map. Don't display it
+         if (iter->first != "correlator") {
+            keys << QString(iter->first.c_str());
+            values << QString(iter->second.asString().c_str());
+         }
     }
     endInsertRows();
     emit detailReady();
