@@ -152,6 +152,9 @@ void DialogObjects::dataRefreshed()
         objectModel->selected(filteredIndex);
         emit objectRefreshed(objectModel->getSelected(filteredIndex), objectName());
     }
+
+    // remove any samples that are older than 600 seconds
+    objectModel->expireSamples();
 }
 void DialogObjects::accept()
 {

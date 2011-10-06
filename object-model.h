@@ -27,7 +27,15 @@
 #include <qmf/Data.h>
 #include <sstream>
 #include <string>
+#include "sample.h"
 
+class MinMax {
+public:
+
+    MinMax () {min = 0; max=0; }
+    qint64 min;
+    qint64 max;
+};
 
 class ObjectListModel : public QAbstractListModel {
     Q_OBJECT
@@ -41,20 +49,20 @@ public:
     std::string fieldValue(int row, const std::string& field);
     const qmf::Data& qmfData(int row);
     void refresh(uint correlator);
+    void expireSamples();
+    void setSampleProperties(const QStringList& list);
 
-    //typedef QMap<QDateTime, qmf::Data> Sample;
-    // a sample node
-    struct Sample {
-        QDateTime dateTime;
-        qmf::Data data;
+    // list of values for an individual object
+    typedef QList<Sample> SampleList;
+    typedef QList<Sample>::const_iterator const_iterSampleList;
 
-        Sample(const qmf::Data& _data) :
-                dateTime(QDateTime::currentDateTime()), data(_data) {}
-    };
-
-    typedef QHash<QString, Sample> Samples;
+    // hash of lists keyed by object name
+    typedef QHash<QString, SampleList> Samples;
+    typedef QHash<QString, SampleList>::const_iterator const_iterSamples;
 
     const Samples& samples() { return samplesData; }
+    // get the min and max for the Sample list for name
+    MinMax minMax(const QString& name, const QStringList& props);
 
 public slots:
     void addObject(const qmf::Data&, uint);
@@ -67,16 +75,25 @@ signals:
     void objectSelected(const qmf::Data&);
 
 protected:
+    typedef QList<Sample>::iterator iterSampleList;
 
     // the data for the objects in the display list
     typedef QList<qmf::Data> DataList;
     DataList    dataList;
 
     std::string uniqueProperty;
+    static const int sampleLife = 610;
+    void addSample(const qmf::Data& object, const qpid::types::Variant& name);
 
 private:
+    // TODO: move the samples data into it's own class
+
     // historical data for rates and charting
     Samples samplesData;
+
+    // list of properties to save for charting
+    QStringList sampleProperties;
+
 };
 
 std::ostream& operator<<(std::ostream& out, const qmf::Data& queue);

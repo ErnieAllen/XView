@@ -21,8 +21,14 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <item row="1" column="0">
      <layout class="QGridLayout" name="gridLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <widget class="WidgetExchanges" name="widgetExchanges" native="true">
         <property name="focusPolicy">

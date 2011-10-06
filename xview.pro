@@ -27,7 +27,9 @@ SOURCES += main.cpp\
     object-model.cpp \
     dialogobjects.cpp \
     widgetqmfobject.cpp \
-    related-model.cpp
+    related-model.cpp \
+    chart.cpp \
+    sample.cpp
 
 HEADERS  += xview.h \
     qmf-thread.h \
@@ -45,13 +47,16 @@ HEADERS  += xview.h \
     object-model.h \
     dialogobjects.h \
     widgetqmfobject.h \
-    related-model.h
+    related-model.h \
+    chart.h \
+    sample.h
 
 FORMS    += xview.ui \
     dialogopen.ui \
     dialogabout.ui \
     dialogobjects.ui \
-    widgetqmfobject.ui
+    widgetqmfobject.ui \
+    chart.ui
 
 OTHER_FILES += \
     license.txt \

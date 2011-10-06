@@ -114,6 +114,7 @@ XView::XView(QWidget *parent) :
     // Create the dialog boxes and pass their model to the widgets
     exchangesDialog = new DialogExchanges(this, "exchanges");
     exchangesDialog->initModels("name");
+    exchangesDialog->listModel()->setSampleProperties(ui->widgetExchanges->getSampleProperties());
     ui->widgetExchanges->setRelatedModel(exchangesDialog->listModel(), this);
     connect(exchangesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetExchanges, SLOT(setCurrentObject(qmf::Data)));
@@ -125,6 +126,7 @@ XView::XView(QWidget *parent) :
 
     bindingsDialog = new DialogObjects(this, "bindings");
     bindingsDialog->initModels("bindingKey");
+    bindingsDialog->listModel()->setSampleProperties(ui->widgetBindings->getSampleProperties());
     ui->widgetBindings->setRelatedModel(bindingsDialog->listModel(), this);
     connect(bindingsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetBindings, SLOT(setCurrentObject(qmf::Data)));
@@ -136,6 +138,7 @@ XView::XView(QWidget *parent) :
 
     queuesDialog = new DialogObjects(this, "queues");
     queuesDialog->initModels("name");
+    queuesDialog->listModel()->setSampleProperties(ui->widgetQueues->getSampleProperties());
     ui->widgetQueues->setRelatedModel(queuesDialog->listModel(), this);
     connect(queuesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetQueues, SLOT(setCurrentObject(qmf::Data)));
@@ -147,6 +150,7 @@ XView::XView(QWidget *parent) :
 
     subscriptionsDialog = new DialogObjects(this, "subscriptions");
     subscriptionsDialog->initModels("name");
+    subscriptionsDialog->listModel()->setSampleProperties(ui->widgetSubscriptions->getSampleProperties());
     ui->widgetSubscriptions->setRelatedModel(subscriptionsDialog->listModel(), this);
     connect(subscriptionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetSubscriptions, SLOT(setCurrentObject(qmf::Data)));

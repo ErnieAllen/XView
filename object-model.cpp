@@ -24,11 +24,11 @@ using std::cout;
 using std::endl;
 
 ObjectListModel::ObjectListModel(QObject* parent, std::string unique) :
-        QAbstractListModel(parent), uniqueProperty(unique)
+        QAbstractListModel(parent), uniqueProperty(unique),
+        sampleProperties()
 {
     // nothing to see here
 }
-
 
 void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
 {
@@ -40,9 +40,7 @@ void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
     const qpid::types::Variant& name = object.getProperty(uniqueProperty);
 
     // create a new sample
-    Sample sample(object);
-    //sample[QDateTime::currentDateTime()] = object;
-    samplesData.insertMulti(QString(name.asString().c_str()), sample);
+    addSample(object, name);
 
     // see if the object exists in the list
     for (int idx=0; idx<dataList.size(); idx++) {
@@ -65,6 +63,26 @@ void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
     beginInsertRows(QModelIndex(), last, last);
     dataList.append(o);
     endInsertRows();
+}
+
+void ObjectListModel::expireSamples()
+{
+    QDateTime tnow(QDateTime::currentDateTime());
+    int secs;
+
+    QHash<QString, SampleList>::iterator iter = samplesData.begin();
+    while (iter != samplesData.end()) {
+        SampleList sampleList = iter.value();
+        iterSampleList iterList = sampleList.begin();
+        while (iterList != sampleList.end()) {
+            secs = (*iterList).dateTime().secsTo(tnow);
+            if (secs > sampleLife) {
+                iterList = sampleList.erase(iterList);
+            } else
+                ++iterList;
+        }
+        ++iter;
+    }
 }
 
 void ObjectListModel::refresh(uint correlator)
@@ -191,3 +209,39 @@ std::ostream& operator<<(std::ostream& out, const qmf::Data& object)
     }
     return out;
 }
+
+void ObjectListModel::setSampleProperties(const QStringList& list)
+{
+    sampleProperties = list;
+}
+
+void ObjectListModel::addSample(const qmf::Data& object, const qpid::types::Variant& name)
+{
+    QString key = QString(name.asString().c_str());
+    SampleList list = samplesData[key];
+    list.append(Sample(object, sampleProperties));
+    samplesData[key] = list;
+}
+
+// get the min and max for the given properties in the Sample list for name
+MinMax ObjectListModel::minMax(const QString& name, const QStringList& props)
+{
+    MinMax mm = MinMax();
+    SampleList list = samplesData[name];
+
+    QStringList::const_iterator prop = props.constBegin();
+    while (prop != props.constEnd()) {
+        QList<Sample>::iterator iter = list.begin();
+        while (iter != list.end()) {
+            QString p = *prop;
+            qint64 v = (*iter).data(p);
+            mm.min = qMin(mm.min, v);
+            mm.max = qMax(mm.max, v);
+            ++iter;
+        }
+        ++prop;
+    }
+
+    return mm;
+}
+

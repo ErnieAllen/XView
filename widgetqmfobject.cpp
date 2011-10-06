@@ -32,7 +32,7 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
 
     _current = false;
     currentMode = modeMessages;
-    ui->tableWidget->setColumnCount(3);
+    ui->tableWidget->setColumnCount(2);
     QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(4);
     shadow->setColor(QColor(200, 200, 200, 180));
@@ -123,6 +123,10 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
     int x = qMax(0, width() / 2 - ui->labelRelated->width() / 2);
     ui->labelIndex->move(x, reservedY() + 40);
 
+    // move the chart
+    ui->widgetChart->resize(width() - 20, ui->widgetChart->height());
+    ui->widgetChart->move(width() / 2 - ui->widgetChart->width() / 2, height() - ui->widgetChart->height() - 12);
+
 }
 
 void WidgetQmfObject::focusInEvent ( QFocusEvent * )
@@ -159,7 +163,20 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
         painter.setPen(currentPen);
         painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
         painter.restore();
+    } else {
+        painter.save();
+        QPen currentPen(Qt::white);
+        QColor currentColor(Qt::white);
+        currentPen.setWidth(2);
+
+        QBrush currentBrush(currentColor);
+
+        painter.setBrush(currentBrush);
+        painter.setPen(currentPen);
+        painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
+        painter.restore();
     }
+
 
     // if this section has a current object
     // draw background with a diagonal lines
@@ -303,6 +320,7 @@ void WidgetQmfObject::reset()
     ui->comboBox->hide();
     //ui->comboBox->clear();
     _arrow = arrowNone;
+    ui->widgetChart->clear();
 }
 
 void WidgetQmfObject::setCurrentMode(StatMode mode)
@@ -321,6 +339,7 @@ void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
     setFocus();
     this->setCurrent(true);
     showData(object);
+
 }
 
 // SLOT triggered when an automatic background update
@@ -348,6 +367,9 @@ void WidgetQmfObject::showData(const qmf::Data& object)
     if (rightBuddy) {
         rightBuddy->showRelated(object, objectName(), arrowRight);
     }
+    ObjectListModel *model = (ObjectListModel *)related->sourceModel();
+    showChart(object, model);
+
 }
 
 
@@ -406,19 +428,10 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
             maxValWidth = qMax(maxValWidth, fm.width(newItem->text()));
             ui->tableWidget->setItem(row, 0, newItem);
 
-            if (currentMode == modeBytes || currentMode == modeByteRate)
-                newItem = new QTableWidgetItem(QString("bytes"));
-            else
-                newItem = new QTableWidgetItem(QString("messages"));
-
-            newItem->setBackgroundColor(colors[currentMode]);
-            maxModeWidth = qMax(maxModeWidth, fm.width(newItem->text()));
-            ui->tableWidget->setItem(row, 1, newItem);
-
             newItem = new QTableWidgetItem((*column_iter).header);
             newItem->setBackgroundColor(colors[currentMode]);;
             maxNameWidth = qMax(maxNameWidth, fm.width(newItem->text()));
-            ui->tableWidget->setItem(row, 2, newItem);
+            ui->tableWidget->setItem(row, 1, newItem);
 
             ++row;
         }
@@ -426,8 +439,7 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     }
     ui->tableWidget->resize(maxModeWidth + maxValWidth + maxNameWidth + 24, fm.height() * row - row/3);
     ui->tableWidget->setColumnWidth(0, maxValWidth + 8);
-    ui->tableWidget->setColumnWidth(1, maxModeWidth + 6);
-    ui->tableWidget->setColumnWidth(2, maxNameWidth + 8);
+    ui->tableWidget->setColumnWidth(1, maxNameWidth + 8);
 
     // force a resize event so the table is drawn in the correct place
     QResizeEvent event(size(), size());
@@ -435,29 +447,41 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
 
 }
 
+// Generate the value to display in the tableWidget
 QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& iter, const qpid::types::Variant::Map::const_iterator& uname)
 {
+    // if we aren't showing a rate, return the value directly
     if ((currentMode == this->modeMessages) || (currentMode == this->modeBytes))
         return QString(iter->second.asString().c_str());
 
+    // we are showing a rate. get the two most recent values
     ObjectListModel *pModel = (ObjectListModel *)related->sourceModel();
     ObjectListModel::Samples samples = pModel->samples();
 
+    // get the sample's hash entry for this object
     QString name(uname->second.asString().c_str());
-    QHash<QString, ObjectListModel::Sample>::iterator i = samples.find(name);
-    if (i != samples.end()) {
-        ObjectListModel::Sample sample1 = i.value();
-        ++i;
-        if (i != samples.end()) {
-            ObjectListModel::Sample sample2 = i.value();
-            int elapsedSecs = sample2.dateTime.secsTo(sample1.dateTime);
-            if (elapsedSecs > 0) {
-                uint val1 = sample1.data.getProperty(iter->first).asUint32();
-                uint val2 = sample2.data.getProperty(iter->first).asUint32();
-                uint delta = val1 - val2;
-                float rate = delta / elapsedSecs;
-                QString ret;
-                return ret.setNum(rate);
+    ObjectListModel::const_iterSamples iterSamples = samples.constFind(name);
+    if (iterSamples != samples.constEnd()) {
+        // get the list of samples
+        ObjectListModel::SampleList sampleList = iterSamples.value();
+        // get the last (most recent) sample from the list
+        ObjectListModel::const_iterSampleList iList = sampleList.constEnd();
+        if (iList != sampleList.constBegin()) {
+            Sample sample1 = *iList;
+            // if there is another sample
+            --iList;
+            if (iList != sampleList.begin()) {
+                // get the previous sample
+                Sample sample2 = *iList;
+                // calculate the change / second
+                int elapsedSecs = sample2.dateTime().secsTo(sample1.dateTime());
+                if (elapsedSecs > 0) {
+                    quint64 val1 = sample1.data(iter->first);
+                    quint64 val2 = sample2.data(iter->first);
+                    quint64 delta = val1 - val2;
+                    float rate = delta / elapsedSecs;
+                    return QString::number(rate);
+                }
             }
         }
     }
@@ -524,6 +548,7 @@ void WidgetQmfObject::relatedIndexChanged(int i)
     update();
 
     if (i < 0) {
+        // the combobox is empty, there is no related object
         ui->labelIndex->setText(QString("No %1").arg(ui->labelRelated->text().toLower()));
         ui->comboBox->hide();
         ui->tableWidget->hide();
@@ -543,9 +568,12 @@ void WidgetQmfObject::relatedIndexChanged(int i)
     ObjectListModel *model = (ObjectListModel *)related->sourceModel();
     const qmf::Data& object = model->qmfData(source_row.row());
 
+    // show the current stats for this object
     ui->tableWidget->setVisible(true);
     ui->tableWidget->setRowCount(summaryColumns.size());
     fillTableWidget(object);
+
+    showChart(object, model);
 
     // cascade the related object
     if (_arrow == arrowLeft)
@@ -555,4 +583,37 @@ void WidgetQmfObject::relatedIndexChanged(int i)
         if (rightBuddy)
             rightBuddy->showRelated(object, objectName(), arrowRight);
 
+}
+
+void WidgetQmfObject::showChart(const qmf::Data& object, ObjectListModel *model)
+{
+    //
+    // show the chart for this object
+    //
+    QList<Column>::const_iterator column_iter = summaryColumns.constBegin();
+    QStringList chartColumns;
+    // loop through all the columns we might want to display
+    while (column_iter != summaryColumns.constEnd()) {
+        if ((*column_iter).mode == currentMode && (*column_iter).chart) {
+            // accumulate all the columns for this object/chart mode
+            chartColumns.append(QString((*column_iter).name.c_str()));
+        }
+        ++column_iter;
+    }
+    const qpid::types::Variant::Map& props(object.getProperties());
+    QString name(props.find(unique)->second.asString().c_str());
+
+    ui->widgetChart->updateChart(model, name, chartColumns, 600);
+}
+
+QStringList WidgetQmfObject::getSampleProperties()
+{
+    QSet<QString> set;
+    QList<Column>::const_iterator iter = summaryColumns.constBegin();
+    while (iter != summaryColumns.constEnd()) {
+        if ((*iter).chart)
+            set.insert(QString((*iter).name.c_str()));
+        ++iter;
+    }
+    return set.toList();
 }

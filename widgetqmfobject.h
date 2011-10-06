@@ -60,6 +60,7 @@ public:
     void setRelatedModel(ObjectListModel *, QWidget *);
     void reset();
     void setArrow(ArrowDirection a) {_arrow = a;}
+    QStringList getSampleProperties();
 
     // expose the pushbutton publically so signal/slots can be connected
     QPushButton* pushButton();
@@ -84,6 +85,8 @@ protected:
     void focusInEvent ( QFocusEvent * event );
     void keyPressEvent ( QKeyEvent * event );
     virtual void showRelated(const qmf::Data& object, const QString& widget_name, ArrowDirection a);
+    void showChart(const qmf::Data& object, ObjectListModel *model);
+
 
     int reservedY(); // amount reserved at top of widget for button and label
     int mid_paint(); // use this as a common mid point for painting
@@ -97,9 +100,10 @@ protected:
         Qt::Alignment   alignment;
         std::string     format;
         StatMode        mode;
+        bool            chart;
 
-        Column(const std::string& _n, const char* _h, Qt::Alignment _a, const std::string& _f, StatMode _m) :
-            name(_n), header(_h), alignment(_a), format(_f), mode(_m) {}
+        Column(const std::string& _n, const char* _h, Qt::Alignment _a, const std::string& _f, StatMode _m, bool _c=false) :
+            name(_n), header(_h), alignment(_a), format(_f), mode(_m), chart(_c) {}
     };
     typedef QList<Column> ObjectColumnList;
     ObjectColumnList summaryColumns;

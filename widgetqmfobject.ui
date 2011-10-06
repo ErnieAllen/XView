@@ -197,7 +197,24 @@
     <string>0 of 0 related exchanges</string>
    </property>
   </widget>
+  <widget class="chart" name="widgetChart" native="true">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>139</y>
+     <width>231</width>
+     <height>111</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>chart</class>
+   <extends>QWidget</extends>
+   <header>chart.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
