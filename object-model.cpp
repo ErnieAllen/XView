@@ -27,7 +27,7 @@ ObjectListModel::ObjectListModel(QObject* parent, std::string unique) :
         QAbstractListModel(parent), uniqueProperty(unique),
         sampleProperties()
 {
-    // nothing to see here
+    sampleLife = 600;
 }
 
 void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
@@ -65,26 +65,6 @@ void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
     endInsertRows();
 }
 
-void ObjectListModel::expireSamples()
-{
-    QDateTime tnow(QDateTime::currentDateTime());
-    int secs;
-
-    QHash<QString, SampleList>::iterator iter = samplesData.begin();
-    while (iter != samplesData.end()) {
-        SampleList sampleList = iter.value();
-        iterSampleList iterList = sampleList.begin();
-        while (iterList != sampleList.end()) {
-            secs = (*iterList).dateTime().secsTo(tnow);
-            if (secs > sampleLife) {
-                iterList = sampleList.erase(iterList);
-            } else
-                ++iterList;
-        }
-        ++iter;
-    }
-}
-
 void ObjectListModel::refresh(uint correlator)
 {
     // remove any old queues that were not added/updated with this correlator
@@ -93,9 +73,9 @@ void ObjectListModel::refresh(uint correlator)
         if (corr != correlator) {
             // clear out the old samples
             QString name(dataList.at(idx).getProperty(uniqueProperty).asString().c_str());
-            if (samplesData.contains(name))
+            if (samplesData.contains(name)) {
                 samplesData.remove(name);
-
+            }
             beginRemoveRows( QModelIndex(), idx, idx );
             dataList.removeAt(idx--);
             endRemoveRows();
@@ -218,25 +198,66 @@ void ObjectListModel::setSampleProperties(const QStringList& list)
 void ObjectListModel::addSample(const qmf::Data& object, const qpid::types::Variant& name)
 {
     QString key = QString(name.asString().c_str());
-    SampleList list = samplesData[key];
-    list.append(Sample(object, sampleProperties));
-    samplesData[key] = list;
+    samplesData[key].append(Sample(object, sampleProperties));
+}
+
+void ObjectListModel::expireSamples()
+{
+    QDateTime tnow(QDateTime::currentDateTime());
+    int secs;
+
+    QStringList keys = samplesData.keys();
+    QStringList::const_iterator iter = keys.constBegin();
+    while (iter != keys.constEnd()) {
+        SampleList &sampleList(samplesData[*iter]);
+
+        iterSampleList iterList = sampleList.begin();
+        while (iterList != sampleList.end()) {
+            secs = (*iterList).dateTime().secsTo(tnow);
+            if (secs > sampleLife) {
+                // erase increments iterList
+                iterList = sampleList.erase(iterList);
+            } else
+                break;
+        }
+
+        ++iter;
+    }
 }
 
 // get the min and max for the given properties in the Sample list for name
-MinMax ObjectListModel::minMax(const QString& name, const QStringList& props)
+MinMax ObjectListModel::minMax(const QString& name, const QStringList& props, bool isRate)
 {
     MinMax mm = MinMax();
-    SampleList list = samplesData[name];
+    SampleList& list(samplesData[name]);
 
     QStringList::const_iterator prop = props.constBegin();
     while (prop != props.constEnd()) {
-        QList<Sample>::iterator iter = list.begin();
-        while (iter != list.end()) {
-            QString p = *prop;
-            qint64 v = (*iter).data(p);
-            mm.min = qMin(mm.min, v);
-            mm.max = qMax(mm.max, v);
+        QString p = *prop;
+        ObjectListModel::const_iterSampleList iter = list.constBegin();
+        while (iter != list.constEnd()) {
+            Sample sample1 = *iter;
+            qint64 v1 = sample1.data(p);
+            if (!isRate) {
+                mm.min = qMin(mm.min, (qreal)v1);
+                mm.max = qMax(mm.max, (qreal)v1);
+            } else {
+                QDateTime t1 = sample1.dateTime();
+                ++iter;
+                if (iter != list.constEnd()) {
+                    Sample sample2 = *iter;
+                    qint64 v2 = sample2.data(p);
+                    QDateTime t2 = sample2.dateTime();
+                    int secs = t1.secsTo(t2);
+                    if (secs) {
+                        mm.min = qMin(mm.min, (v1 - v2) / (qreal)secs);
+                        mm.max = qMax(mm.max, (v1 - v2) / (qreal)secs);
+                    }
+
+                }
+                // we don't want to increment iter twice
+                --iter;
+            }
             ++iter;
         }
         ++prop;

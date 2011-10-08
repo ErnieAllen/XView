@@ -21,21 +21,13 @@
 
 #include <QAbstractListModel>
 #include <QModelIndex>
-#include <QList>
+#include <QLinkedList>
 #include <QHash>
 #include <QDateTime>
 #include <qmf/Data.h>
 #include <sstream>
 #include <string>
 #include "sample.h"
-
-class MinMax {
-public:
-
-    MinMax () {min = 0; max=0; }
-    qint64 min;
-    qint64 max;
-};
 
 class ObjectListModel : public QAbstractListModel {
     Q_OBJECT
@@ -51,10 +43,11 @@ public:
     void refresh(uint correlator);
     void expireSamples();
     void setSampleProperties(const QStringList& list);
+    void setDuration(int duration) { sampleLife = duration; }
 
     // list of values for an individual object
-    typedef QList<Sample> SampleList;
-    typedef QList<Sample>::const_iterator const_iterSampleList;
+    typedef QLinkedList<Sample> SampleList;
+    typedef QLinkedList<Sample>::const_iterator const_iterSampleList;
 
     // hash of lists keyed by object name
     typedef QHash<QString, SampleList> Samples;
@@ -62,7 +55,7 @@ public:
 
     const Samples& samples() { return samplesData; }
     // get the min and max for the Sample list for name
-    MinMax minMax(const QString& name, const QStringList& props);
+    MinMax minMax(const QString& name, const QStringList& props, bool isRate);
 
 public slots:
     void addObject(const qmf::Data&, uint);
@@ -75,14 +68,16 @@ signals:
     void objectSelected(const qmf::Data&);
 
 protected:
-    typedef QList<Sample>::iterator iterSampleList;
+    typedef QLinkedList<Sample>::iterator iterSampleList;
+    typedef QHash<QString, SampleList>::iterator iterSamples;
 
-    // the data for the objects in the display list
+    // the data for the objects in the display listbox
+    // This is the list of Queues or Exchanges or whatever the object happens to be.
     typedef QList<qmf::Data> DataList;
     DataList    dataList;
 
     std::string uniqueProperty;
-    static const int sampleLife = 610;
+    int sampleLife;
     void addSample(const qmf::Data& object, const qpid::types::Variant& name);
 
 private:
