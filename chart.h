@@ -37,17 +37,18 @@ public:
     ~chart();
 
     void clear();
-    void updateChart(ObjectListModel *samples, const QString& name, const QStringList& props, int duration);
+    void updateChart(bool isRate, ObjectListModel *samples, const QString& name, const QHash<QString, QColor>& props, int duration);
 
 protected:
 
     void paintEvent(QPaintEvent *event);
 
     //void plot_values(const ObjectListModel::Samples& samples, const std::string& prop, const QString& name, const QPointF& mm, int duration);
-    QPointF xy(Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, int maxy);
+    QPointF xy(Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm);
+    QPointF xyRate(Sample& prevSample, Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm);
 
     void drawXAxis(QPainter& painter, int intervals, int step, int duration);
-    void drawYAxis(QPainter& painter, int intervals, int step);
+    void drawYAxis(QPainter& painter, int intervals, int step, const MinMax& mm);
 
 private:
     Ui::chart *ui;
@@ -57,10 +58,10 @@ private:
     ObjectListModel *samplesContainer;
 
     // each proprty gets it's own line on the chart
-    QStringList properties;
+    QHash<QString, QColor> properties;
     QString oName;
-    MinMax mm;
     int duration;
+    bool rate;
 };
 
 #endif // CHART_H

@@ -26,10 +26,10 @@ chart::chart(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::chart),
     properties(),
-    oName(),
-    mm()
+    oName()
 {
     ui->setupUi(this);
+    rate = false;
 }
 
 chart::~chart()
@@ -42,12 +42,13 @@ void chart::clear()
     properties.clear();
 }
 
-void chart::updateChart(ObjectListModel* samples, const QString& name, const QStringList& props, int dur)
+void chart::updateChart(bool isRate, ObjectListModel* samples, const QString& name, const QHash<QString, QColor>& props, int dur)
 {
     duration = dur;
     samplesContainer = samples;
     properties = props;
     oName = name;
+    rate = isRate;
 
     update();
 }
@@ -56,43 +57,33 @@ void chart::paintEvent(QPaintEvent *e)
 {
     QWidget::paintEvent(e);
 
-    if (properties.size() == 0)
+    if (properties.isEmpty())
         return;
 
-    mm = samplesContainer->minMax(oName, properties);
-    mm.max = mm.max * 1.1 + 1.0;
+    MinMax mm = samplesContainer->minMax(oName, properties.keys(), rate);
+    mm.max = (qint32)(mm.max * 1.1 + 1.0);
 
     if (mm.min < 0)
-        mm.min = mm.min * 1.1 - 1.0;
+        mm.min = (qint32)(mm.min * 1.1 - 1.0);
 
     int yIntervals = 6;
     int yStep = 2;
 
-    if (mm.max < 3)
+    if ((mm.max - mm.min) < 3)
         yStep = 3;
 
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
+    //painter.setRenderHint(QPainter::Antialiasing);
 
     //painter.fillRect(0, 0,  width(), height(), Qt::white);
 
+    drawXAxis(painter, 10, 2, duration);
+    drawYAxis(painter, yIntervals, yStep, mm);
+
     QPen axisPen = QPen(Qt::SolidLine);
     axisPen.setColor(QColor(226, 226, 226));
-    axisPen.setWidth(1);
-
-    drawXAxis(painter, 10, 2, duration);
-
-    drawYAxis(painter, yIntervals, yStep);
-
-    static const QColor colors[] = {
-        QColor(255, 0, 0),
-        QColor(0, 255, 0),
-        QColor(0, 0, 255),
-        QColor(255, 255, 0),
-        QColor(255, 0, 255),
-        QColor(0, 255, 255)
-    };
-
+    axisPen.setWidth(3);
+    painter.setPen(axisPen);
 
     int w = ui->graph->width();
     int h = ui->graph->height();
@@ -107,14 +98,18 @@ void chart::paintEvent(QPaintEvent *e)
 
     QPointF p1, p2;
     bool tick;
-    int i = 0;
+    Sample prevSample;
 
+    painter.setOpacity(0.5);
     // for each property line
-    QStringList::const_iterator iter = properties.constBegin();
+    QHash<QString, QColor>::const_iterator iter = properties.constBegin();
     while (iter != properties.constEnd()) {
-        axisPen.setColor(colors[i++]);
+        QColor lineColor = QColor(iter.value());
+        lineColor.setAlpha(127);
+        axisPen.setColor(lineColor);
         painter.setPen(axisPen);
-        QString prop = *iter;
+        painter.setBrush(QBrush(lineColor));
+        QString prop = iter.key();
 
         tick = true;
         iterSamples = sampleList.constEnd();
@@ -123,21 +118,32 @@ void chart::paintEvent(QPaintEvent *e)
 
         // get the 1st point for a line segment
         Sample sample = *iterSamples;
-        p1 = QPointF(xy(sample, prop, tnow, w, h, duration, mm.max));
+        p1 = QPointF(xy(sample, prop, tnow, w, h, duration, mm));
 
         // loop backwards through the samples
         while (iterSamples != sampleList.constBegin()) {
             --iterSamples;
 
+            if (rate)
+                prevSample = sample;
             sample = *iterSamples;
+
             if (tick) {
-                p2 = QPointF(xy(sample, prop, tnow, w, h, duration, mm.max));
+                if (rate)
+                    p2 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
+                else
+                    p2 = xy(sample, prop, tnow, w, h, duration, mm);
             } else {
-                p1 = QPointF(xy(sample, prop, tnow, w, h, duration, mm.max));
+                if (rate)
+                    p1 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
+                else
+                    p1 = xy(sample, prop, tnow, w, h, duration, mm);
             }
+            /*
             if (prop == "msgMatched") {
                 qDebug("(%.2f, %.2f)-(%.2f, %.2f)", p1.x(), p1.y(), p2.x(), p2.y());
             }
+            */
             painter.drawLine(p1, p2);
             tick = !tick;
         }
@@ -147,17 +153,38 @@ void chart::paintEvent(QPaintEvent *e)
     }
 }
 
-QPointF chart::xy(Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, int maxy)
+QPointF chart::xy(Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm)
 {
     float x, y;
     int secs;
     secs = sample.dateTime().secsTo(tnow);
-    quint64 value = sample.data(prop);
+    qint64 value = sample.data(prop);
     x = width - ((float)secs / (float)duration) * width;
-    y = height - (float)((float)value / (float)maxy) * height;
+    y = (float)height * (float)((mm.max - value) / (mm.max - mm.min));
     return QPointF(x, y);
 }
 
+QPointF chart::xyRate(Sample& prevSample, Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm)
+{
+    float x = 0.0, y = 0.0;
+    float elapsed = sample.dateTime().secsTo(prevSample.dateTime());
+    int secs = sample.dateTime().secsTo(tnow);
+
+    qint64 value1 = sample.data(prop);
+    qint64 value2 = prevSample.data(prop);
+    qint64 diff = value1 - value2;
+
+    if (elapsed) {
+        x = width - ((float)secs / (float)duration) * width;
+        float _rate = diff / elapsed;
+        float _range = mm.max - mm.min;
+        float prange = _rate / _range;
+        if (prange < 0)
+            prange = - prange;
+        y = height - prange * height;
+    }
+    return QPointF(x, y);
+}
 
 /*
 void chart::plot_legend(QStringList titles, QList<QColor> colors)
@@ -205,6 +232,9 @@ void chart::plot_legend(QStringList titles, QList<QColor> colors)
         cr.stroke()
 
 */
+
+
+// Draws x-axis text and vertical lines that separate the x axis
 void chart::drawXAxis(QPainter& painter, int intervals, int step, int duration)
 {
     int i;
@@ -229,7 +259,7 @@ void chart::drawXAxis(QPainter& painter, int intervals, int step, int duration)
             painter.drawLine(x, 4, x, gHeight+6);
 
             painter.setPen(textPen);
-            painter.drawText(x, height(), fmt_duration(i * gap));
+            painter.drawText(x, height() - 4, fmt_duration(i * gap));
         } else {
             painter.setPen(gridPen);
             painter.drawLine(x, 4, x, gHeight);
@@ -240,7 +270,8 @@ void chart::drawXAxis(QPainter& painter, int intervals, int step, int duration)
     }
 }
 
-void chart::drawYAxis(QPainter& painter, int intervals, int step)
+// draw y-axis text and horizontal grid lines
+void chart::drawYAxis(QPainter& painter, int intervals, int step, const MinMax& mm)
 {
     int i;
     int y;
@@ -249,8 +280,7 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step)
     int gWidth = ui->graph->width();
 
     int interval = (float)gHeight / (float)intervals;
-    int gap = gHeight / intervals;
-    float fraction;
+    float gap = (mm.max - mm.min) / (float)intervals;
     float value;
     QString sValue = QString();
 
@@ -262,26 +292,37 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step)
     painter.setFont(textFont);
 
     for (i=0; i<intervals + 1; ++i) {
+        value = mm.min + (i * gap);
         y = gHeight - (i * interval);
+        y = (float)gHeight * (float)((mm.max - value) / (mm.max - mm.min));
         if (i % step == 0) {
             painter.setPen(gridPen1);
-            painter.drawLine(8, y, gWidth + 3, y);
+            painter.drawLine(6, y, gWidth + 3, y);
 
             painter.setPen(textPen);
-            fraction = (gHeight - y) / (float)gHeight;
-            value = fraction * (float)(mm.max - mm.min);
             if (value >= 1000000)
                 sValue.sprintf("%.1f1M", (value / 1000000.0));
-            else if (value >= 10000) {
-                sValue.sprintf("%.0fK", (value / 10000.0));
+            else if (value >= 1000) {
+                sValue.sprintf("%.0fK", (value / 1000.0));
+            } else if (gap < 1) {
+                sValue.sprintf("%.1f", value);
             } else {
                 sValue.sprintf("%.0f", value);
+
             }
             painter.drawText(gWidth + 6, y + 6, sValue);
         } else {
             painter.setPen(gridPen);
-            painter.drawLine(8, y, gWidth, y);
+            painter.drawLine(6, y, gWidth, y);
         }
+    }
+    // draw a darker line at y=0
+    if (mm.min <= 0 && mm.max >=0) {
+        QPen zeroPen = QPen(QColor(Qt::darkGray));
+        zeroPen.setStyle(Qt::DashLine);
+        painter.setPen(zeroPen);
+        y = (float)gHeight * (float)((mm.max - 0.0) / (mm.max - mm.min));
+        painter.drawLine(6, y, gWidth, y);
     }
 }
 
