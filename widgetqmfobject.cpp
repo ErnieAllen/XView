@@ -48,6 +48,7 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     ui->labelRelated->hide();
     ui->labelIndex->hide();
     _arrow = arrowNone;
+    duration = 600;
 
 }
 
@@ -72,6 +73,7 @@ void WidgetQmfObject::setRelatedModel(ObjectListModel *model, QWidget *parent)
     ui->comboBox->setModel(related);
     connect(ui->comboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(relatedIndexChanged(int)));
+    model->setDuration(duration);
 }
 
 void WidgetQmfObject::setEnabled(bool enabled)
@@ -190,15 +192,14 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
         currentPen.setWidth(border_width);
 
         painter.setPen(currentPen);
-        painter.drawRect(border_width / 2, border_width / 2 + reservedY(),
-                         width() - border_width,
-                         height() - border_width - reservedY());
+        int x = border_width / 2;
+        int y = border_width / 2 + reservedY();
+        int w = width() - border_width;
+        int h = height() / 2 - border_width - reservedY();
+        painter.drawRect(x, y, w, h);
 
         QBrush currentBrush(backColor, Qt::FDiagPattern);
-        painter.fillRect(border_width / 2, border_width / 2 + reservedY(),
-                         width() - border_width,
-                         height() - border_width - reservedY(),
-                         currentBrush);
+        painter.fillRect(x, y, w, h, currentBrush);
         painter.restore();
     }
 
@@ -466,6 +467,8 @@ QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& 
         ObjectListModel::SampleList sampleList = iterSamples.value();
         // get the last (most recent) sample from the list
         ObjectListModel::const_iterSampleList iList = sampleList.constEnd();
+        // skip the place holder "end"
+        --iList;
         if (iList != sampleList.constBegin()) {
             Sample sample1 = *iList;
             // if there is another sample
@@ -591,19 +594,23 @@ void WidgetQmfObject::showChart(const qmf::Data& object, ObjectListModel *model)
     // show the chart for this object
     //
     QList<Column>::const_iterator column_iter = summaryColumns.constBegin();
-    QStringList chartColumns;
+
+    QHash<QString, QColor> chartColumns;
     // loop through all the columns we might want to display
     while (column_iter != summaryColumns.constEnd()) {
         if ((*column_iter).mode == currentMode && (*column_iter).chart) {
             // accumulate all the columns for this object/chart mode
-            chartColumns.append(QString((*column_iter).name.c_str()));
+            chartColumns[QString((*column_iter).name.c_str())] = (*column_iter).color;
         }
         ++column_iter;
     }
     const qpid::types::Variant::Map& props(object.getProperties());
     QString name(props.find(unique)->second.asString().c_str());
 
-    ui->widgetChart->updateChart(model, name, chartColumns, 600);
+    bool isRate = true;
+    if (currentMode == modeMessages || currentMode == modeBytes)
+        isRate = false;
+    ui->widgetChart->updateChart(isRate, model, name, chartColumns, duration);
 }
 
 QStringList WidgetQmfObject::getSampleProperties()

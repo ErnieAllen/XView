@@ -25,20 +25,20 @@ WidgetExchanges::WidgetExchanges(QWidget *parent) :
 {
     this->setSectionName(QString("Exchanges"));
     summaryColumns.append(Column("msgRoutes", "routed", Qt::AlignRight, "N", modeMessages, true));
-    summaryColumns.append(Column("msgReceives", "received", Qt::AlignRight, "N", modeMessages, true));
-    summaryColumns.append(Column("msgDrops", "dropped", Qt::AlignRight, "N", modeMessages, true));
+    summaryColumns.append(Column("msgReceives", "received", Qt::AlignRight, "N", modeMessages, true, QColor(Qt::green)));
+    summaryColumns.append(Column("msgDrops", "dropped", Qt::AlignRight, "N", modeMessages, true, QColor(Qt::blue)));
 
     summaryColumns.append(Column("byteRoutes", "routed", Qt::AlignRight, "N", modeBytes, true));
-    summaryColumns.append(Column("byteReceives", "received", Qt::AlignRight, "N", modeBytes, true));
-    summaryColumns.append(Column("byteDrops", "dropped", Qt::AlignRight, "N", modeBytes, true));
+    summaryColumns.append(Column("byteReceives", "received", Qt::AlignRight, "N", modeBytes, true, QColor(Qt::green)));
+    summaryColumns.append(Column("byteDrops", "dropped", Qt::AlignRight, "N", modeBytes, true, QColor(Qt::blue)));
 
     summaryColumns.append(Column("msgRoutes", "routed / sec", Qt::AlignRight, "N", modeMessageRate, true));
-    summaryColumns.append(Column("msgReceives", "received / sec", Qt::AlignRight, "N", modeMessageRate, true));
-    summaryColumns.append(Column("msgDrops", "dropped / sec", Qt::AlignRight, "N", modeMessageRate, true));
+    summaryColumns.append(Column("msgReceives", "received / sec", Qt::AlignRight, "N", modeMessageRate, true, QColor(Qt::green)));
+    summaryColumns.append(Column("msgDrops", "dropped / sec", Qt::AlignRight, "N", modeMessageRate, true, QColor(Qt::blue)));
 
     summaryColumns.append(Column("byteRoutes", "routed / sec", Qt::AlignRight, "N", modeByteRate, true));
-    summaryColumns.append(Column("byteReceives", "received / sec", Qt::AlignRight, "N", modeByteRate, true));
-    summaryColumns.append(Column("byteDrops", "dropped / sec", Qt::AlignRight, "N", modeByteRate, true));
+    summaryColumns.append(Column("byteReceives", "received / sec", Qt::AlignRight, "N", modeByteRate, true, QColor(Qt::green)));
+    summaryColumns.append(Column("byteDrops", "dropped / sec", Qt::AlignRight, "N", modeByteRate, true, QColor(Qt::blue)));
 
     setRelatedText("Related exchanges");
 

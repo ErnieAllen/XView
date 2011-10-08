@@ -153,7 +153,7 @@ void DialogObjects::dataRefreshed()
         emit objectRefreshed(objectModel->getSelected(filteredIndex), objectName());
     }
 
-    // remove any samples that are older than 600 seconds
+    // remove any samples that are older than our charting window
     objectModel->expireSamples();
 }
 void DialogObjects::accept()

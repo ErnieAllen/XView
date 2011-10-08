@@ -78,7 +78,7 @@ void QmfThread::run()
             std::string s;
             qpid::types::Variant::Map args;
 
-            if (sess.nextEvent(event, qpid::messaging::Duration::SECOND * 2)) {
+            if (sess.nextEvent(event, qpid::messaging::Duration::SECOND * 3)) {
                 //
                 // Process the event
                 //

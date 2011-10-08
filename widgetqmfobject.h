@@ -101,9 +101,10 @@ protected:
         std::string     format;
         StatMode        mode;
         bool            chart;
+        QColor          color;
 
-        Column(const std::string& _n, const char* _h, Qt::Alignment _a, const std::string& _f, StatMode _m, bool _c=false) :
-            name(_n), header(_h), alignment(_a), format(_f), mode(_m), chart(_c) {}
+        Column(const std::string& _n, const char* _h, Qt::Alignment _a, const std::string& _f, StatMode _m, bool _c=false, QColor _co=QColor(Qt::red)):
+            name(_n), header(_h), alignment(_a), format(_f), mode(_m), chart(_c), color(_co) {}
     };
     typedef QList<Column> ObjectColumnList;
     ObjectColumnList summaryColumns;
@@ -130,7 +131,7 @@ private:
     bool _current; // draw with highlighted background
     ArrowDirection _arrow;   // direction to draw a background arrow 0->none 1->left 2->right
     Ui::WidgetQmfObject *ui;
-
+    int duration;
 };
 
 #endif // WIDGETQMFOBJECT_H
