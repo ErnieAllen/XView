@@ -19,31 +19,15 @@
 
 #include "sample.h"
 
-
-Sample::Sample(const qmf::Data& data, const QStringList& list) :
-        _dateTime(QDateTime::currentDateTime()),
-        _data()
+Sample::Sample(const qmf::Data& data, const QStringList& list, QDateTime dt)
 {
 
-    QStringList::const_iterator iter = list.begin();
-    while (iter != list.end()) {
-        /*
-        const QString& s(*iter);
-        qpid::types::Variant qv = data.getProperty(s.toStdString());
-        quint64 value = qv.asUint64();
-        _data.insert(s, value);
-        */
-        _data.insert(*iter, data.getProperty((*iter).toStdString()).asInt64());
+    d = new SampleData;
+    setDateTime(dt);
+
+    QStringList::const_iterator iter = list.constBegin();
+    while (iter != list.constEnd()) {
+        setProperty(*iter, data.getProperty((*iter).toStdString()).asInt64());
         ++iter;
     }
-}
-
-qint64 Sample::data(const QString &key)
-{
-    return _data.value(key, 0);
-}
-
-qint64 Sample::data(const std::string& key)
-{
-    return data(QString(key.c_str()));
 }

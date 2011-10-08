@@ -20,25 +20,50 @@
 #ifndef SAMPLE_H
 #define SAMPLE_H
 
+#include <QSharedData>
 #include <QDateTime>
 #include <QVariant>
 #include <QStringList>
 #include <qmf/Data.h>
+#include <float.h> // for DBL_MAX
+
+class MinMax {
+public:
+
+    MinMax () {min = DBL_MAX; max=DBL_MAX * -1.0; }
+    qreal min;
+    qreal max;
+};
+
+class SampleData : public QSharedData
+{
+public:
+    SampleData()  { }
+    SampleData(const SampleData& other)
+        : QSharedData(other), dateTime(other.dateTime), data(other.data) { }
+    ~SampleData() { }
+
+    QDateTime               dateTime;
+    QHash<QString, qint64>  data;
+};
 
 class Sample
 {
 public:
-    Sample(const qmf::Data& d, const QStringList& l);
+    Sample() { d = new SampleData; }
+    Sample(const qmf::Data& data, const QStringList& list, QDateTime dt=QDateTime::currentDateTime());
+    Sample(const Sample& other) : d (other.d) { }
 
-    const QDateTime& dateTime() { return _dateTime; }
-    qint64 data(const QString& key);
-    qint64 data(const std::string& key);
+    void setDateTime(const QDateTime & dt) { d->dateTime = dt; }
+    void setProperty(const QString& key, qint64 value) { d->data.insert(key, value); }
+
+    QDateTime dateTime() const { return d->dateTime; }
+    qint64 data(const QString& key) const { return d->data.value(key, 0); }
+    qint64 data(const std::string& key) const { return data(QString(key.c_str())); }
 
 private:
-    QDateTime                _dateTime;
-    QHash<QString, qint64>   _data;
+    QSharedDataPointer<SampleData> d;
 
-    bool _valid;
 };
 
 #endif // SAMPLE_H
