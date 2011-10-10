@@ -81,10 +81,14 @@ void WidgetQmfObject::setEnabled(bool enabled)
     QWidget::setEnabled(enabled);
     ui->pushButton->setEnabled(enabled);
 
-    if (!enabled)
+    if (!enabled) {
         reset();
+        if (related) {
+            ObjectListModel *model = (ObjectListModel *)related->sourceModel();
+            model->clearSamples();
+        }
+    }
 }
-
 // This is exposed so the main window can setup a connect between the
 // pushbutton and the dialog box
 QPushButton* WidgetQmfObject::pushButton()
@@ -150,35 +154,30 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
         QPoint(10,   5)
     };
 
+    painter.save();
+    QPen currentPen(Qt::white);
+    QColor currentColor(Qt::white);
+    currentPen.setWidth(2);
+
+    QBrush currentBrush(currentColor);
+
+    painter.setBrush(currentBrush);
+    painter.setPen(currentPen);
+    painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
+    painter.restore();
+
     // if this section has the focus,
     // draw with a light background
     if (this->hasFocus()) {
         painter.save();
-        QColor currentColor(248, 248, 248, 248);
 
-        QPen currentPen(Qt::white);
-        currentPen.setWidth(2);
-
-        QBrush currentBrush(currentColor);
-
-        painter.setBrush(currentBrush);
-        painter.setPen(currentPen);
-        painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
-        painter.restore();
-    } else {
-        painter.save();
-        QPen currentPen(Qt::white);
-        QColor currentColor(Qt::white);
-        currentPen.setWidth(2);
-
-        QBrush currentBrush(currentColor);
-
-        painter.setBrush(currentBrush);
+        QPen currentPen(QColor(200, 200, 200));
+        currentPen.setWidth(6);
+        currentPen.setStyle(Qt::DotLine);
         painter.setPen(currentPen);
         painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
         painter.restore();
     }
-
 
     // if this section has a current object
     // draw background with a diagonal lines
@@ -520,6 +519,9 @@ void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget
             related->setRelatedData("exchangeRef", cname);
         } else if (widget_type == "widgetBindings") {
             related->setRelatedData("name", name);
+        } else if (widget_type == "widgetSessions") {
+            std::string cname = ":" + name;
+            related->setRelatedData("sessionRef", cname);
         }
         related->clearFilter();
         emit needData();
