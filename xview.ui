@@ -116,6 +116,8 @@
     <addaction name="actionSubscriptions"/>
     <addaction name="actionSessions"/>
     <addaction name="actionConnections"/>
+    <addaction name="separator"/>
+    <addaction name="actionCharts"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMode"/>
@@ -272,10 +274,21 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Connections</string>
+    <string>C&amp;onnections</string>
    </property>
    <property name="toolTip">
     <string>Show connections</string>
+   </property>
+  </action>
+  <action name="actionCharts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Charts</string>
+   </property>
+   <property name="toolTip">
+    <string>Show charts</string>
    </property>
   </action>
  </widget>

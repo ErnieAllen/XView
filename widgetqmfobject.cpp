@@ -26,11 +26,15 @@
 WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     QWidget(parent),
     backgroundColor(200, 200, 200),
-    ui(new Ui::WidgetQmfObject)
+    ui(new Ui::WidgetQmfObject),
+    redIcon(":/images/legend-red.png"),
+    greenIcon(":/images/legend-green.png"),
+    blueIcon(":/images/legend-blue.png")
 {
     ui->setupUi(this);
 
     _current = false;
+    chart = false;
     currentMode = modeMessages;
     ui->tableWidget->setColumnCount(2);
     QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect();
@@ -49,7 +53,6 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     ui->labelIndex->hide();
     _arrow = arrowNone;
     duration = 600;
-
 }
 
 WidgetQmfObject::~WidgetQmfObject()
@@ -98,12 +101,12 @@ QPushButton* WidgetQmfObject::pushButton()
 
 int WidgetQmfObject::reservedY()
 {
-    return  ui->labelName->height() + ui->pushButton->height();
+    return  ui->labelName->height() + ui->pushButton->height() + 20;
 }
 
 int WidgetQmfObject::mid_paint()
 {
-    return (reservedY() + height()) / 2;
+    return ui->pushButton->height() + 15;
 }
 
 void WidgetQmfObject::resizeEvent(QResizeEvent *)
@@ -111,13 +114,11 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
     ui->pushButton->move(width() /2 - ui->pushButton->width() / 2, ui->pushButton->y());
 
     if (_current) {
-        int y = ui->pushButton->height();
-        ui->labelName->move(0, y);
-        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, reservedY() + 20);
+        ui->labelName->move(0, reservedY());
     } else {
         ui->comboBox->move(0, reservedY());
-        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, ui->comboBox->y() + ui->comboBox->height() + 46);
     }
+    ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, ui->comboBox->y() + ui->comboBox->height() + 46);
     ui->labelName->resize(width(), ui->labelName->height());
     ui->comboBox->resize(width(), ui->comboBox->height());
 
@@ -130,9 +131,12 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
     ui->labelIndex->move(x, reservedY() + 40);
 
     // move the chart
-    ui->widgetChart->resize(width() - 20, ui->widgetChart->height());
-    ui->widgetChart->move(width() / 2 - ui->widgetChart->width() / 2, height() - ui->widgetChart->height() - 12);
-
+    if (chart) {
+        ui->widgetChart->resize(width() - 20, ui->widgetChart->height());
+        ui->widgetChart->move(width() / 2 - ui->widgetChart->width() / 2, ui->comboBox->y() + ui->comboBox->height() + 46);
+        //ui->widgetChart->move(width() / 2 - ui->widgetChart->width() / 2, ui->tableWidget->y() + ui->tableWidget->height() + 4);
+        ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, ui->widgetChart->y() + ui->widgetChart->height() + 6);
+    }
 }
 
 void WidgetQmfObject::focusInEvent ( QFocusEvent * )
@@ -169,6 +173,12 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
     // if this section has the focus,
     // draw with a light background
     if (this->hasFocus()) {
+        if (_current)
+            ui->pushButton->setFocus();
+        else
+            ui->comboBox->setFocus();
+
+/*
         painter.save();
 
         QPen currentPen(QColor(230, 230, 255));
@@ -177,11 +187,13 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
         painter.setPen(currentPen);
         painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
         painter.restore();
+*/
     }
 
     // if this section has a current object
     // draw background with a diagonal lines
     // and a heavy border
+/*
     if (this->_current) {
         painter.save();
 
@@ -201,7 +213,7 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
         painter.fillRect(x, y, w, h, currentBrush);
         painter.restore();
     }
-
+*/
     // if this section is showing related objects
     // draw with the appropriate arrow
     if ((this->_arrow == arrowLeft) || (this->_arrow == arrowRight)) {
@@ -227,7 +239,7 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
 
         // the arrow points are defined to be 100 wide.
         // scale the viewport to show them as the width of the widget
-        painter.scale(width() / 100.0, width() / 100.0);
+        painter.scale(width() / 100.0, 3.0);
 
         painter.drawPolygon(arrowPoints,  sizeof( arrowPoints ) / sizeof( arrowPoints[0] ));
 
@@ -380,9 +392,10 @@ void WidgetQmfObject::showData(const qmf::Data& object)
     if (rightBuddy) {
         rightBuddy->showRelated(object, objectName(), arrowRight);
     }
-    ObjectListModel *model = (ObjectListModel *)related->sourceModel();
-    showChart(object, model);
-
+    if (chart) {
+        ObjectListModel *model = (ObjectListModel *)related->sourceModel();
+        showChart(object, model);
+    }
 }
 
 
@@ -409,6 +422,11 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     data = object;
     setLabelName();
 
+    if (chart)
+        ui->tableWidget->setColumnCount(3);
+    else
+        ui->tableWidget->setColumnCount(2);
+
     QTableWidgetItem *newItem;
     int row = 0;
     int maxValWidth = 0;
@@ -425,34 +443,56 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     const qpid::types::Variant::Map& props(object.getProperties());
     qpid::types::Variant::Map::const_iterator iter;
 
-    ui->tableWidget->clear();
     QList<Column>::const_iterator column_iter = summaryColumns.constBegin();
 
+    // remove and free up any existing table cells
+    ui->tableWidget->clearContents();
+
+    int col; // which column we are creating
     // loop through all the columns we might want to display
     while (column_iter != summaryColumns.constEnd()) {
-
         // find the column in the current data
         iter = props.find((*column_iter).name);
         bool show = (*column_iter).mode == currentMode;
         if ((iter != props.end()) && show) {
+            col = 0;
+
+            if (chart) {
+
+                newItem = new QTableWidgetItem("");
+                newItem->setBackgroundColor(colors[currentMode]);
+                if ((*column_iter).chart) {
+                    if ((*column_iter).color == QColor(Qt::red))
+                        newItem->setIcon(redIcon);
+                    else if ((*column_iter).color == QColor(Qt::green))
+                        newItem->setIcon(greenIcon);
+                    else if ((*column_iter).color == QColor(Qt::blue))
+                        newItem->setIcon(blueIcon);
+                }
+                ui->tableWidget->setItem(row, col++, newItem);
+            }
+
             newItem = new QTableWidgetItem(value(iter, props.find(unique)));
             newItem->setBackgroundColor(colors[currentMode]);
             newItem->setTextAlignment((*column_iter).alignment);
             maxValWidth = qMax(maxValWidth, fm.width(newItem->text()));
-            ui->tableWidget->setItem(row, 0, newItem);
+            ui->tableWidget->setItem(row, col++, newItem);
 
             newItem = new QTableWidgetItem((*column_iter).header);
             newItem->setBackgroundColor(colors[currentMode]);;
             maxNameWidth = qMax(maxNameWidth, fm.width(newItem->text()));
-            ui->tableWidget->setItem(row, 1, newItem);
+            ui->tableWidget->setItem(row, col++, newItem);
 
             ++row;
         }
         ++column_iter;
     }
-    ui->tableWidget->resize(maxModeWidth + maxValWidth + maxNameWidth + 24, fm.height() * row - row/3);
-    ui->tableWidget->setColumnWidth(0, maxValWidth + 8);
-    ui->tableWidget->setColumnWidth(1, maxNameWidth + 8);
+    ui->tableWidget->resize((chart ? 16 : 0) + maxModeWidth + maxValWidth + maxNameWidth + 22, fm.height() * row - row/3);
+    col = 0;
+    if (chart)
+        ui->tableWidget->setColumnWidth(col++, 18);
+    ui->tableWidget->setColumnWidth(col++, maxValWidth + 8);
+    ui->tableWidget->setColumnWidth(col, maxNameWidth + 8);
 
     // force a resize event so the table is drawn in the correct place
     QResizeEvent event(size(), size());
@@ -591,7 +631,8 @@ void WidgetQmfObject::relatedIndexChanged(int i)
     ui->tableWidget->setRowCount(summaryColumns.size());
     fillTableWidget(object);
 
-    showChart(object, model);
+    if (chart)
+        showChart(object, model);
 
     // cascade the related object
     if (_arrow == arrowLeft)
@@ -601,6 +642,27 @@ void WidgetQmfObject::relatedIndexChanged(int i)
         if (rightBuddy)
             rightBuddy->showRelated(object, objectName(), arrowRight);
 
+}
+
+// SLOT triggered when the actionCharts menu item is toggled / loaded
+void WidgetQmfObject::showChart(bool b)
+{
+    chart = b;
+    if (b) {
+        if (data) {
+            ObjectListModel *model = (ObjectListModel *)related->sourceModel();
+            ui->widgetChart->show();
+            showChart(data, model);
+        }
+    } else {
+        ui->widgetChart->clear();
+        ui->widgetChart->hide();
+    }
+    if (data)
+        fillTableWidget(data);
+    // force a resize event so the table is drawn in the correct place
+    QResizeEvent event(size(), size());
+    QApplication::sendEvent(this, &event);
 }
 
 void WidgetQmfObject::showChart(const qmf::Data& object, ObjectListModel *model)
@@ -626,6 +688,7 @@ void WidgetQmfObject::showChart(const qmf::Data& object, ObjectListModel *model)
     if (currentMode == modeMessages || currentMode == modeBytes)
         isRate = false;
     ui->widgetChart->updateChart(isRate, model, name, chartColumns, duration);
+
 }
 
 QStringList WidgetQmfObject::getSampleProperties()

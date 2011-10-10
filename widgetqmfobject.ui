@@ -128,6 +128,9 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
+   </property>
    <property name="styleSheet">
     <string notr="true"/>
    </property>
@@ -181,7 +184,7 @@
     </rect>
    </property>
    <property name="focusPolicy">
-    <enum>Qt::NoFocus</enum>
+    <enum>Qt::ClickFocus</enum>
    </property>
   </widget>
   <widget class="QLabel" name="labelIndex">

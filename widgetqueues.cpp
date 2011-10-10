@@ -63,9 +63,10 @@ WidgetQueues::~WidgetQueues()
 
 void WidgetQueues::paintEvent(QPaintEvent *e)
 {
-
-    QRectF queueRects[4] = {
-        QRect(0.0, 0.0, width()-12*3, 30.0),
+    QRectF queueRects[] = {
+        QRect(0.0, 0.0, width()-12*5, 30.0),
+        QRect(width()-12*5, 0.0, 12, 30.0),
+        QRect(width()-12*4, 0.0, 12, 30.0),
         QRect(width()-12*3, 0.0, 12, 30.0),
         QRect(width()-12*2, 0.0, 12, 30.0),
         QRect(width()-12,   0.0, 10, 30.0)
@@ -82,12 +83,13 @@ void WidgetQueues::paintEvent(QPaintEvent *e)
     queuePen.setWidth(2);
 
     int mid = mid_paint();
-    painter.translate(1, mid - 15);
+    painter.translate(1, mid - 4);
 
     painter.setPen(queuePen);
     painter.setBrush(queueBrush);
 
-    painter.drawRects(queueRects, 4);
+    painter.scale(1.0, 0.6);
+    painter.drawRects(queueRects, 6);
 
 }
 

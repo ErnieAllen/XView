@@ -40,7 +40,7 @@ XView::XView(QWidget *parent) :
     qRegisterMetaType<QItemSelection>();
 
     //
-    // Restore the window size and location
+    // Restore the window size and location and menu check boxes
     //
     QSettings settings;
     restoreGeometry(settings.value("mainWindowGeometry").toByteArray());
@@ -49,12 +49,26 @@ XView::XView(QWidget *parent) :
     ui->actionQueues->setChecked( settings.value("mainWindowChecks/Queues", true).toBool());
     ui->actionSubscriptions->setChecked( settings.value("mainWindowChecks/Subscriptions", false).toBool());
     ui->actionSessions->setChecked( settings.value("mainWindowChecks/Sessions", false).toBool());
+    ui->actionCharts->setChecked( settings.value("mainWindowChecks/Charts", false).toBool());
 
     ui->widgetExchanges->setVisible(ui->actionExchanges->isChecked());
     ui->widgetBindings->setVisible(ui->actionBindings->isChecked());
     ui->widgetQueues->setVisible(ui->actionQueues->isChecked());
     ui->widgetSubscriptions->setVisible(ui->actionSubscriptions->isChecked());
     ui->widgetSessions->setVisible(ui->actionSessions->isChecked());
+
+    ui->widgetExchanges->showChart(ui->actionCharts->isChecked());
+    ui->widgetBindings->showChart(ui->actionCharts->isChecked());
+    ui->widgetQueues->showChart(ui->actionCharts->isChecked());
+    ui->widgetSubscriptions->showChart(ui->actionCharts->isChecked());
+    ui->widgetSessions->showChart(ui->actionCharts->isChecked());
+
+    connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetExchanges, SLOT(showChart(bool)));
+    connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetBindings, SLOT(showChart(bool)));
+    connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetQueues, SLOT(showChart(bool)));
+    connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetSubscriptions, SLOT(showChart(bool)));
+    connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetSessions, SLOT(showChart(bool)));
+
     //
     // Create the thread object that maintains communication with the messaging plane.
     //
@@ -377,6 +391,7 @@ XView::~XView()
     settings.setValue("mainWindowChecks/Queues", ui->actionQueues->isChecked());
     settings.setValue("mainWindowChecks/Subscriptions", ui->actionSubscriptions->isChecked());
     settings.setValue("mainWindowChecks/Sessions", ui->actionSessions->isChecked());
+    settings.setValue("mainWindowChecks/Charts", ui->actionCharts->isChecked());
 
     delete openDialog;
     delete aboutDialog;

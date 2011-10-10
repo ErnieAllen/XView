@@ -4,5 +4,8 @@
         <file>images/bytes.png</file>
         <file>images/msgrate.png</file>
         <file>images/byterate.png</file>
+        <file>images/legend-blue.png</file>
+        <file>images/legend-green.png</file>
+        <file>images/legend-red.png</file>
     </qresource>
 </RCC>

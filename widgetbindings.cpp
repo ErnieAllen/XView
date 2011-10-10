@@ -52,7 +52,7 @@ void WidgetBindings::paintEvent(QPaintEvent *e)
     painter.setRenderHint(QPainter::Antialiasing);
 
     int mid = mid_paint();
-    painter.translate(-6, mid - 5);
+    painter.translate(-6, mid);
 
     painter.save();
 

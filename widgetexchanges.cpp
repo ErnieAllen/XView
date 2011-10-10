@@ -50,7 +50,6 @@ WidgetExchanges::~WidgetExchanges()
 
 void WidgetExchanges::paintEvent(QPaintEvent *e)
 {
-
     // points that define an arrow
     static const QPoint arrowPoints[] = {
         QPoint(10,  -10),
@@ -79,22 +78,21 @@ void WidgetExchanges::paintEvent(QPaintEvent *e)
     //int side = qMin(width(), h);
 
     int mid = this->mid_paint();
-    //painter.drawEllipse(width() - side + 2, h / 2 - side / 2 + reserved + 2, side-3, side-3);
 
     // or
-    painter.drawRect(0, mid - 5, width(), 10);
+    painter.drawRect(0, mid, width(), 10);
 
     painter.save();
-    painter.translate(width() / 2, mid);
+    painter.translate(width() / 2, mid + 6);
     painter.rotate(45);
+    painter.scale(0.5, 0.5);
     for (int i=0; i<4; i++) {
         painter.drawPolygon(arrowPoints,  sizeof( arrowPoints ) / sizeof( arrowPoints[0] ));
         painter.rotate(90);
     }
     painter.restore();
-    //painter.setPen(QColor(Qt::white));
-    int radius = 18;
-    painter.drawEllipse(width()/2 - radius, mid - radius, radius * 2, radius * 2);
+    //int radius = 18;
+    //painter.drawEllipse(width()/2 - radius, mid - radius, radius * 2, radius * 2);
 
 }
 

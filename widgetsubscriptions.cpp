@@ -35,7 +35,6 @@ WidgetSubscriptions::~WidgetSubscriptions()
 
 void WidgetSubscriptions::paintEvent(QPaintEvent *e)
 {
-
     QPointF points[6] = {
         QPointF(0.0, 0.0),
         QPointF(10.0, -10.0),
@@ -56,7 +55,7 @@ void WidgetSubscriptions::paintEvent(QPaintEvent *e)
     QBrush subBrush(Qt::white);
 
     int mid = mid_paint();
-    painter.translate(1, mid);
+    painter.translate(1, mid + 6);
 
     painter.setPen(subPen);
     painter.setBrush(subBrush);

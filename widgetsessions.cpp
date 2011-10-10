@@ -45,31 +45,23 @@ WidgetSessions::~WidgetSessions()
 
 void WidgetSessions::paintEvent(QPaintEvent *e)
 {
-
-    QRectF queueRects[4] = {
-        QRect(0.0, 0.0, width()-12*3, 30.0),
-        QRect(width()-12*3, 0.0, 12, 30.0),
-        QRect(width()-12*2, 0.0, 12, 30.0),
-        QRect(width()-12,   0.0, 10, 30.0)
-    };
-
     WidgetQmfObject::paintEvent(e);
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    QColor queueColor(backgroundColor);
-    QPen   queuePen(queueColor);
-    QBrush queueBrush(Qt::white);
-    queuePen.setWidth(2);
+    QColor color(backgroundColor);
+    QPen   pen(color);
+    QBrush brush(Qt::white);
+    pen.setWidth(2);
 
     int mid = mid_paint();
-    painter.translate(1, mid - 15);
+    painter.translate(1, mid - 10);
 
-    painter.setPen(queuePen);
-    painter.setBrush(queueBrush);
+    painter.setPen(pen);
+    painter.setBrush(brush);
 
-    painter.drawRects(queueRects, 4);
+    painter.drawRoundedRect(0, 5, width()-4, 20, 9, 9);
 
 }
 

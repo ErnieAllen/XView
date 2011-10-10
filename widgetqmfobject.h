@@ -77,7 +77,7 @@ public slots:
     void showData(const qmf::Data& object);
     void setEnabled(bool enabled);
     void initRelated();
-
+    void showChart(bool b);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -129,9 +129,14 @@ private:
     QString value(const qpid::types::Variant::Map::const_iterator& iter, const qpid::types::Variant::Map::const_iterator& uname);
 
     bool _current; // draw with highlighted background
+    bool chart;     // should we show the chart
     ArrowDirection _arrow;   // direction to draw a background arrow 0->none 1->left 2->right
     Ui::WidgetQmfObject *ui;
     int duration;
+
+    QIcon redIcon;
+    QIcon greenIcon;
+    QIcon blueIcon;
 };
 
 #endif // WIDGETQMFOBJECT_H
