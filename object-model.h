@@ -44,6 +44,7 @@ public:
     void expireSamples();
     void setSampleProperties(const QStringList& list);
     void setDuration(int duration) { sampleLife = duration; }
+    void clearSamples();
 
     // list of values for an individual object
     typedef QLinkedList<Sample> SampleList;

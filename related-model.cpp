@@ -44,5 +44,6 @@ bool RelatedFilterProxyModel::filterAcceptsRow(int sourceRow,
     QString row_val(model->fieldValue(sourceRow, field).c_str());
     if (value == "")
         return row_val.isEmpty();
-    return row_val.endsWith(value.c_str());
+    bool accept = row_val.endsWith(value.c_str());
+    return accept;
 }

@@ -134,7 +134,11 @@ std::string ObjectListModel::fieldValue(int row, const std::string& field)
 {
     const qmf::Data& object= dataList.at(row);
     qpid::types::Variant value = object.getProperty(field);
-    if ((field == "queueRef") || (field == "exchangeRef")) {
+    if ((field == "queueRef") ||
+        (field == "exchangeRef") ||
+        (field == "sessionRef") ||
+        (field == "connectionRef") ||
+        (field == "vhostRef")) {
         return value.asMap()["_object_name"].asString();
     }
     return value.asString();
@@ -266,3 +270,7 @@ MinMax ObjectListModel::minMax(const QString& name, const QStringList& props, bo
     return mm;
 }
 
+void ObjectListModel::clearSamples()
+{
+    samplesData.clear();
+}
