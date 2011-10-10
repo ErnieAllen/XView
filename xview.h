@@ -53,6 +53,7 @@ private:
     DialogExchanges* exchangesDialog;
     DialogObjects*   queuesDialog;
     DialogObjects*   subscriptionsDialog;
+    DialogObjects*    sessionsDialog;
     QActionGroup*    actionGroup;
     QToolBar *       modeToolBar;
 
@@ -68,6 +69,7 @@ private slots:
     void queryBindings();
     void queryQueues();
     void querySubscriptions();
+    void querySessions();
     void dispatchResponse(QObject *target, const qmf::ConsoleEvent& event);
     void queryCurrent();
     void setMessageMode();

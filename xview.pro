@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     widgetqmfobject.cpp \
     related-model.cpp \
     chart.cpp \
-    sample.cpp
+    sample.cpp \
+    widgetsessions.cpp
 
 HEADERS  += xview.h \
     qmf-thread.h \
@@ -49,7 +50,8 @@ HEADERS  += xview.h \
     widgetqmfobject.h \
     related-model.h \
     chart.h \
-    sample.h
+    sample.h \
+    widgetsessions.h
 
 FORMS    += xview.ui \
     dialogopen.ui \

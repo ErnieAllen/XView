@@ -57,6 +57,13 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="4">
+       <widget class="WidgetSessions" name="widgetSessions" native="true">
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -73,7 +80,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="separator"/>
     <addaction name="actionOpen_localhost"/>
@@ -85,13 +92,13 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuMode">
     <property name="title">
-     <string>Mode</string>
+     <string>&amp;Mode</string>
     </property>
     <addaction name="actionMessages"/>
     <addaction name="actionBytes"/>
@@ -99,18 +106,30 @@
     <addaction name="actionMessage_rate"/>
     <addaction name="actionByte_rate"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actionExchanges"/>
+    <addaction name="actionBindings"/>
+    <addaction name="actionQueues"/>
+    <addaction name="actionSubscriptions"/>
+    <addaction name="actionSessions"/>
+    <addaction name="actionConnections"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMode"/>
+   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionOpen_localhost">
    <property name="text">
-    <string>Open localhost</string>
+    <string>Open &amp;localhost</string>
    </property>
   </action>
   <action name="actionOpen_URL">
    <property name="text">
-    <string>Open URL...</string>
+    <string>&amp;Open URL...</string>
    </property>
   </action>
   <action name="actionClose">
@@ -118,17 +137,17 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Close</string>
+    <string>&amp;Close</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
-    <string>Exit</string>
+    <string>E&amp;xit</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About...</string>
+    <string>&amp;About...</string>
    </property>
   </action>
   <action name="actionMessages">
@@ -139,7 +158,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Messages</string>
+    <string>&amp;Messages</string>
    </property>
    <property name="toolTip">
     <string>Show number of messages</string>
@@ -153,7 +172,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Bytes</string>
+    <string>&amp;Bytes</string>
    </property>
    <property name="toolTip">
     <string>Show number of bytes</string>
@@ -167,7 +186,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Message rate</string>
+    <string>Message &amp;rate</string>
    </property>
    <property name="toolTip">
     <string>Show number of messages per second</string>
@@ -181,13 +200,82 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Byte rate</string>
+    <string>B&amp;yte rate</string>
    </property>
    <property name="toolTip">
     <string>Show number of bytes per second</string>
    </property>
    <property name="statusTip">
     <string>Show number of bytes per second</string>
+   </property>
+  </action>
+  <action name="actionExchanges">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Exchanges</string>
+   </property>
+   <property name="toolTip">
+    <string>Show exchanges</string>
+   </property>
+  </action>
+  <action name="actionBindings">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Bindings</string>
+   </property>
+   <property name="toolTip">
+    <string>Show bindings</string>
+   </property>
+  </action>
+  <action name="actionQueues">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Queues</string>
+   </property>
+   <property name="toolTip">
+    <string>Show queues</string>
+   </property>
+  </action>
+  <action name="actionSubscriptions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Subscriptions</string>
+   </property>
+   <property name="toolTip">
+    <string>Show subscriptions</string>
+   </property>
+  </action>
+  <action name="actionSessions">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>S&amp;essions</string>
+   </property>
+   <property name="toolTip">
+    <string>Show sessions</string>
+   </property>
+  </action>
+  <action name="actionConnections">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Connections</string>
+   </property>
+   <property name="toolTip">
+    <string>Show connections</string>
    </property>
   </action>
  </widget>
@@ -217,6 +305,12 @@
    <header location="global">widgetsubscriptions.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>WidgetSessions</class>
+   <extends>QWidget</extends>
+   <header location="global">widgetsessions.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections>
@@ -233,6 +327,86 @@
     <hint type="destinationlabel">
      <x>275</x>
      <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionExchanges</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>widgetExchanges</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>73</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionBindings</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>widgetBindings</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>201</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionQueues</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>widgetQueues</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>328</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSubscriptions</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>widgetSubscriptions</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>456</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSessions</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>widgetSessions</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>583</x>
+     <y>191</y>
     </hint>
    </hints>
   </connection>
