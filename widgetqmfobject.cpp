@@ -171,7 +171,7 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
     if (this->hasFocus()) {
         painter.save();
 
-        QPen currentPen(QColor(200, 200, 200));
+        QPen currentPen(QColor(230, 230, 255));
         currentPen.setWidth(6);
         currentPen.setStyle(Qt::DotLine);
         painter.setPen(currentPen);
@@ -240,14 +240,27 @@ void WidgetQmfObject::keyPressEvent ( QKeyEvent * event )
 {
     int row;
     int rows;
+    WidgetQmfObject *buddy;
     switch (event->key()) {
     case Qt::Key_Left:
-        if (leftBuddy)
-            leftBuddy->setFocus();
+        buddy = leftBuddy;
+        while (buddy) {
+            if (buddy->isVisible()) {
+                buddy->setFocus();
+                break;
+            }
+            buddy = buddy->leftBuddy;
+        }
         break;
     case Qt::Key_Right:
-        if (rightBuddy)
-            rightBuddy->setFocus();
+        buddy = rightBuddy;
+        while (buddy) {
+            if (buddy->isVisible()) {
+                buddy->setFocus();
+                break;
+            }
+            buddy = buddy->rightBuddy;
+        }
         break;
     case Qt::Key_Up:
         row = ui->comboBox->currentIndex();
