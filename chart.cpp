@@ -30,6 +30,7 @@ chart::chart(QWidget *parent) :
 {
     ui->setupUi(this);
     rate = false;
+    samplesContainer = NULL;
 }
 
 chart::~chart()
