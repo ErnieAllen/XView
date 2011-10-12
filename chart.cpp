@@ -31,6 +31,12 @@ chart::chart(QWidget *parent) :
     ui->setupUi(this);
     rate = false;
     samplesContainer = NULL;
+
+    ui->graph->addAction(ui->actionShow_chart);
+    ui->graph->addAction(ui->actionHide_chart);
+    ui->actionSep->setSeparator(true);
+    ui->graph->addAction(ui->actionSep);
+    ui->graph->addAction(ui->actionContigure_chart);
 }
 
 chart::~chart()
@@ -45,12 +51,22 @@ void chart::clear()
 
 void chart::updateChart(bool isRate, ObjectListModel* samples, const QString& name, const QHash<QString, QColor>& props, int dur)
 {
+    // number of seconds on the x-axis
     duration = dur;
+
+    // pointer to object that contains the samples
     samplesContainer = samples;
+
+    // hash of sample's property names and line colors
     properties = props;
+
+    // the object name needed by the samples container, ie. the queue name, or the binding key
     oName = name;
+
+    // is this a rate chart
     rate = isRate;
 
+    // force a paint
     update();
 }
 
@@ -61,6 +77,7 @@ void chart::paintEvent(QPaintEvent *e)
     if (properties.isEmpty())
         return;
 
+    // get the current min and max Y vales so we can draw the y-axis
     MinMax mm = samplesContainer->minMax(oName, properties.keys(), rate);
     mm.max = (qint32)(mm.max * 1.1 + 1.0);
 
@@ -76,15 +93,13 @@ void chart::paintEvent(QPaintEvent *e)
     QPainter painter(this);
     //painter.setRenderHint(QPainter::Antialiasing);
 
-    //painter.fillRect(0, 0,  width(), height(), Qt::white);
-
     drawXAxis(painter, 10, 2, duration);
     drawYAxis(painter, yIntervals, yStep, mm);
 
-    QPen axisPen = QPen(Qt::SolidLine);
-    axisPen.setColor(QColor(226, 226, 226));
-    axisPen.setWidth(3);
-    painter.setPen(axisPen);
+    QPen pen = QPen(Qt::SolidLine);
+    pen.setColor(QColor(226, 226, 226));
+    pen.setWidth(3);
+    painter.setPen(pen);
 
     int w = ui->graph->width();
     int h = ui->graph->height();
@@ -99,27 +114,35 @@ void chart::paintEvent(QPaintEvent *e)
 
     QPointF p1, p2;
     bool tick;
+    bool rateSkippedFirst = false;
     Sample prevSample;
 
     painter.setOpacity(0.5);
+
     // for each property line
     QHash<QString, QColor>::const_iterator iter = properties.constBegin();
     while (iter != properties.constEnd()) {
+
+        rateSkippedFirst = false;
+
         QColor lineColor = QColor(iter.value());
         lineColor.setAlpha(127);
-        axisPen.setColor(lineColor);
-        painter.setPen(axisPen);
+        pen.setColor(lineColor);
+        painter.setPen(pen);
         painter.setBrush(QBrush(lineColor));
         QString prop = iter.key();
 
         tick = true;
         iterSamples = sampleList.constEnd();
+        if (iterSamples == sampleList.constBegin())
+            break;
+
         // backup past the place holder
         --iterSamples;
 
         // get the 1st point for a line segment
         Sample sample = *iterSamples;
-        p1 = QPointF(xy(sample, prop, tnow, w, h, duration, mm));
+        p1 = xy(sample, prop, tnow, w, h, duration, mm);
 
         // loop backwards through the samples
         while (iterSamples != sampleList.constBegin()) {
@@ -129,26 +152,33 @@ void chart::paintEvent(QPaintEvent *e)
                 prevSample = sample;
             sample = *iterSamples;
 
-            if (tick) {
-                if (rate)
-                    p2 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
-                else
-                    p2 = xy(sample, prop, tnow, w, h, duration, mm);
-            } else {
-                if (rate)
-                    p1 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
-                else
-                    p1 = xy(sample, prop, tnow, w, h, duration, mm);
-            }
-            /*
-            if (prop == "msgMatched") {
-                qDebug("(%.2f, %.2f)-(%.2f, %.2f)", p1.x(), p1.y(), p2.x(), p2.y());
-            }
-            */
-            painter.drawLine(p1, p2);
-            tick = !tick;
-        }
+            int diff = sample.dateTime().secsTo(prevSample.dateTime());
+            if (!rate || (diff > 0)) {
+                if (tick) {
+                    if (rate)
+                        p2 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
+                    else
+                        p2 = xy(sample, prop, tnow, w, h, duration, mm);
+                } else {
+                    if (rate)
+                        p1 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
+                    else
+                        p1 = xy(sample, prop, tnow, w, h, duration, mm);
+                }
+                /*
+                if (prop == "msgMatched") {
+                    qDebug("(%.2f, %.2f)-(%.2f, %.2f)", p1.x(), p1.y(), p2.x(), p2.y());
+                }
+                */
+                if (rate && !rateSkippedFirst)
+                    rateSkippedFirst = true;
+                else {
+                    painter.drawLine(p1, p2);
+                }
+                tick = !tick;
 
+            }
+        }
         // next property line
         ++iter;
     }
@@ -173,7 +203,7 @@ QPointF chart::xyRate(Sample& prevSample, Sample& sample, const QString& prop, c
 
     qint64 value1 = sample.data(prop);
     qint64 value2 = prevSample.data(prop);
-    qint64 diff = value1 - value2;
+    qint64 diff = value2 - value1;
 
     if (elapsed) {
         x = width - ((float)secs / (float)duration) * width;
@@ -186,54 +216,6 @@ QPointF chart::xyRate(Sample& prevSample, Sample& sample, const QString& prop, c
     }
     return QPointF(x, y);
 }
-
-/*
-void chart::plot_legend(QStringList titles, QList<QColor> colors)
-{
-    int i;
-    QString title;
-    QColor color;
-    for (i=0; i<titles.size(); i++)
-    {
-
-    }
-
-        for i, item in enumerate(zip(titles, colors)):
-            title, color = item
-            y = 16 + i * 16
-
-            cr.set_source_rgba(1, 1, 1, 0.75)
-            cr.rectangle(4, y - 12, 16 + 6.5 * len(title), 16)
-            cr.fill()
-            cr.stroke()
-
-            cr.set_source_rgb(*color)
-            cr.rectangle(8, y, 8, -8)
-            cr.fill()
-            cr.stroke()
-
-            cr.move_to(20, y)
-            cr.set_source_rgb(0, 0, 0)
-            cr.show_text(title)
-            cr.stroke()
-
-            width, height = cr.text_extents(title)[2:4]
-}
-
-
-    def plot_frame(self, color=(0.8, 0.8, 0.8)):
-        cr = Context(self.surface)
-        cr.set_line_width(1)
-        cr.set_source_rgb(*color)
-
-        cr.move_to(self.width, 0)
-        cr.line_to(self.width, self.height)
-        cr.line_to(0, self.height)
-
-        cr.stroke()
-
-*/
-
 
 // Draws x-axis text and vertical lines that separate the x axis
 void chart::drawXAxis(QPainter& painter, int intervals, int step, int duration)
@@ -327,6 +309,7 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step, const MinMax& 
     }
 }
 
+// convert a number of seconds to a string containing the nearest d, h, m, or s
 QString chart::fmt_duration(int secs)
 {
     QString elems = QString();

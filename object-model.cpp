@@ -254,8 +254,8 @@ MinMax ObjectListModel::minMax(const QString& name, const QStringList& props, bo
                     QDateTime t2 = sample2.dateTime();
                     int secs = t1.secsTo(t2);
                     if (secs) {
-                        mm.min = qMin(mm.min, (v1 - v2) / (qreal)secs);
-                        mm.max = qMax(mm.max, (v1 - v2) / (qreal)secs);
+                        mm.min = qMin(mm.min, (v2 - v1) / (qreal)secs);
+                        mm.max = qMax(mm.max, (v2 - v1) / (qreal)secs);
                     }
 
                 }

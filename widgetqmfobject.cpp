@@ -487,7 +487,7 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
         }
         ++column_iter;
     }
-    ui->tableWidget->resize((chart ? 16 : 0) + maxModeWidth + maxValWidth + maxNameWidth + 22, fm.height() * row - row/3);
+    ui->tableWidget->resize((chart ? 16 : 0) + maxModeWidth + maxValWidth + maxNameWidth + 20, fm.height() * row - row/2 - row/7);
     col = 0;
     if (chart)
         ui->tableWidget->setColumnWidth(col++, 18);
