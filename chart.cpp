@@ -191,7 +191,7 @@ QPointF chart::xy(Sample& sample, const QString& prop, const QDateTime& tnow, in
     secs = sample.dateTime().secsTo(tnow);
     qint64 value = sample.data(prop);
     x = width - ((float)secs / (float)duration) * width;
-    y = (float)height * (float)((mm.max - value) / (mm.max - mm.min));
+    y = (float)height * (float)((mm.max - value) / (mm.max - mm.min)) + ui->topmargin->height();
     return QPointF(x, y);
 }
 
@@ -212,7 +212,7 @@ QPointF chart::xyRate(Sample& prevSample, Sample& sample, const QString& prop, c
         float prange = _rate / _range;
         if (prange < 0)
             prange = - prange;
-        y = height - prange * height;
+        y = height - prange * height + ui->topmargin->height();
     }
     return QPointF(x, y);
 }
@@ -261,8 +261,8 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step, const MinMax& 
 
     int gHeight = ui->graph->height();
     int gWidth = ui->graph->width();
+    int margin = ui->topmargin->height();
 
-    int interval = (float)gHeight / (float)intervals;
     float gap = (mm.max - mm.min) / (float)intervals;
     float value;
     QString sValue = QString();
@@ -276,8 +276,7 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step, const MinMax& 
 
     for (i=0; i<intervals + 1; ++i) {
         value = mm.min + (i * gap);
-        y = gHeight - (i * interval);
-        y = (float)gHeight * (float)((mm.max - value) / (mm.max - mm.min));
+        y = (float)gHeight * (float)((mm.max - value) / (mm.max - mm.min)) + margin;
         if (i % step == 0) {
             painter.setPen(gridPen1);
             painter.drawLine(6, y, gWidth + 3, y);
@@ -304,7 +303,7 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step, const MinMax& 
         QPen zeroPen = QPen(QColor(Qt::darkGray));
         zeroPen.setStyle(Qt::DashLine);
         painter.setPen(zeroPen);
-        y = (float)gHeight * (float)((mm.max - 0.0) / (mm.max - mm.min));
+        y = (float)gHeight * (float)((mm.max - 0.0) / (mm.max - mm.min)) + margin;
         painter.drawLine(6, y, gWidth, y);
     }
 }
