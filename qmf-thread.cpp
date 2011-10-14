@@ -25,7 +25,6 @@
 
 #include <iostream>
 #include <string>
-#include <QtGui/QApplication>
 
 using std::cout;
 using std::endl;
