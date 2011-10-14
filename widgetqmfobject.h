@@ -54,9 +54,15 @@ public:
     explicit WidgetQmfObject(QWidget *parent = 0);
     ~WidgetQmfObject();
 
+    static const QColor colors[];
+
     bool current();
     void setCurrent(bool b=true);
     void setSectionName(const QString&);
+    const QString &sectionName() {return sectionTitle; }
+    void initRelatedButtons();
+    void setAction(QAction *myAction);
+    QAction * getAction() { return action; }
     void setRelatedModel(ObjectListModel *, QWidget *);
     void reset();
     void setArrow(ArrowDirection a) {_arrow = a;}
@@ -70,6 +76,7 @@ public:
     qmfWidgetList peers;
     WidgetQmfObject *leftBuddy;
     WidgetQmfObject *rightBuddy;
+    QString sectionTitle;
 
 public slots:
     void setCurrentObject(const qmf::Data& object);
@@ -78,6 +85,8 @@ public slots:
     void setEnabled(bool enabled);
     void initRelated();
     void showChart(bool b);
+    void rightBuddyChanged(bool b);
+    void leftBuddyChanged(bool b);
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -115,6 +124,7 @@ protected:
 
     QColor backgroundColor;
     StatMode currentMode;
+    QAction *action;
 
 signals:
     void needData();

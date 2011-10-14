@@ -210,12 +210,49 @@
     </rect>
    </property>
   </widget>
+  <widget class="CommandLinkButton" name="commandLinkButtonNext">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>230</y>
+     <width>31</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="CommandLinkButton" name="commandLinkButtonPrev">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>230</y>
+     <width>31</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
    <class>chart</class>
    <extends>QWidget</extends>
    <header>chart.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CommandLinkButton</class>
+   <extends>QCommandLinkButton</extends>
+   <header location="global">commandlinkbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

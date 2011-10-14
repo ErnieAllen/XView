@@ -23,8 +23,15 @@
 #include <QGraphicsDropShadowEffect>
 #include <QResizeEvent>
 
+const QColor WidgetQmfObject::colors[] = {
+        QColor(255, 255, 220), // yellow  (messages)
+        QColor(220, 255, 220), // green   (bytes)
+        QColor(255, 220, 255), // magenta (message rate)
+        QColor(220, 255, 255)};// cyan    (byte rate)
+
 WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     QWidget(parent),
+    sectionTitle(),
     backgroundColor(200, 200, 200),
     ui(new Ui::WidgetQmfObject),
     redIcon(":/images/legend-red.png"),
@@ -32,6 +39,11 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     blueIcon(":/images/legend-blue.png")
 {
     ui->setupUi(this);
+
+    QIcon prev = QIcon(":/images/messages.png");
+
+    ui->commandLinkButtonPrev->setIconType(QStyle::SP_ArrowLeft);
+    ui->commandLinkButtonNext->setIconType(QStyle::SP_ArrowRight);
 
     _current = false;
     chart = false;
@@ -111,7 +123,10 @@ int WidgetQmfObject::mid_paint()
 
 void WidgetQmfObject::resizeEvent(QResizeEvent *)
 {
+
     ui->pushButton->move(width() /2 - ui->pushButton->width() / 2, ui->pushButton->y());
+    ui->commandLinkButtonPrev->move(0, ui->pushButton->y());
+    ui->commandLinkButtonNext->move(width() - ui->commandLinkButtonNext->width(), ui->pushButton->y());
 
     if (_current) {
         ui->labelName->move(0, reservedY());
@@ -348,10 +363,34 @@ void WidgetQmfObject::reset()
     ui->widgetChart->clear();
 }
 
+void WidgetQmfObject::leftBuddyChanged(bool b)
+{
+    if (b) {
+        ui->commandLinkButtonPrev->hide();
+    } else if (leftBuddy)
+        ui->commandLinkButtonPrev->show();
+}
+
+void WidgetQmfObject::rightBuddyChanged(bool b)
+{
+    if (b) {
+        ui->commandLinkButtonNext->hide();
+    } else if (rightBuddy)
+        ui->commandLinkButtonNext->show();
+}
+
 void WidgetQmfObject::setCurrentMode(StatMode mode)
 {
     currentMode = mode;
     fillTableWidget(data);
+    if (chart) {
+        if (data) {
+            ObjectListModel *model = (ObjectListModel *)related->sourceModel();
+            showChart(data, model);
+        }
+    }
+
+
 }
 
 void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
@@ -433,12 +472,6 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     int maxNameWidth = 0;
     int maxModeWidth = 0;
     QFontMetrics fm(ui->tableWidget->font());
-
-    static const QColor colors[] = {
-        QColor(255, 255, 220), // yellow  (messages)
-        QColor(220, 255, 220), // green   (bytes)
-        QColor(255, 220, 255), // magenta (message rate)
-        QColor(220, 255, 255)};// cyan    (byte rate)
 
     const qpid::types::Variant::Map& props(object.getProperties());
     qpid::types::Variant::Map::const_iterator iter;
@@ -545,7 +578,38 @@ QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& 
 
 void WidgetQmfObject::setSectionName(const QString &name)
 {
+    sectionTitle = name;
     ui->pushButton->setText(name);
+}
+
+void WidgetQmfObject::setAction(QAction *myAction)
+{
+    action = myAction;
+}
+
+void WidgetQmfObject::initRelatedButtons()
+{
+    if (this->leftBuddy) {
+        ui->commandLinkButtonPrev->setToolTip(QString("Show %1").arg(leftBuddy->sectionName().toLower()));
+        connect(ui->commandLinkButtonPrev, SIGNAL(clicked()), this->leftBuddy->getAction(), SLOT(toggle()));
+        if (leftBuddy->getAction()->isChecked())
+            ui->commandLinkButtonPrev->hide();
+        else
+            ui->commandLinkButtonPrev->show();
+    }
+    else
+        ui->commandLinkButtonPrev->hide();
+
+    if (this->rightBuddy) {
+        ui->commandLinkButtonNext->setToolTip(QString("Show %1").arg(rightBuddy->sectionName().toLower()));
+        connect(ui->commandLinkButtonNext, SIGNAL(clicked()), this->rightBuddy->getAction(), SLOT(toggle()));
+        if (rightBuddy->getAction()->isChecked())
+            ui->commandLinkButtonNext->hide();
+        else
+            ui->commandLinkButtonNext->show();
+    }
+    else
+        ui->commandLinkButtonNext->hide();
 }
 
 void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget_type, ArrowDirection a)

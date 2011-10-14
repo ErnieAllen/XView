@@ -39,6 +39,17 @@ XView::XView(QWidget *parent) :
     qRegisterMetaType<qmf::ConsoleEvent>();
     qRegisterMetaType<QItemSelection>();
 
+    // notify the section widgets when a neighbour is hidden / shown
+    // so they can hide/show their next/prev buttons
+    connect(ui->actionExchanges, SIGNAL(toggled(bool)), ui->widgetBindings, SLOT(leftBuddyChanged(bool)));
+    connect(ui->actionBindings, SIGNAL(toggled(bool)), ui->widgetExchanges, SLOT(rightBuddyChanged(bool)));
+    connect(ui->actionBindings, SIGNAL(toggled(bool)), ui->widgetQueues, SLOT(leftBuddyChanged(bool)));
+    connect(ui->actionQueues, SIGNAL(toggled(bool)), ui->widgetBindings, SLOT(rightBuddyChanged(bool)));
+    connect(ui->actionQueues, SIGNAL(toggled(bool)), ui->widgetSubscriptions, SLOT(leftBuddyChanged(bool)));
+    connect(ui->actionSubscriptions, SIGNAL(toggled(bool)), ui->widgetQueues, SLOT(rightBuddyChanged(bool)));
+    connect(ui->actionSubscriptions, SIGNAL(toggled(bool)), ui->widgetSessions, SLOT(leftBuddyChanged(bool)));
+    connect(ui->actionSessions, SIGNAL(toggled(bool)), ui->widgetSubscriptions, SLOT(rightBuddyChanged(bool)));
+
     //
     // Restore the window size and location and menu check boxes
     //
@@ -124,6 +135,18 @@ XView::XView(QWidget *parent) :
     ui->widgetSessions->peers.append(ui->widgetQueues);
     ui->widgetSessions->peers.append(ui->widgetBindings);
     ui->widgetSessions->peers.append(ui->widgetExchanges);
+
+    ui->widgetExchanges->setAction(ui->actionExchanges);
+    ui->widgetBindings->setAction(ui->actionBindings);
+    ui->widgetQueues->setAction(ui->actionQueues);
+    ui->widgetSubscriptions->setAction(ui->actionSubscriptions);
+    ui->widgetSessions->setAction(ui->actionSessions);
+
+    ui->widgetExchanges->initRelatedButtons();
+    ui->widgetBindings->initRelatedButtons();
+    ui->widgetQueues->initRelatedButtons();
+    ui->widgetSubscriptions->initRelatedButtons();
+    ui->widgetSessions->initRelatedButtons();
 
     // when the sections request data, send the request
     // over to qmf
@@ -238,6 +261,7 @@ void XView::setupStatusBar() {
     ui->actionBytes->setIcon(QIcon(":/images/bytes.png"));
     ui->actionMessage_rate->setIcon(QIcon(":/images/msgrate.png"));
     ui->actionByte_rate->setIcon(QIcon(":/images/byterate.png"));
+
     actionGroup = new QActionGroup(this);
     actionGroup->addAction(ui->actionMessages);
     actionGroup->addAction(ui->actionBytes);
@@ -246,9 +270,21 @@ void XView::setupStatusBar() {
 
     modeToolBar = addToolBar(tr("Modes"));
     modeToolBar->setObjectName("Mode");
-    modeToolBar->setIconSize(QSize(32,32));
+    //modeToolBar->setIconSize(QSize(32,32));
     modeToolBar->addActions(actionGroup->actions());
-    //modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    QList<QToolButton *> buttons = modeToolBar->findChildren<QToolButton *>();
+    int i;
+    QToolButton *button;
+    for (i=1; i<buttons.size() && i<5; ++i) {
+        button = buttons.at(i);
+        QString background = WidgetQmfObject::colors[i-1].name();
+        button->setStyleSheet(QString("background: %1; checked.background: %2").
+                              arg(background).
+                              arg(background));
+    }
+
+    modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 }
 
 // SLOT Triggered when the qmf thread has been idle for 2 seconds

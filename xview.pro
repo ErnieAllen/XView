@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     related-model.cpp \
     chart.cpp \
     sample.cpp \
-    widgetsessions.cpp
+    widgetsessions.cpp \
+    commandlinkbutton.cpp
 
 HEADERS  += xview.h \
     qmf-thread.h \
@@ -51,7 +52,8 @@ HEADERS  += xview.h \
     related-model.h \
     chart.h \
     sample.h \
-    widgetsessions.h
+    widgetsessions.h \
+    commandlinkbutton.h
 
 FORMS    += xview.ui \
     dialogopen.ui \

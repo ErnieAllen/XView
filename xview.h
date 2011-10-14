@@ -26,6 +26,7 @@
 #include "dialogabout.h"
 #include "dialogobjects.h"
 #include "dialogexchanges.h"
+#include "widgetqmfobject.h"
 
 namespace Ui {
     class XView;
