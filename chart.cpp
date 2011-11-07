@@ -100,6 +100,80 @@ void chart::paintEvent(QPaintEvent *e)
     pen.setColor(QColor(226, 226, 226));
     pen.setWidth(3);
     painter.setPen(pen);
+    painter.setOpacity(0.5);
+
+    if (rate)
+        paintRate(painter, mm);
+    else
+        paintValue(painter, mm);
+}
+
+void chart::paintValue(QPainter &painter, MinMax &mm)
+{
+    int w = ui->graph->width();
+    int h = ui->graph->height();
+
+    QDateTime tnow(QDateTime::currentDateTime());
+    const ObjectListModel::Samples& samples(samplesContainer->samples());
+
+    ObjectListModel::const_iterSamples iterHash = samples.constFind(oName);
+    // shallow reference to the list
+    ObjectListModel::SampleList sampleList = iterHash.value();
+    ObjectListModel::const_iterSampleList iterSamples;
+
+    QPointF p1, p2;
+    bool tick;
+    QPen pen(painter.pen());
+    Sample prevSample;
+
+    // for each property line
+    QHash<QString, QColor>::const_iterator iter = properties.constBegin();
+    while (iter != properties.constEnd()) {
+
+        QColor lineColor = QColor(iter.value());
+        lineColor.setAlpha(127);
+        pen.setColor(lineColor);
+        painter.setPen(pen);
+        painter.setBrush(QBrush(lineColor));
+        QString prop = iter.key();
+
+        tick = true;
+        iterSamples = sampleList.constEnd();
+        if (iterSamples == sampleList.constBegin())
+            break;
+
+        // backup past the place holder since we are going backwards
+        --iterSamples;
+
+        // get the 1st point for a line segment
+        Sample sample = *iterSamples;
+        p1 = xy(sample, prop, tnow, w, h, duration, mm);
+
+        // loop backwards through the samples
+        while (iterSamples != sampleList.constBegin()) {
+            --iterSamples;
+
+            prevSample = sample;
+            sample = *iterSamples;
+
+            int diff = sample.dateTime().secsTo(prevSample.dateTime());
+            if (diff > 0) {
+                if (tick) {
+                    p2 = xy(sample, prop, tnow, w, h, duration, mm);
+                } else {
+                    p1 = xy(sample, prop, tnow, w, h, duration, mm);
+                }
+                painter.drawLine(p1, p2);
+                tick = !tick;
+            }
+        }
+        // next property line
+        ++iter;
+    }
+}
+
+void chart::paintRate(QPainter &painter, MinMax &mm)
+{
 
     int w = ui->graph->width();
     int h = ui->graph->height();
@@ -114,10 +188,9 @@ void chart::paintEvent(QPaintEvent *e)
 
     QPointF p1, p2;
     bool tick;
+    QPen pen(painter.pen());
     bool rateSkippedFirst = false;
     Sample prevSample;
-
-    painter.setOpacity(0.5);
 
     // for each property line
     QHash<QString, QColor>::const_iterator iter = properties.constBegin();
@@ -137,7 +210,7 @@ void chart::paintEvent(QPaintEvent *e)
         if (iterSamples == sampleList.constBegin())
             break;
 
-        // backup past the place holder
+        // backup past the place holder since we are going backwards
         --iterSamples;
 
         // get the 1st point for a line segment
@@ -148,29 +221,17 @@ void chart::paintEvent(QPaintEvent *e)
         while (iterSamples != sampleList.constBegin()) {
             --iterSamples;
 
-            if (rate)
-                prevSample = sample;
+            prevSample = sample;
             sample = *iterSamples;
 
             int diff = sample.dateTime().secsTo(prevSample.dateTime());
-            if (!rate || (diff > 0)) {
+            if (diff > 0) {
                 if (tick) {
-                    if (rate)
-                        p2 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
-                    else
-                        p2 = xy(sample, prop, tnow, w, h, duration, mm);
+                    p2 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
                 } else {
-                    if (rate)
-                        p1 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
-                    else
-                        p1 = xy(sample, prop, tnow, w, h, duration, mm);
+                    p1 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
                 }
-                /*
-                if (prop == "msgMatched") {
-                    qDebug("(%.2f, %.2f)-(%.2f, %.2f)", p1.x(), p1.y(), p2.x(), p2.y());
-                }
-                */
-                if (rate && !rateSkippedFirst)
+                if (!rateSkippedFirst)
                     rateSkippedFirst = true;
                 else {
                     painter.drawLine(p1, p2);

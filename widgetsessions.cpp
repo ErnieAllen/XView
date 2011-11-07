@@ -65,9 +65,13 @@ void WidgetSessions::paintEvent(QPaintEvent *e)
 
 }
 
-void WidgetSessions::showRelated(const qmf::Data& object, const QString &, ArrowDirection a)
+void WidgetSessions::showRelated(const qmf::Data& object, const QString &widget_type, ArrowDirection a)
 {
     setArrow(a);
+
+    //we can't go from connection to session
+    if (widget_type == "widgetConnections")
+        return;
 
     // for sessions, we should only be asked to show records related to a subscription
     // so assume the object is a subscription

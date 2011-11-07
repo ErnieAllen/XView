@@ -87,6 +87,8 @@ public slots:
     void showChart(bool b);
     void rightBuddyChanged(bool b);
     void leftBuddyChanged(bool b);
+    void setDrawAsRect(bool b);
+
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -147,6 +149,7 @@ private:
     QIcon redIcon;
     QIcon greenIcon;
     QIcon blueIcon;
+    bool drawAsRect; // add a white background and border when the layout is cascading
 };
 
 #endif // WIDGETQMFOBJECT_H

@@ -39,46 +39,53 @@ XView::XView(QWidget *parent) :
     qRegisterMetaType<qmf::ConsoleEvent>();
     qRegisterMetaType<QItemSelection>();
 
-    // notify the section widgets when a neighbour is hidden / shown
-    // so they can hide/show their next/prev buttons
-    connect(ui->actionExchanges, SIGNAL(toggled(bool)), ui->widgetBindings, SLOT(leftBuddyChanged(bool)));
-    connect(ui->actionBindings, SIGNAL(toggled(bool)), ui->widgetExchanges, SLOT(rightBuddyChanged(bool)));
-    connect(ui->actionBindings, SIGNAL(toggled(bool)), ui->widgetQueues, SLOT(leftBuddyChanged(bool)));
-    connect(ui->actionQueues, SIGNAL(toggled(bool)), ui->widgetBindings, SLOT(rightBuddyChanged(bool)));
-    connect(ui->actionQueues, SIGNAL(toggled(bool)), ui->widgetSubscriptions, SLOT(leftBuddyChanged(bool)));
-    connect(ui->actionSubscriptions, SIGNAL(toggled(bool)), ui->widgetQueues, SLOT(rightBuddyChanged(bool)));
-    connect(ui->actionSubscriptions, SIGNAL(toggled(bool)), ui->widgetSessions, SLOT(leftBuddyChanged(bool)));
-    connect(ui->actionSessions, SIGNAL(toggled(bool)), ui->widgetSubscriptions, SLOT(rightBuddyChanged(bool)));
-
     //
     // Restore the window size and location and menu check boxes
     //
     QSettings settings;
     restoreGeometry(settings.value("mainWindowGeometry").toByteArray());
-    ui->actionExchanges->setChecked( settings.value("mainWindowChecks/Exchanges", false).toBool());
-    ui->actionBindings->setChecked( settings.value("mainWindowChecks/Bindings", false).toBool());
-    ui->actionQueues->setChecked( settings.value("mainWindowChecks/Queues", true).toBool());
-    ui->actionSubscriptions->setChecked( settings.value("mainWindowChecks/Subscriptions", false).toBool());
-    ui->actionSessions->setChecked( settings.value("mainWindowChecks/Sessions", false).toBool());
     ui->actionCharts->setChecked( settings.value("mainWindowChecks/Charts", false).toBool());
+    ui->actionCascadingLayout->setChecked( settings.value("mainWindowChecks/Layout", false).toBool());
 
-    ui->widgetExchanges->setVisible(ui->actionExchanges->isChecked());
-    ui->widgetBindings->setVisible(ui->actionBindings->isChecked());
-    ui->widgetQueues->setVisible(ui->actionQueues->isChecked());
-    ui->widgetSubscriptions->setVisible(ui->actionSubscriptions->isChecked());
-    ui->widgetSessions->setVisible(ui->actionSessions->isChecked());
+    // setup the layout
+    FisheyeLayout *fisheyeLayout;
+    fisheyeLayout = new FisheyeLayout(ui->centralWidget, !ui->actionCascadingLayout->isChecked());
+    fisheyeLayout->addWidget(ui->widgetExchanges);
+    fisheyeLayout->addWidget(ui->widgetBindings);
+    fisheyeLayout->addWidget(ui->widgetQueues);
+    fisheyeLayout->addWidget(ui->widgetSubscriptions);
+    fisheyeLayout->addWidget(ui->widgetSessions);
+    fisheyeLayout->addWidget(ui->widgetConnections);;
+    connect(ui->actionCascadingLayout, SIGNAL(toggled(bool)), fisheyeLayout, SLOT(setCascade(bool)));
 
+    // connect the charts menu item to show/hide the charts
     ui->widgetExchanges->showChart(ui->actionCharts->isChecked());
     ui->widgetBindings->showChart(ui->actionCharts->isChecked());
     ui->widgetQueues->showChart(ui->actionCharts->isChecked());
     ui->widgetSubscriptions->showChart(ui->actionCharts->isChecked());
     ui->widgetSessions->showChart(ui->actionCharts->isChecked());
+    ui->widgetConnections->showChart(ui->actionCharts->isChecked());
 
     connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetExchanges, SLOT(showChart(bool)));
     connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetBindings, SLOT(showChart(bool)));
     connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetQueues, SLOT(showChart(bool)));
     connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetSubscriptions, SLOT(showChart(bool)));
     connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetSessions, SLOT(showChart(bool)));
+    connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetConnections, SLOT(showChart(bool)));
+
+    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetExchanges, SLOT(setDrawAsRect(bool)));
+    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetBindings, SLOT(setDrawAsRect(bool)));
+    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetQueues, SLOT(setDrawAsRect(bool)));
+    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetSubscriptions, SLOT(setDrawAsRect(bool)));
+    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetSessions, SLOT(setDrawAsRect(bool)));
+    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetConnections, SLOT(setDrawAsRect(bool)));
+
+    connect(ui->actionExchanges,     SIGNAL(triggered()), ui->widgetExchanges, SLOT(setFocus()));
+    connect(ui->actionBindings,      SIGNAL(triggered()), ui->widgetBindings, SLOT(setFocus()));
+    connect(ui->actionQueues,        SIGNAL(triggered()), ui->widgetQueues, SLOT(setFocus()));
+    connect(ui->actionSubscriptions, SIGNAL(triggered()), ui->widgetSubscriptions, SLOT(setFocus()));
+    connect(ui->actionSessions,      SIGNAL(triggered()), ui->widgetSessions, SLOT(setFocus()));
+    connect(ui->actionConnections,   SIGNAL(triggered()), ui->widgetConnections, SLOT(setFocus()));
 
     //
     // Create the thread object that maintains communication with the messaging plane.
@@ -115,38 +122,51 @@ XView::XView(QWidget *parent) :
     ui->widgetExchanges->peers.append(ui->widgetQueues);
     ui->widgetExchanges->peers.append(ui->widgetSubscriptions);
     ui->widgetExchanges->peers.append(ui->widgetSessions);
+    ui->widgetExchanges->peers.append(ui->widgetConnections);
 
     ui->widgetBindings->leftBuddy= ui->widgetExchanges;
     ui->widgetBindings->rightBuddy = ui->widgetQueues;
     ui->widgetBindings->peers.append(ui->widgetSubscriptions);
     ui->widgetBindings->peers.append(ui->widgetSessions);
+    ui->widgetBindings->peers.append(ui->widgetConnections);
 
     ui->widgetQueues->leftBuddy = ui->widgetBindings;
     ui->widgetQueues->rightBuddy = ui->widgetSubscriptions;
     ui->widgetQueues->peers.append(ui->widgetExchanges);
     ui->widgetQueues->peers.append(ui->widgetSessions);
+    ui->widgetQueues->peers.append(ui->widgetConnections);
 
     ui->widgetSubscriptions->leftBuddy = ui->widgetQueues;
     ui->widgetSubscriptions->rightBuddy = ui->widgetSessions;
     ui->widgetSubscriptions->peers.append(ui->widgetBindings);
     ui->widgetSubscriptions->peers.append(ui->widgetExchanges);
+    ui->widgetSubscriptions->peers.append(ui->widgetConnections);
 
     ui->widgetSessions->leftBuddy = ui->widgetSubscriptions;
+    ui->widgetSessions->rightBuddy = ui->widgetConnections;
     ui->widgetSessions->peers.append(ui->widgetQueues);
     ui->widgetSessions->peers.append(ui->widgetBindings);
     ui->widgetSessions->peers.append(ui->widgetExchanges);
+
+    ui->widgetConnections->leftBuddy = ui->widgetSessions;
+    ui->widgetConnections->peers.append(ui->widgetQueues);
+    ui->widgetConnections->peers.append(ui->widgetBindings);
+    ui->widgetConnections->peers.append(ui->widgetExchanges);
+    ui->widgetConnections->peers.append(ui->widgetSubscriptions);
 
     ui->widgetExchanges->setAction(ui->actionExchanges);
     ui->widgetBindings->setAction(ui->actionBindings);
     ui->widgetQueues->setAction(ui->actionQueues);
     ui->widgetSubscriptions->setAction(ui->actionSubscriptions);
     ui->widgetSessions->setAction(ui->actionSessions);
+    ui->widgetConnections->setAction(ui->actionConnections);
 
     ui->widgetExchanges->initRelatedButtons();
     ui->widgetBindings->initRelatedButtons();
     ui->widgetQueues->initRelatedButtons();
     ui->widgetSubscriptions->initRelatedButtons();
     ui->widgetSessions->initRelatedButtons();
+    ui->widgetConnections->initRelatedButtons();
 
     // when the sections request data, send the request
     // over to qmf
@@ -160,6 +180,8 @@ XView::XView(QWidget *parent) :
             this, SLOT(querySubscriptions()));
     connect(ui->widgetSessions, SIGNAL(needData()),
             this, SLOT(querySessions()));
+    connect(ui->widgetConnections, SIGNAL(needData()),
+            this, SLOT(queryConnections()));
 
     connect(ui->actionMessages,     SIGNAL(triggered()), this, SLOT(setMessageMode()));
     connect(ui->actionBytes,        SIGNAL(triggered()), this, SLOT(setByteMode()));
@@ -229,6 +251,18 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetSessions->pushButton(), SIGNAL(clicked()), sessionsDialog, SLOT(exec()));
     connect(sessionsDialog, SIGNAL(finalAdded()), ui->widgetSessions, SLOT(initRelated()));
 
+    connectionsDialog = new DialogObjects(this, "connections");
+    connectionsDialog->initModels("remoteProcessName");
+    connectionsDialog->listModel()->setSampleProperties(ui->widgetConnections->getSampleProperties());
+    ui->widgetConnections->setRelatedModel(connectionsDialog->listModel(), this);
+    connect(connectionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
+            ui->widgetConnections, SLOT(setCurrentObject(qmf::Data)));
+    connect(connectionsDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
+            ui->widgetConnections, SLOT(showData(qmf::Data)));
+    connect(ui->widgetConnections->pushButton(), SIGNAL(clicked()), this, SLOT(queryConnections()));
+    connect(ui->widgetConnections->pushButton(), SIGNAL(clicked()), connectionsDialog, SLOT(exec()));
+    connect(connectionsDialog, SIGNAL(finalAdded()), ui->widgetConnections, SLOT(initRelated()));
+
     //
     // Create linkages to enable and disable main-window components based on the connection status.
     //
@@ -241,12 +275,14 @@ XView::XView(QWidget *parent) :
     connect(qmf, SIGNAL(isConnected(bool)), ui->widgetQueues,            SLOT(setEnabled(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), ui->widgetSubscriptions,     SLOT(setEnabled(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), ui->widgetSessions,          SLOT(setEnabled(bool)));
+    connect(qmf, SIGNAL(isConnected(bool)), ui->widgetConnections,       SLOT(setEnabled(bool)));
 
     connect(qmf, SIGNAL(isConnected(bool)), exchangesDialog,             SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), bindingsDialog,              SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), queuesDialog,                SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), subscriptionsDialog,         SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), sessionsDialog,              SLOT(connectionChanged(bool)));
+    connect(qmf, SIGNAL(isConnected(bool)), connectionsDialog,           SLOT(connectionChanged(bool)));
 }
 
 // Display the connection status in the status bar
@@ -301,6 +337,8 @@ void XView::queryCurrent()
         querySubscriptions();
     else if (ui->widgetSessions->current() || sessionsDialog->isVisible())
         querySessions();
+    else if (ui->widgetConnections->current() || connectionsDialog->isVisible())
+        queryConnections();
 }
 
 // Send an async query to get the list of objects
@@ -350,6 +388,14 @@ void XView::querySessions()
     queryObjects("session", sessionsDialog);
 }
 
+// SLOT: triggered when Connections Dialog is displayed
+// Send an async query to get the list of Connections
+// When the response is received, send an event to the Connections dialog
+void XView::queryConnections()
+{
+    queryObjects("connection", connectionsDialog);
+}
+
 // SLOT: Triggered when a qmf query response is received
 // Send the received event over to the appropriate dialog box
 void XView::dispatchResponse(QObject *target, const qmf::ConsoleEvent& event)
@@ -360,41 +406,29 @@ void XView::dispatchResponse(QObject *target, const qmf::ConsoleEvent& event)
 
 void XView::setMessageMode()
 {
-    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeMessages);
-    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeMessages);
-    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeMessages);
-    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeMessages);
-    ui->widgetSessions->setCurrentMode(WidgetQmfObject::modeMessages);
+    setMode(WidgetQmfObject::modeMessages);
 }
-
 void XView::setByteMode()
 {
-    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeBytes);
-    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeBytes);
-    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeBytes);
-    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeBytes);
-    ui->widgetSessions->setCurrentMode(WidgetQmfObject::modeBytes);
+    setMode(WidgetQmfObject::modeBytes);
 }
 void XView::setMessageRateMode()
 {
-    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeMessageRate);
-    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeMessageRate);
-    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeMessageRate);
-    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeMessageRate);
-    ui->widgetSessions->setCurrentMode(WidgetQmfObject::modeMessageRate);
+    setMode(WidgetQmfObject::modeMessageRate);
 }
 void XView::setByteRateMode()
 {
-    ui->widgetBindings->setCurrentMode(WidgetQmfObject::modeByteRate);
-    ui->widgetExchanges->setCurrentMode(WidgetQmfObject::modeByteRate);
-    ui->widgetQueues->setCurrentMode(WidgetQmfObject::modeByteRate);
-    ui->widgetSubscriptions->setCurrentMode(WidgetQmfObject::modeByteRate);
-    ui->widgetSessions->setCurrentMode(WidgetQmfObject::modeByteRate);
+    setMode(WidgetQmfObject::modeByteRate);
 }
-
-void XView::setByteMode();
-void XView::setMessageRateMode();
-void XView::setByteRateMode();
+void XView::setMode(WidgetQmfObject::StatMode mode)
+{
+    ui->widgetBindings->setCurrentMode(mode);
+    ui->widgetExchanges->setCurrentMode(mode);
+    ui->widgetQueues->setCurrentMode(mode);
+    ui->widgetSubscriptions->setCurrentMode(mode);
+    ui->widgetSessions->setCurrentMode(mode);
+    ui->widgetConnections->setCurrentMode(mode);
+}
 
 // process command line arguments
 void XView::init(int argc, char *argv[])
@@ -422,12 +456,8 @@ XView::~XView()
     QSettings settings;
     settings.setValue("mainWindowGeometry", saveGeometry());
     settings.setValue("mainWindowState", saveState());
-    settings.setValue("mainWindowChecks/Exchanges", ui->actionExchanges->isChecked());
-    settings.setValue("mainWindowChecks/Bindings", ui->actionBindings->isChecked());
-    settings.setValue("mainWindowChecks/Queues", ui->actionQueues->isChecked());
-    settings.setValue("mainWindowChecks/Subscriptions", ui->actionSubscriptions->isChecked());
-    settings.setValue("mainWindowChecks/Sessions", ui->actionSessions->isChecked());
     settings.setValue("mainWindowChecks/Charts", ui->actionCharts->isChecked());
+    settings.setValue("mainWindowChecks/Layout", ui->actionCascadingLayout->isChecked());
 
     delete openDialog;
     delete aboutDialog;
@@ -436,6 +466,7 @@ XView::~XView()
     delete queuesDialog;
     delete subscriptionsDialog;
     delete sessionsDialog;
+    delete connectionsDialog;
 
     delete label_connection_status;
     delete label_connection_prompt;

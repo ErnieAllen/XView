@@ -20,53 +20,84 @@
      <height>300</height>
     </size>
    </property>
-   <layout class="QGridLayout" name="gridLayout_3">
-    <property name="spacing">
-     <number>0</number>
+   <widget class="WidgetExchanges" name="widgetExchanges" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
     </property>
-    <item row="1" column="0">
-     <layout class="QGridLayout" name="gridLayout">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="WidgetExchanges" name="widgetExchanges" native="true">
-        <property name="focusPolicy">
-         <enum>Qt::StrongFocus</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="WidgetBindings" name="widgetBindings" native="true">
-        <property name="focusPolicy">
-         <enum>Qt::StrongFocus</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="WidgetQueues" name="widgetQueues" native="true">
-        <property name="focusPolicy">
-         <enum>Qt::StrongFocus</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="WidgetSubscriptions" name="widgetSubscriptions" native="true">
-        <property name="focusPolicy">
-         <enum>Qt::StrongFocus</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="WidgetSessions" name="widgetSessions" native="true">
-        <property name="focusPolicy">
-         <enum>Qt::StrongFocus</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-   </layout>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+   </widget>
+   <widget class="WidgetBindings" name="widgetBindings" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+   </widget>
+   <widget class="WidgetQueues" name="widgetQueues" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+   </widget>
+   <widget class="WidgetSubscriptions" name="widgetSubscriptions" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+   </widget>
+   <widget class="WidgetSessions" name="widgetSessions" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+   </widget>
+   <widget class="WidgetConnections" name="widgetConnections" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>100</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menubar">
@@ -118,6 +149,7 @@
     <addaction name="actionConnections"/>
     <addaction name="separator"/>
     <addaction name="actionCharts"/>
+    <addaction name="actionCascadingLayout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMode"/>
@@ -213,7 +245,7 @@
   </action>
   <action name="actionExchanges">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>&amp;Exchanges</string>
@@ -224,7 +256,7 @@
   </action>
   <action name="actionBindings">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>&amp;Bindings</string>
@@ -235,10 +267,10 @@
   </action>
   <action name="actionQueues">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>&amp;Queues</string>
@@ -249,7 +281,7 @@
   </action>
   <action name="actionSubscriptions">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>&amp;Subscriptions</string>
@@ -260,7 +292,7 @@
   </action>
   <action name="actionSessions">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>S&amp;essions</string>
@@ -271,7 +303,7 @@
   </action>
   <action name="actionConnections">
    <property name="checkable">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>C&amp;onnections</string>
@@ -289,6 +321,17 @@
    </property>
    <property name="toolTip">
     <string>Show charts</string>
+   </property>
+  </action>
+  <action name="actionCascadingLayout">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cascading &amp;Layout</string>
    </property>
   </action>
  </widget>
@@ -322,6 +365,12 @@
    <class>WidgetSessions</class>
    <extends>QWidget</extends>
    <header location="global">widgetsessions.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WidgetConnections</class>
+   <extends>QWidget</extends>
+   <header location="global">widgetconnections.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

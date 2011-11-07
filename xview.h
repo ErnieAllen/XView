@@ -27,6 +27,7 @@
 #include "dialogobjects.h"
 #include "dialogexchanges.h"
 #include "widgetqmfobject.h"
+#include "fisheyelayout.h"
 
 namespace Ui {
     class XView;
@@ -54,7 +55,8 @@ private:
     DialogExchanges* exchangesDialog;
     DialogObjects*   queuesDialog;
     DialogObjects*   subscriptionsDialog;
-    DialogObjects*    sessionsDialog;
+    DialogObjects*   sessionsDialog;
+    DialogObjects*   connectionsDialog;
     QActionGroup*    actionGroup;
     QToolBar *       modeToolBar;
 
@@ -65,12 +67,15 @@ private:
     void setupStatusBar();
     void queryObjects(const std::string& qmf_class, DialogObjects* dialog);
 
+    void setMode(WidgetQmfObject::StatMode mode);
+
 private slots:
     void queryExchanges();
     void queryBindings();
     void queryQueues();
     void querySubscriptions();
     void querySessions();
+    void queryConnections();
     void dispatchResponse(QObject *target, const qmf::ConsoleEvent& event);
     void queryCurrent();
     void setMessageMode();

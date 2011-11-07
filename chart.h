@@ -50,6 +50,9 @@ protected:
     void drawXAxis(QPainter& painter, int intervals, int step, int duration);
     void drawYAxis(QPainter& painter, int intervals, int step, const MinMax& mm);
 
+    void paintRate(QPainter& painter, MinMax &mm);
+    void paintValue(QPainter& painter, MinMax &mm);
+
 private:
     Ui::chart *ui;
 

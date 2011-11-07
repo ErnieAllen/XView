@@ -36,7 +36,8 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     ui(new Ui::WidgetQmfObject),
     redIcon(":/images/legend-red.png"),
     greenIcon(":/images/legend-green.png"),
-    blueIcon(":/images/legend-blue.png")
+    blueIcon(":/images/legend-blue.png"),
+    drawAsRect(false)
 {
     ui->setupUi(this);
 
@@ -79,6 +80,10 @@ void WidgetQmfObject::setRelatedText(const std::string& name)
     ui->labelRelated->setText(QString(name.c_str()));
 }
 
+void WidgetQmfObject::setDrawAsRect(bool b)
+{
+    drawAsRect = b;
+}
 
 void WidgetQmfObject::setRelatedModel(ObjectListModel *model, QWidget *parent)
 {
@@ -159,6 +164,7 @@ void WidgetQmfObject::focusInEvent ( QFocusEvent * )
     //setCurrent(true);
     //emit madeCurrent(objectName());
     update();
+    updateGeometry();
 }
 
 void WidgetQmfObject::paintEvent(QPaintEvent *)
@@ -174,6 +180,15 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
     };
 
     painter.save();
+
+    if (drawAsRect) {
+        painter.fillRect(0, 0, width(), height(), Qt::white);
+
+        QPen border(Qt::black);
+        painter.setPen(border);
+        painter.drawRect(0, 0, width(), height());
+    }
+
     QPen currentPen(Qt::white);
     QColor currentColor(Qt::white);
     currentPen.setWidth(2);
@@ -182,7 +197,7 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
 
     painter.setBrush(currentBrush);
     painter.setPen(currentPen);
-    painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
+    //painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
     painter.restore();
 
     // if this section has the focus,
