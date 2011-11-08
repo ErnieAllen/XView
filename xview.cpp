@@ -58,6 +58,8 @@ XView::XView(QWidget *parent) :
     fisheyeLayout->addWidget(ui->widgetConnections);;
     connect(ui->actionCascadingLayout, SIGNAL(toggled(bool)), fisheyeLayout, SLOT(setCascade(bool)));
 
+    fisheyeLayout->setCascade(ui->actionCascadingLayout->isChecked());
+
     // connect the charts menu item to show/hide the charts
     ui->widgetExchanges->showChart(ui->actionCharts->isChecked());
     ui->widgetBindings->showChart(ui->actionCharts->isChecked());
@@ -79,6 +81,13 @@ XView::XView(QWidget *parent) :
     connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetSubscriptions, SLOT(setDrawAsRect(bool)));
     connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetSessions, SLOT(setDrawAsRect(bool)));
     connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetConnections, SLOT(setDrawAsRect(bool)));
+
+    ui->widgetExchanges->setDrawAsRect(ui->actionCascadingLayout->isChecked());
+    ui->widgetBindings->setDrawAsRect(ui->actionCascadingLayout->isChecked());
+    ui->widgetQueues->setDrawAsRect(ui->actionCascadingLayout->isChecked());
+    ui->widgetSubscriptions->setDrawAsRect(ui->actionCascadingLayout->isChecked());
+    ui->widgetSessions->setDrawAsRect(ui->actionCascadingLayout->isChecked());
+    ui->widgetConnections->setDrawAsRect(ui->actionCascadingLayout->isChecked());
 
     connect(ui->actionExchanges,     SIGNAL(triggered()), ui->widgetExchanges, SLOT(setFocus()));
     connect(ui->actionBindings,      SIGNAL(triggered()), ui->widgetBindings, SLOT(setFocus()));
