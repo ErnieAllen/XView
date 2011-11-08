@@ -98,7 +98,7 @@ protected:
 
     int reservedY(); // amount reserved at top of widget for button and label
     int mid_paint(); // use this as a common mid point for painting
-    virtual QString unique_property(); // allow derived classes to override object name
+    virtual QString unique_property(bool useKey=false); // allow derived classes to override object name
     void setRelatedText(const std::string&);
 
     // the columns that are to be displayed in the summary box
@@ -123,7 +123,6 @@ protected:
     QColor backgroundColor;
     StatMode currentMode;
     QAction *action;
-    std::string unique; // object property used for the bold section name
 
 signals:
     void needData();

@@ -36,7 +36,6 @@ WidgetConnections::WidgetConnections(QWidget *parent) :
     summaryColumns.append(Column("bytesToClient", "To client / sec", Qt::AlignRight, "N", modeByteRate, true));
     summaryColumns.append(Column("bytesFromClient", "From client / sec", Qt::AlignRight, "N", modeByteRate, true, QColor(Qt::green)));
 
-    unique = "remoteProcessName";
     setRelatedText("Related Connections");
 }
 

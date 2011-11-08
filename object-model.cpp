@@ -110,9 +110,20 @@ int ObjectListModel::rowCount(const QModelIndex &parent) const
 }
 
 
-void ObjectListModel::setKey(const QString &altKey)
+void ObjectListModel::setKey(const std::string &altKey)
 {
     dataKey = altKey;
+}
+
+const std::string &ObjectListModel::unique(bool useKey)
+{
+    if (useKey) {
+        if (dataKey != "") {
+            return dataKey;
+        }
+    }
+
+    return uniqueProperty;
 }
 
 QVariant ObjectListModel::data(const QModelIndex &index, int role) const
@@ -133,7 +144,7 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
     const qpid::types::Variant::Map& props(object.getProperties());
     qpid::types::Variant::Map::const_iterator iter;
 
-    iter = props.find(dataKey.toStdString());
+    iter = props.find(dataKey);
     if (iter == props.end()) {
         iter = props.find(uniqueProperty);
     }

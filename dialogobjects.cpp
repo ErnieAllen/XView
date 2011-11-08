@@ -49,7 +49,7 @@ void DialogObjects::initModels(std::string unique)
 void DialogObjects::setKey(const QString &altKey)
 {
     if (objectModel)
-        objectModel->setKey(altKey);
+        objectModel->setKey(altKey.toStdString());
 }
 
 void DialogObjects::initConnections()

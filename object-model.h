@@ -45,7 +45,8 @@ public:
     void setSampleProperties(const QStringList& list);
     void setDuration(int duration) { sampleLife = duration; }
     void clearSamples();
-    void setKey(const QString &altKey);
+    void setKey(const std::string &altKey);
+    const std::string &unique(bool useKey);
 
     // list of values for an individual object
     typedef QLinkedList<Sample> SampleList;
@@ -77,15 +78,14 @@ protected:
     // This is the list of Queues or Exchanges or whatever the object happens to be.
     typedef QList<qmf::Data> DataList;
     DataList    dataList;
-    QString     dataKey; // field name used in list if "uniqueProperty" is absent
 
+    std::string dataKey; // field name used in list if "uniqueProperty" is absent
     std::string uniqueProperty;
+
     int sampleLife;
     void addSample(const qmf::Data& object, const qpid::types::Variant& name);
 
 private:
-    // TODO: move the samples data into it's own class
-
     // historical data for rates and charting
     Samples samplesData;
 

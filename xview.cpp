@@ -253,7 +253,7 @@ XView::XView(QWidget *parent) :
 
     connectionsDialog = new DialogObjects(this, "connections");
     connectionsDialog->initModels("address");
-    connectionsDialog->setKey("remoteProcessName");
+    connectionsDialog->setKey("remoteProcessName"); // use this field in the object list
     connectionsDialog->listModel()->setSampleProperties(ui->widgetConnections->getSampleProperties());
     ui->widgetConnections->setRelatedModel(connectionsDialog->listModel(), this);
     connect(connectionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),

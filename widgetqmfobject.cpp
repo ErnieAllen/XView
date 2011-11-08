@@ -56,10 +56,6 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     shadow->setOffset(4);
     ui->tableWidget->setGraphicsEffect(shadow);
 
-    // default to using the name property of the object
-    // to display as the section name
-    unique = "name";
-
     setFocusPolicy(Qt::StrongFocus);
     ui->comboBox->hide();
     ui->labelRelated->hide();
@@ -339,16 +335,29 @@ bool WidgetQmfObject::current()
     return _current;
 }
 
-QString WidgetQmfObject::unique_property()
+QString WidgetQmfObject::unique_property(bool useKey)
 {
     QString prop;
     if (data.isValid()) {
         const qpid::types::Variant::Map& props(data.getProperties());
         qpid::types::Variant::Map::const_iterator iter;
 
+        ObjectListModel *model = (ObjectListModel *)related->sourceModel();
+
+        const std::string &unique(model->unique(useKey));
         iter = props.find(unique);
         if (iter != props.end()) {
             prop = QString(iter->second.asString().c_str());
+        } else {
+            if (useKey) {
+            // the models key field doesn't exist in this record
+            // use the guarenteed unique field instead
+                const std::string &key(model->unique(false));
+                iter = props.find(key);
+                if (iter != props.end()) {
+                    prop = QString(iter->second.asString().c_str());
+                }
+            }
         }
     }
     return prop;
@@ -356,7 +365,7 @@ QString WidgetQmfObject::unique_property()
 
 void WidgetQmfObject::setLabelName()
 {
-    QString full_text = unique_property();
+    QString full_text = unique_property(true);
     QFontMetrics label_fm(ui->labelName->font());
     QString elided_text = label_fm.elidedText(full_text, Qt::ElideRight, ui->labelName->width());
     ui->labelName->setText(elided_text);
@@ -738,7 +747,7 @@ void WidgetQmfObject::showChart(bool b)
     QApplication::sendEvent(this, &event);
 }
 
-void WidgetQmfObject::showChart(const qmf::Data& object, ObjectListModel *model)
+void WidgetQmfObject::showChart(const qmf::Data&, ObjectListModel *model)
 {
     //
     // show the chart for this object
