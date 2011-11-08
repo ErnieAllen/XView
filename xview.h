@@ -82,6 +82,7 @@ private slots:
     void setByteMode();
     void setMessageRateMode();
     void setByteRateMode();
+    void forceLayout();
 
 };
 

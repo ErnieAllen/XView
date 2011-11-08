@@ -91,13 +91,16 @@ void FisheyeLayout::setTiledGeometry(const QRect &r)
     int i = 0;
     while (i < list.size()) {
         QRect geom(w * i, 0, w, r.height());
-        list.at(i)->setGeometry(geom);
+
+        startGeometryAnimation(list.at(i), geom);
+        //list.at(i)->setGeometry(geom);
         ++i;
     }
 }
 
 void FisheyeLayout::setGeometry(const QRect &r)
 {
+    qDebug("setGeometry: x:%i, y:%i, w:%i, h:%i", r.x(), r.y(), r.width(), r.height());
     QLayout::setGeometry(r);
 
     if (list.size() == 0)
@@ -140,13 +143,31 @@ void FisheyeLayout::setGeometry(const QRect &r)
             geom.setWidth(r.width() * 0.9);
             geom.setHeight(r.height() - diff * yGap * 2);
 
-            o->setGeometry(geom);
+            startGeometryAnimation(o, geom);
+            //o->setGeometry(geom);
             ++i;
         }
     } else {
         list.at(0)->setGeometry(QRect(0, 0, r.width(), r.height()));
     }
 }
+
+void FisheyeLayout::startGeometryAnimation(QLayoutItem *o, const QRect& geom)
+{
+    QPropertyAnimation *animation;
+    if (!animationHash.contains(o)) {
+        animation = new QPropertyAnimation(o->widget(), "geometry");
+        animationHash[o] = animation;
+    } else {
+        animation = animationHash[o];
+    }
+    animation->setDuration(50);
+    animation->setStartValue(o->widget()->geometry());
+    animation->setEndValue(geom);
+
+    animation->start();
+}
+
 
 int FisheyeLayout::getFocusedItem()
 {
@@ -163,7 +184,9 @@ int FisheyeLayout::getFocusedItem()
 FisheyeLayout::~FisheyeLayout()
 {
      QLayoutItem *item;
-     while ((item = takeAt(0)))
+     while ((item = takeAt(0))) {
+         if (animationHash.contains(item))
+             delete animationHash[item];
          delete item;
+    }
 }
-

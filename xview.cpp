@@ -57,6 +57,7 @@ XView::XView(QWidget *parent) :
     fisheyeLayout->addWidget(ui->widgetSessions);
     fisheyeLayout->addWidget(ui->widgetConnections);;
     connect(ui->actionCascadingLayout, SIGNAL(toggled(bool)), fisheyeLayout, SLOT(setCascade(bool)));
+    connect(ui->actionCascadingLayout, SIGNAL(changed()), this, SLOT(forceLayout()));
 
     fisheyeLayout->setCascade(ui->actionCascadingLayout->isChecked());
 
@@ -293,6 +294,11 @@ XView::XView(QWidget *parent) :
     connect(qmf, SIGNAL(isConnected(bool)), subscriptionsDialog,         SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), sessionsDialog,              SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), connectionsDialog,           SLOT(connectionChanged(bool)));
+}
+
+void XView::forceLayout()
+{
+    ui->centralWidget->layout()->update();
 }
 
 // Display the connection status in the status bar

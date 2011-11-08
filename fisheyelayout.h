@@ -44,9 +44,12 @@ public slots:
 protected:
     int getFocusedItem();
     void setTiledGeometry(const QRect &r);
+    void startGeometryAnimation(QLayoutItem *o, const QRect& geom);
+
 
 private:
     QList<QLayoutItem*> list;
+    QHash<QLayoutItem*, QPropertyAnimation*> animationHash;
     bool tiled;
 
 };
