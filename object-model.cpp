@@ -110,6 +110,11 @@ int ObjectListModel::rowCount(const QModelIndex &parent) const
 }
 
 
+void ObjectListModel::setKey(const QString &altKey)
+{
+    dataKey = altKey;
+}
+
 QVariant ObjectListModel::data(const QModelIndex &index, int role) const
 {
 
@@ -124,10 +129,19 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     const qmf::Data& object= dataList.at(index.row());
-    const qpid::types::Variant& name = object.getProperty(uniqueProperty);
 
-    QString n = QString(name.asString().c_str());
-    return n;
+    const qpid::types::Variant::Map& props(object.getProperties());
+    qpid::types::Variant::Map::const_iterator iter;
+
+    iter = props.find(dataKey.toStdString());
+    if (iter == props.end()) {
+        iter = props.find(uniqueProperty);
+    }
+
+    if (iter != props.end())
+        return QString((*iter).second.asString().c_str());
+
+    return QString();
 }
 
 std::string ObjectListModel::fieldValue(int row, const std::string& field)

@@ -43,6 +43,7 @@ public:
     QEvent::Type eventType;
 
     void initModels(std::string unique);
+    void setKey(const QString &altKey);
     ObjectListModel *listModel() { return objectModel; }
 
     void gotDataEvent(const qmf::ConsoleEvent& event);

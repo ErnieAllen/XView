@@ -252,7 +252,8 @@ XView::XView(QWidget *parent) :
     connect(sessionsDialog, SIGNAL(finalAdded()), ui->widgetSessions, SLOT(initRelated()));
 
     connectionsDialog = new DialogObjects(this, "connections");
-    connectionsDialog->initModels("remoteProcessName");
+    connectionsDialog->initModels("address");
+    connectionsDialog->setKey("remoteProcessName");
     connectionsDialog->listModel()->setSampleProperties(ui->widgetConnections->getSampleProperties());
     ui->widgetConnections->setRelatedModel(connectionsDialog->listModel(), this);
     connect(connectionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),

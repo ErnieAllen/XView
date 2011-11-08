@@ -22,6 +22,7 @@
 
 DialogObjects::DialogObjects(QWidget *parent, const std::string& name) :
     QDialog(parent),
+    objectModel(0),
     ui(new Ui::DialogObjects)
 {
     ui->setupUi(this);
@@ -43,6 +44,12 @@ void DialogObjects::initModels(std::string unique)
     objectDetailsModel = new ObjectDetailsModel(this);
 
     initConnections();
+}
+
+void DialogObjects::setKey(const QString &altKey)
+{
+    if (objectModel)
+        objectModel->setKey(altKey);
 }
 
 void DialogObjects::initConnections()

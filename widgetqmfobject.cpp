@@ -379,22 +379,6 @@ void WidgetQmfObject::reset()
     ui->widgetChart->clear();
 }
 
-void WidgetQmfObject::leftBuddyChanged(bool b)
-{
-    if (b) {
-        ui->commandLinkButtonPrev->hide();
-    } else if (leftBuddy)
-        ui->commandLinkButtonPrev->show();
-}
-
-void WidgetQmfObject::rightBuddyChanged(bool b)
-{
-    if (b) {
-        ui->commandLinkButtonNext->hide();
-    } else if (rightBuddy)
-        ui->commandLinkButtonNext->show();
-}
-
 void WidgetQmfObject::setCurrentMode(StatMode mode)
 {
     currentMode = mode;
@@ -521,7 +505,7 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
                 ui->tableWidget->setItem(row, col++, newItem);
             }
 
-            newItem = new QTableWidgetItem(value(iter, props.find(unique)));
+            newItem = new QTableWidgetItem(value(iter, unique_property()));
             newItem->setBackgroundColor(colors[currentMode]);
             newItem->setTextAlignment((*column_iter).alignment);
             maxValWidth = qMax(maxValWidth, fm.width(newItem->text()));
@@ -550,7 +534,7 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
 }
 
 // Generate the value to display in the tableWidget
-QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& iter, const qpid::types::Variant::Map::const_iterator& uname)
+QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname)
 {
     // if we aren't showing a rate, return the value directly
     if ((currentMode == this->modeMessages) || (currentMode == this->modeBytes))
@@ -561,8 +545,7 @@ QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& 
     ObjectListModel::Samples samples = pModel->samples();
 
     // get the sample's hash entry for this object
-    QString name(uname->second.asString().c_str());
-    ObjectListModel::const_iterSamples iterSamples = samples.constFind(name);
+    ObjectListModel::const_iterSamples iterSamples = samples.constFind(uname);
     if (iterSamples != samples.constEnd()) {
         // get the list of samples
         ObjectListModel::SampleList sampleList = iterSamples.value();
@@ -628,11 +611,6 @@ void WidgetQmfObject::initRelatedButtons()
         ui->commandLinkButtonNext->hide();
 }
 
-void WidgetQmfObject::clearRelated(ArrowDirection a)
-{
-    setArrow(a);
-}
-
 void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget_type, ArrowDirection a)
 {
     const qpid::types::Variant::Map& attrs(object.getProperties());
@@ -689,7 +667,6 @@ void WidgetQmfObject::initRelated()
 void WidgetQmfObject::relatedIndexChanged(int i)
 {
     update();
-qDebug("relatedIndexChanged %i", i);
 
     if (i < 0) {
         // the combobox is empty, there is no related object
@@ -777,14 +754,14 @@ void WidgetQmfObject::showChart(const qmf::Data& object, ObjectListModel *model)
         }
         ++column_iter;
     }
-    const qpid::types::Variant::Map& props(object.getProperties());
-    QString name(props.find(unique)->second.asString().c_str());
 
     bool isRate = true;
     if (currentMode == modeMessages || currentMode == modeBytes)
         isRate = false;
 
     ui->widgetChart->show();
+
+    QString name = unique_property();
     ui->widgetChart->updateChart(isRate, model, name, chartColumns, duration);
 
 }

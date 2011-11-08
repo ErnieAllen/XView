@@ -45,6 +45,7 @@ public:
     void setSampleProperties(const QStringList& list);
     void setDuration(int duration) { sampleLife = duration; }
     void clearSamples();
+    void setKey(const QString &altKey);
 
     // list of values for an individual object
     typedef QLinkedList<Sample> SampleList;
@@ -76,6 +77,7 @@ protected:
     // This is the list of Queues or Exchanges or whatever the object happens to be.
     typedef QList<qmf::Data> DataList;
     DataList    dataList;
+    QString     dataKey; // field name used in list if "uniqueProperty" is absent
 
     std::string uniqueProperty;
     int sampleLife;

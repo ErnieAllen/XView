@@ -89,3 +89,22 @@ void WidgetConnections::showRelated(const qmf::Data& object, const QString &, Ar
     emit needData();
 
 }
+
+QString WidgetConnections::unique_property()
+{
+    QString prop = WidgetQmfObject::unique_property();
+    // if the remoteProcessName is absent (it is optional after all)
+    // then use the address as the object's "name"
+    if (prop.isEmpty()) {
+        if (data.isValid()) {
+            const qpid::types::Variant::Map& props(data.getProperties());
+            qpid::types::Variant::Map::const_iterator iter;
+
+            iter = props.find("address");
+            if (iter != props.end()) {
+                prop = QString(iter->second.asString().c_str());
+            }
+        }
+    }
+    return prop;
+}

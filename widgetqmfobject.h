@@ -85,10 +85,7 @@ public slots:
     void setEnabled(bool enabled);
     void initRelated();
     void showChart(bool b);
-    void rightBuddyChanged(bool b);
-    void leftBuddyChanged(bool b);
     void setDrawAsRect(bool b);
-
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -119,7 +116,6 @@ protected:
     };
     typedef QList<Column> ObjectColumnList;
     ObjectColumnList summaryColumns;
-    std::string unique; // object property used for the bold section name
 
     qmf::Data data;
     RelatedFilterProxyModel *related;
@@ -127,6 +123,7 @@ protected:
     QColor backgroundColor;
     StatMode currentMode;
     QAction *action;
+    std::string unique; // object property used for the bold section name
 
 signals:
     void needData();
@@ -138,9 +135,8 @@ private:
     void setLabelName();
     void fillTableWidget(const qmf::Data& object);
     void resetOthers();
-    void clearRelated(ArrowDirection a);
 
-    QString value(const qpid::types::Variant::Map::const_iterator& iter, const qpid::types::Variant::Map::const_iterator& uname);
+    QString value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname);
 
     bool _current; // draw with highlighted background
     bool chart;     // should we show the chart
