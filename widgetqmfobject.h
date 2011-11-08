@@ -138,6 +138,8 @@ private:
     void setLabelName();
     void fillTableWidget(const qmf::Data& object);
     void resetOthers();
+    void clearRelated(ArrowDirection a);
+
     QString value(const qpid::types::Variant::Map::const_iterator& iter, const qpid::types::Variant::Map::const_iterator& uname);
 
     bool _current; // draw with highlighted background

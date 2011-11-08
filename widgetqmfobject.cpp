@@ -187,17 +187,18 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
         QPen border(Qt::black);
         painter.setPen(border);
         painter.drawRect(0, 0, width(), height());
+    } else {
+        QPen currentPen(Qt::white);
+        QColor currentColor(Qt::white);
+        currentPen.setWidth(2);
+
+        QBrush currentBrush(currentColor);
+
+        painter.setBrush(currentBrush);
+        painter.setPen(currentPen);
+        painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
     }
 
-    QPen currentPen(Qt::white);
-    QColor currentColor(Qt::white);
-    currentPen.setWidth(2);
-
-    QBrush currentBrush(currentColor);
-
-    painter.setBrush(currentBrush);
-    painter.setPen(currentPen);
-    //painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
     painter.restore();
 
     // if this section has the focus,
@@ -627,6 +628,11 @@ void WidgetQmfObject::initRelatedButtons()
         ui->commandLinkButtonNext->hide();
 }
 
+void WidgetQmfObject::clearRelated(ArrowDirection a)
+{
+    setArrow(a);
+}
+
 void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget_type, ArrowDirection a)
 {
     const qpid::types::Variant::Map& attrs(object.getProperties());
@@ -683,12 +689,23 @@ void WidgetQmfObject::initRelated()
 void WidgetQmfObject::relatedIndexChanged(int i)
 {
     update();
+qDebug("relatedIndexChanged %i", i);
 
     if (i < 0) {
         // the combobox is empty, there is no related object
         ui->labelIndex->setText(QString("No %1").arg(ui->labelRelated->text().toLower()));
+        ui->widgetChart->clear();
+        ui->widgetChart->hide();
         ui->comboBox->hide();
         ui->tableWidget->hide();
+
+        // cascade the related object
+        if (_arrow == arrowLeft)
+            if (leftBuddy)
+                leftBuddy->relatedIndexChanged(-1);
+        if (_arrow == arrowRight)
+            if (rightBuddy)
+               rightBuddy->relatedIndexChanged(-1);
         return;
     }
     int rows = ui->comboBox->model()->rowCount();
@@ -766,6 +783,8 @@ void WidgetQmfObject::showChart(const qmf::Data& object, ObjectListModel *model)
     bool isRate = true;
     if (currentMode == modeMessages || currentMode == modeBytes)
         isRate = false;
+
+    ui->widgetChart->show();
     ui->widgetChart->updateChart(isRate, model, name, chartColumns, duration);
 
 }
