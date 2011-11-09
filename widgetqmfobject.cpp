@@ -551,26 +551,35 @@ void WidgetQmfObject::setAction(QAction *myAction)
     action = myAction;
 }
 
+void WidgetQmfObject::showRelatedButtons(bool show)
+{
+    if (this->leftBuddy) {
+        if (show)
+            ui->commandLinkButtonPrev->show();
+        else
+            ui->commandLinkButtonPrev->hide();
+    }
+    if (this->rightBuddy) {
+        if (show)
+            ui->commandLinkButtonNext->show();
+        else
+            ui->commandLinkButtonNext->hide();
+        rightBuddy->showRelatedButtons(show);
+    }
+}
+
 void WidgetQmfObject::initRelatedButtons()
 {
     if (this->leftBuddy) {
         ui->commandLinkButtonPrev->setToolTip(QString("Show %1").arg(leftBuddy->sectionName().toLower()));
-        connect(ui->commandLinkButtonPrev, SIGNAL(clicked()), this->leftBuddy->getAction(), SLOT(toggle()));
-        if (leftBuddy->getAction()->isChecked())
-            ui->commandLinkButtonPrev->hide();
-        else
-            ui->commandLinkButtonPrev->show();
+        connect(ui->commandLinkButtonPrev, SIGNAL(clicked()), this->leftBuddy, SLOT(setFocus()));
     }
     else
         ui->commandLinkButtonPrev->hide();
 
     if (this->rightBuddy) {
         ui->commandLinkButtonNext->setToolTip(QString("Show %1").arg(rightBuddy->sectionName().toLower()));
-        connect(ui->commandLinkButtonNext, SIGNAL(clicked()), this->rightBuddy->getAction(), SLOT(toggle()));
-        if (rightBuddy->getAction()->isChecked())
-            ui->commandLinkButtonNext->hide();
-        else
-            ui->commandLinkButtonNext->show();
+        connect(ui->commandLinkButtonNext, SIGNAL(clicked()), this->rightBuddy, SLOT(setFocus()));
     }
     else
         ui->commandLinkButtonNext->hide();

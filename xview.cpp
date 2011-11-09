@@ -57,6 +57,7 @@ XView::XView(QWidget *parent) :
     fisheyeLayout->addWidget(ui->widgetSessions);
     fisheyeLayout->addWidget(ui->widgetConnections);;
     connect(ui->actionCascadingLayout, SIGNAL(toggled(bool)), fisheyeLayout, SLOT(setCascade(bool)));
+    connect(ui->actionCascadingLayout, SIGNAL(toggled(bool)), ui->widgetExchanges, SLOT(showRelatedButtons(bool)));
     connect(ui->actionCascadingLayout, SIGNAL(changed()), this, SLOT(forceLayout()));
 
     fisheyeLayout->setCascade(ui->actionCascadingLayout->isChecked());

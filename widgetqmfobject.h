@@ -86,6 +86,7 @@ public slots:
     void initRelated();
     void showChart(bool b);
     void setDrawAsRect(bool b);
+    void showRelatedButtons(bool);
 
 protected:
     void paintEvent(QPaintEvent *event);
