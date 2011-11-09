@@ -45,32 +45,45 @@ WidgetConnections::~WidgetConnections()
 
 void WidgetConnections::paintEvent(QPaintEvent *e)
 {
-    QPointF points[6] = {
-        QPointF(0.0, 0.0),
-        QPointF(10.0, -10.0),
-        QPointF(width()-10.0, -10.0),
-        QPointF(width()-2, 0.0),
-        QPointF(width()-10.0, 10.0),
-        QPointF(10.0, 10.0)
+    // points that define an arrow
+    static const QPoint monitorPoints[] = {
+        QPoint(4,  -10),
+        QPoint(26, -10),
+        QPoint(26,  10),
+        QPoint(4,   10)
+    };
+    static const QPoint keyPoints[] = {
+        QPoint(4,  -6),
+        QPoint(26, -6),
+        QPoint(30,  6),
+        QPoint(0,   6)
     };
 
     WidgetQmfObject::paintEvent(e);
 
+    QColor color(200, 200, 200);
+    QPen pen(color);
+    pen.setWidth(2);
+    QBrush brush(Qt::white);
+
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-
-    QColor subColor(backgroundColor);
-    QPen   subPen(subColor);
-    subPen.setWidth(2);
-    QBrush subBrush(Qt::white);
+    painter.setPen(pen);
+    painter.setBrush(brush);
 
     int mid = mid_paint();
-    painter.translate(1, mid + 6);
 
-    painter.setPen(subPen);
-    painter.setBrush(subBrush);
+    painter.drawRect(0, mid, width(), 10);
 
-    painter.drawPolygon(points, 6);
+    painter.save();
+
+    painter.translate(width() / 2 - 15, mid);
+    painter.drawPolygon(monitorPoints,  sizeof( monitorPoints ) / sizeof( monitorPoints[0] ));
+
+    painter.translate(0, 10);
+    painter.drawPolygon(keyPoints,  sizeof( keyPoints ) / sizeof( keyPoints[0] ));
+
+    painter.restore();
 }
 
 void WidgetConnections::showRelated(const qmf::Data& object, const QString &, ArrowDirection a)

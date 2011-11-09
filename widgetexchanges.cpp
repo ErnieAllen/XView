@@ -83,7 +83,7 @@ void WidgetExchanges::paintEvent(QPaintEvent *e)
     painter.drawRect(0, mid, width(), 10);
 
     painter.save();
-    painter.translate(width() / 2, mid + 6);
+    painter.translate(width() / 2, mid + 5);
     painter.rotate(45);
     painter.scale(0.5, 0.5);
     for (int i=0; i<4; i++) {

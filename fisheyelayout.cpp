@@ -100,7 +100,6 @@ void FisheyeLayout::setTiledGeometry(const QRect &r)
 
 void FisheyeLayout::setGeometry(const QRect &r)
 {
-    qDebug("setGeometry: x:%i, y:%i, w:%i, h:%i", r.x(), r.y(), r.width(), r.height());
     QLayout::setGeometry(r);
 
     if (list.size() == 0)
@@ -110,6 +109,8 @@ void FisheyeLayout::setGeometry(const QRect &r)
         return setTiledGeometry(r);
 
     int focusedItem = getFocusedItem();
+    if (focusedItem < 0)
+        return;
 
     //
     // Setup the corrent z-order
@@ -161,9 +162,10 @@ void FisheyeLayout::startGeometryAnimation(QLayoutItem *o, const QRect& geom)
     } else {
         animation = animationHash[o];
     }
-    animation->setDuration(50);
+    animation->setDuration(500);
     animation->setStartValue(o->widget()->geometry());
     animation->setEndValue(geom);
+    animation->setEasingCurve(QEasingCurve::OutBack);
 
     animation->start();
 }
@@ -178,7 +180,7 @@ int FisheyeLayout::getFocusedItem()
             return i;
         ++i;
     }
-    return 0;
+    return -1;
 }
 
 FisheyeLayout::~FisheyeLayout()

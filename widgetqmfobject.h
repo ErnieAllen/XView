@@ -137,7 +137,7 @@ private:
 
     QString value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname);
 
-    bool _current; // draw with highlighted background
+    bool _current; // this section is the primary one, others show related objects to this one
     bool chart;     // should we show the chart
     ArrowDirection _arrow;   // direction to draw a background arrow 0->none 1->left 2->right
     Ui::WidgetQmfObject *ui;

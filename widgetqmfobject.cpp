@@ -197,50 +197,6 @@ void WidgetQmfObject::paintEvent(QPaintEvent *)
 
     painter.restore();
 
-    // if this section has the focus,
-    // draw with a light background
-    if (this->hasFocus()) {
-        if (_current)
-            ui->pushButton->setFocus();
-        else
-            ui->comboBox->setFocus();
-
-/*
-        painter.save();
-
-        QPen currentPen(QColor(230, 230, 255));
-        currentPen.setWidth(6);
-        currentPen.setStyle(Qt::DotLine);
-        painter.setPen(currentPen);
-        painter.drawRect(1, reservedY() + 1, width()-2, height()-2 - reservedY());
-        painter.restore();
-*/
-    }
-
-    // if this section has a current object
-    // draw background with a diagonal lines
-    // and a heavy border
-/*
-    if (this->_current) {
-        painter.save();
-
-        QColor backColor(200, 200, 255);
-        int border_width = 10;
-        QPen currentPen(backColor);
-        currentPen.setWidth(border_width);
-
-        painter.setPen(currentPen);
-        int x = border_width / 2;
-        int y = border_width / 2 + reservedY();
-        int w = width() - border_width;
-        int h = height() / 2 - border_width - reservedY();
-        painter.drawRect(x, y, w, h);
-
-        QBrush currentBrush(backColor, Qt::FDiagPattern);
-        painter.fillRect(x, y, w, h, currentBrush);
-        painter.restore();
-    }
-*/
     // if this section is showing related objects
     // draw with the appropriate arrow
     if ((this->_arrow == arrowLeft) || (this->_arrow == arrowRight)) {
@@ -410,7 +366,7 @@ void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
     reset();
     resetOthers();
     setFocus();
-    this->setCurrent(true);
+    setCurrent(true);
     showData(object);
 
 }
