@@ -58,7 +58,9 @@ private:
     DialogObjects*   sessionsDialog;
     DialogObjects*   connectionsDialog;
     QActionGroup*    actionGroup;
-    QToolBar *       modeToolBar;
+    QActionGroup*    layoutGroup;
+    QActionGroup*    updateGroup;
+    QToolBar*        modeToolBar;
 
     QmfThread* qmf;
     QLabel *label_connection_prompt;
@@ -76,13 +78,21 @@ private slots:
     void querySubscriptions();
     void querySessions();
     void queryConnections();
-    void dispatchResponse(QObject *target, const qmf::ConsoleEvent& event);
+    void updateExchange();
+    void updateBinding();
+    void updateQueue();
+    void updateSubscription();
+    void updateSession();
+    void updateConnection();
+
+    void dispatchResponse(QObject *target, const qmf::ConsoleEvent& event, bool all);
     void queryCurrent();
     void setMessageMode();
     void setByteMode();
     void setMessageRateMode();
     void setByteRateMode();
-    void forceLayout();
+    void toggleLayout();
+    void toggleUpdate();
 
 };
 

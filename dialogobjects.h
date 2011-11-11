@@ -46,7 +46,7 @@ public:
     void setKey(const QString &altKey);
     ObjectListModel *listModel() { return objectModel; }
 
-    void gotDataEvent(const qmf::ConsoleEvent& event);
+    void gotDataEvent(const qmf::ConsoleEvent& event, bool all);
 public slots:
     void connectionChanged(bool isConnected);
     void accept();

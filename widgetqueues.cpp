@@ -95,9 +95,14 @@ void WidgetQueues::paintEvent(QPaintEvent *e)
 
 void WidgetQueues::showRelated(const qmf::Data& object, const QString &, ArrowDirection a)
 {
+    if (!updateAll)
+        if (this->hasData() && (arrow() != arrowNone)) {
+            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            emit needUpdate();
+            return;
+        }
 
     setArrow(a);
-
     // for queues, we could be asked to show records related to a binding
     // or a subscription
 
@@ -107,6 +112,7 @@ void WidgetQueues::showRelated(const qmf::Data& object, const QString &, ArrowDi
 
     related->setRelatedData("name", queue.toStdString());
     related->clearFilter();
+    qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
     emit needData();
 
 }

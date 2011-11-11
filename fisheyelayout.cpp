@@ -18,6 +18,7 @@
  */
 
 #include "fisheyelayout.h"
+#include "widgetqmfobject.h"
 
 FisheyeLayout::FisheyeLayout(QWidget *parent, bool tile) :
         QLayout(parent), tiled(tile)
@@ -87,6 +88,8 @@ void FisheyeLayout::setTiledGeometry(const QRect &r)
     if (list.size() == 0)
         return;
 
+    setToolTips(0, false);
+
     int w = r.width() / list.size();
     int i = 0;
     while (i < list.size()) {
@@ -110,7 +113,10 @@ void FisheyeLayout::setGeometry(const QRect &r)
 
     int focusedItem = getFocusedItem();
     if (focusedItem < 0)
+        focusedItem = getCurrentItem();
+    if (focusedItem == -1)
         return;
+    setToolTips(focusedItem, true);
 
     //
     // Setup the corrent z-order
@@ -181,6 +187,35 @@ int FisheyeLayout::getFocusedItem()
         ++i;
     }
     return -1;
+}
+
+int FisheyeLayout::getCurrentItem()
+{
+    int i = 0;
+    while (i < list.size()) {
+        WidgetQmfObject *w = (WidgetQmfObject *)(list.at(i)->widget());
+        if (w->current())
+            return i;
+        ++i;
+    }
+    return -1;
+}
+
+void FisheyeLayout::setToolTips(int current, bool set)
+{
+    int i = 0;
+    while (i < list.size()) {
+        WidgetQmfObject *w = (WidgetQmfObject *)(list.at(i)->widget());
+        if (set) {
+            if (i == current)
+                w->setToolTip("");
+            else
+                w->setToolTip(w->sectionName());
+        } else {
+            w->setToolTip("");
+        }
+        ++i;
+    }
 }
 
 FisheyeLayout::~FisheyeLayout()

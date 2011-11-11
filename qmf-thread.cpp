@@ -198,8 +198,7 @@ void QmfThread::run()
 // with the args used to make the call and an object that
 // will be notified when the call completes.
 void QmfThread::queryBroker(const std::string& qmf_class,
-                            QObject* object,
-                            QEvent::Type event_type)
+                            QObject* object)
 {
     // don't try to send a query if we are connecting or disconnecting
     if ((command_queue.size() > 0) || (!connected) || (disconnecting))
@@ -207,12 +206,29 @@ void QmfThread::queryBroker(const std::string& qmf_class,
 
     QMutexLocker locker(&lock);
 
-    query_queue.push_back(Query(object, event_type));
+    query_queue.push_back(Query(object, true));
     qmf::Agent agent = sess.getConnectedBrokerAgent();
     query_queue.back().correlator = agent.queryAsync(
                 qmf::Query(qmf::QUERY_OBJECT, qmf_class, "org.apache.qpid.broker"));
 
     cond.wakeOne();
+}
+
+void QmfThread::queryObject(const qmf::DataAddr& dataAddr, QObject* object)
+{
+    // don't try to send a query if we are connecting or disconnecting
+    if ((command_queue.size() > 0) || (!connected) || (disconnecting))
+        return;
+
+    QMutexLocker locker(&lock);
+
+    query_queue.push_back(Query(object, false));
+    qmf::Agent agent = sess.getConnectedBrokerAgent();
+    query_queue.back().correlator = agent.queryAsync(
+                qmf::Query(dataAddr));
+
+    cond.wakeOne();
+
 }
 
 // Called when a qmf::CONSOLE_METHOD_RESPONSE type event comes in.
@@ -228,7 +244,7 @@ void QmfThread::dispatchQueryResults(qmf::ConsoleEvent& event)
                             iter != query_queue.end(); iter++) {
         const Query& qq(*iter);
         if (qq.correlator == correlator) {
-            emit receivedResponse(qq.object, event);
+            emit receivedResponse(qq.object, event, qq.all);
 
             // this was causing intermittent problems
             //QmfEvent qmfe(qq.t, event);

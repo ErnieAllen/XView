@@ -197,7 +197,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>0 of 0 related exchanges</string>
+    <string/>
    </property>
   </widget>
   <widget class="chart" name="widgetChart" native="true">

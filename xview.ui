@@ -149,11 +149,32 @@
     <addaction name="actionConnections"/>
     <addaction name="separator"/>
     <addaction name="actionCharts"/>
-    <addaction name="actionCascadingLayout"/>
+   </widget>
+   <widget class="QMenu" name="menu_Layout">
+    <property name="title">
+     <string>&amp;Layout</string>
+    </property>
+    <addaction name="action_Horizontal"/>
+    <addaction name="action_Cascading"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <widget class="QMenu" name="menu_Preferences">
+     <property name="title">
+      <string>&amp;Preferences</string>
+     </property>
+     <addaction name="actionUpdate_all"/>
+     <addaction name="actionUpdate_visible"/>
+    </widget>
+    <addaction name="menu_Preferences"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menu_Edit"/>
    <addaction name="menuMode"/>
    <addaction name="menuView"/>
+   <addaction name="menu_Layout"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionOpen_localhost">
@@ -332,6 +353,38 @@
    </property>
    <property name="text">
     <string>Cascading &amp;Layout</string>
+   </property>
+  </action>
+  <action name="action_Horizontal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Horizontal</string>
+   </property>
+  </action>
+  <action name="action_Cascading">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Cascading</string>
+   </property>
+  </action>
+  <action name="actionUpdate_all">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Update &amp;all objects</string>
+   </property>
+  </action>
+  <action name="actionUpdate_visible">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Update &amp;visible objects only</string>
    </property>
   </action>
  </widget>

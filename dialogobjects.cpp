@@ -112,7 +112,7 @@ void DialogObjects::selected(const QModelIndex &index)
 }
 // The async request to get the data has completed
 // Add the objects to the model
-void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event)
+void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event, bool all)
 {
     uint32_t pcount = event.getDataCount();
     for (uint32_t idx = 0; idx < pcount; idx++) {
@@ -120,7 +120,9 @@ void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event)
     }
     // select 1st item if none are selected
     if (event.isFinal()) {
-        objectModel->refresh(event.getCorrelator());
+        // if we just updated all objects, remove the old ones
+        if (all)
+            objectModel->refresh(event.getCorrelator());
         if (!(ui->objectListView->selectionModel()->hasSelection()))
             ui->objectListView->setCurrentIndex(objectModel->index(0, 0));
         dataRefreshed();

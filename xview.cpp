@@ -33,6 +33,7 @@ XView::XView(QWidget *parent) :
     QCoreApplication::setApplicationName("XView");
 
     ui->setupUi(this);
+    setupStatusBar();
 
     // allow qmf types to be passed in signals
     qRegisterMetaType<qmf::Data>();
@@ -45,22 +46,50 @@ XView::XView(QWidget *parent) :
     QSettings settings;
     restoreGeometry(settings.value("mainWindowGeometry").toByteArray());
     ui->actionCharts->setChecked( settings.value("mainWindowChecks/Charts", false).toBool());
-    ui->actionCascadingLayout->setChecked( settings.value("mainWindowChecks/Layout", false).toBool());
+    if (settings.value("mainWindowChecks/Layout", false).toBool())
+        ui->action_Cascading->setChecked(true);
+    else
+        ui->action_Horizontal->setChecked(true);
+
+    // restore the checkboxes for the update menu items
+    if (settings.value("mainWindowChecks/Update", true).toBool())
+        ui->actionUpdate_all->setChecked(true);
+    else
+        ui->actionUpdate_visible->setChecked(true);
+
+    // initialize the widgets to know which update strategy to use
+    ui->widgetExchanges->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetBindings->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetQueues->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetSubscriptions->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetSessions->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetConnections->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+
+    // connect the menu items to the widgets so the widgets know when the update
+    // strategy has changed
+    connect(ui->actionUpdate_all, SIGNAL(changed()), this, SLOT(toggleUpdate()));
 
     // setup the layout
     FisheyeLayout *fisheyeLayout;
-    fisheyeLayout = new FisheyeLayout(ui->centralWidget, !ui->actionCascadingLayout->isChecked());
+    fisheyeLayout = new FisheyeLayout(ui->centralWidget, ui->action_Horizontal->isChecked());
     fisheyeLayout->addWidget(ui->widgetExchanges);
     fisheyeLayout->addWidget(ui->widgetBindings);
     fisheyeLayout->addWidget(ui->widgetQueues);
     fisheyeLayout->addWidget(ui->widgetSubscriptions);
     fisheyeLayout->addWidget(ui->widgetSessions);
     fisheyeLayout->addWidget(ui->widgetConnections);;
-    connect(ui->actionCascadingLayout, SIGNAL(toggled(bool)), fisheyeLayout, SLOT(setCascade(bool)));
-    connect(ui->actionCascadingLayout, SIGNAL(toggled(bool)), ui->widgetExchanges, SLOT(showRelatedButtons(bool)));
-    connect(ui->actionCascadingLayout, SIGNAL(changed()), this, SLOT(forceLayout()));
+    fisheyeLayout->setCascade(ui->action_Cascading->isChecked());
 
-    fisheyeLayout->setCascade(ui->actionCascadingLayout->isChecked());
+    connect(ui->action_Cascading, SIGNAL(toggled(bool)), fisheyeLayout, SLOT(setCascade(bool)));
+    connect(ui->action_Cascading, SIGNAL(toggled(bool)), ui->widgetExchanges, SLOT(showRelatedButtons(bool)));
+    connect(ui->action_Horizontal, SIGNAL(changed()), this, SLOT(toggleLayout()));
+
+    ui->widgetExchanges->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetBindings->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetQueues->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetSubscriptions->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetSessions->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetConnections->setDrawAsRect(ui->action_Cascading->isChecked());
 
     // connect the charts menu item to show/hide the charts
     ui->widgetExchanges->showChart(ui->actionCharts->isChecked());
@@ -77,20 +106,6 @@ XView::XView(QWidget *parent) :
     connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetSessions, SLOT(showChart(bool)));
     connect(ui->actionCharts, SIGNAL(toggled(bool)), ui->widgetConnections, SLOT(showChart(bool)));
 
-    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetExchanges, SLOT(setDrawAsRect(bool)));
-    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetBindings, SLOT(setDrawAsRect(bool)));
-    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetQueues, SLOT(setDrawAsRect(bool)));
-    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetSubscriptions, SLOT(setDrawAsRect(bool)));
-    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetSessions, SLOT(setDrawAsRect(bool)));
-    connect(ui->actionCascadingLayout, SIGNAL(triggered(bool)), ui->widgetConnections, SLOT(setDrawAsRect(bool)));
-
-    ui->widgetExchanges->setDrawAsRect(ui->actionCascadingLayout->isChecked());
-    ui->widgetBindings->setDrawAsRect(ui->actionCascadingLayout->isChecked());
-    ui->widgetQueues->setDrawAsRect(ui->actionCascadingLayout->isChecked());
-    ui->widgetSubscriptions->setDrawAsRect(ui->actionCascadingLayout->isChecked());
-    ui->widgetSessions->setDrawAsRect(ui->actionCascadingLayout->isChecked());
-    ui->widgetConnections->setDrawAsRect(ui->actionCascadingLayout->isChecked());
-
     connect(ui->actionExchanges,     SIGNAL(triggered()), ui->widgetExchanges, SLOT(setFocus()));
     connect(ui->actionBindings,      SIGNAL(triggered()), ui->widgetBindings, SLOT(setFocus()));
     connect(ui->actionQueues,        SIGNAL(triggered()), ui->widgetQueues, SLOT(setFocus()));
@@ -104,10 +119,9 @@ XView::XView(QWidget *parent) :
     qmf = new QmfThread(this);
     qmf->start();
 
-    setupStatusBar();
     connect(qmf, SIGNAL(connectionStatusChanged(QString)), label_connection_status, SLOT(setText(QString)));
 
-    connect(qmf, SIGNAL(receivedResponse(QObject*,qmf::ConsoleEvent)), this, SLOT(dispatchResponse(QObject*,qmf::ConsoleEvent)));
+    connect(qmf, SIGNAL(receivedResponse(QObject*,qmf::ConsoleEvent,bool)), this, SLOT(dispatchResponse(QObject*,qmf::ConsoleEvent,bool)));
     connect(qmf, SIGNAL(qmfTimer()), this, SLOT(queryCurrent()));
 
     // menu actions to open and close the broker connection
@@ -179,6 +193,8 @@ XView::XView(QWidget *parent) :
     ui->widgetSessions->initRelatedButtons();
     ui->widgetConnections->initRelatedButtons();
 
+    ui->widgetExchanges->showRelatedButtons(ui->action_Cascading->isChecked());
+
     // when the sections request data, send the request
     // over to qmf
     connect(ui->widgetBindings, SIGNAL(needData()),
@@ -194,6 +210,15 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetConnections, SIGNAL(needData()),
             this, SLOT(queryConnections()));
 
+
+    // when the sections request update for a single object, send it to qmf
+    connect(ui->widgetExchanges, SIGNAL(needUpdate()), this, SLOT(updateExchange()));
+    connect(ui->widgetBindings, SIGNAL(needUpdate()), this, SLOT(updateBinding()));
+    connect(ui->widgetQueues, SIGNAL(needUpdate()), this, SLOT(updateQueue()));
+    connect(ui->widgetSubscriptions, SIGNAL(needUpdate()), this, SLOT(updateSubscription()));
+    connect(ui->widgetSessions, SIGNAL(needUpdate()), this, SLOT(updateSession()));
+    connect(ui->widgetConnections, SIGNAL(needUpdate()), this, SLOT(updateConnection()));
+
     connect(ui->actionMessages,     SIGNAL(triggered()), this, SLOT(setMessageMode()));
     connect(ui->actionBytes,        SIGNAL(triggered()), this, SLOT(setByteMode()));
     connect(ui->actionMessage_rate, SIGNAL(triggered()), this, SLOT(setMessageRateMode()));
@@ -206,12 +231,15 @@ XView::XView(QWidget *parent) :
     exchangesDialog->initModels("name");
     exchangesDialog->listModel()->setSampleProperties(ui->widgetExchanges->getSampleProperties());
     ui->widgetExchanges->setRelatedModel(exchangesDialog->listModel(), this);
+    // when the widget's button is clicked, get all the objects and show the dialog box
+    connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), this, SLOT(queryExchanges()));
+    connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), exchangesDialog, SLOT(exec()));
+    // when the OK button is pressed on the dialog, set the widgets current object
     connect(exchangesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetExchanges, SLOT(setCurrentObject(qmf::Data)));
     connect(exchangesDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
             ui->widgetExchanges, SLOT(showData(qmf::Data)));
-    connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), this, SLOT(queryExchanges()));
-    connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), exchangesDialog, SLOT(exec()));
+    // after a background update is complete, tell the widget to show related objects
     connect(exchangesDialog, SIGNAL(finalAdded()), ui->widgetExchanges, SLOT(initRelated()));
 
     bindingsDialog = new DialogObjects(this, "bindings");
@@ -297,8 +325,25 @@ XView::XView(QWidget *parent) :
     connect(qmf, SIGNAL(isConnected(bool)), connectionsDialog,           SLOT(connectionChanged(bool)));
 }
 
-void XView::forceLayout()
+void XView::toggleUpdate()
 {
+    ui->widgetExchanges->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetBindings->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetQueues->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetSubscriptions->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetSessions->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    ui->widgetConnections->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+}
+
+void XView::toggleLayout()
+{
+    ui->widgetExchanges->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetBindings->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetQueues->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetSubscriptions->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetSessions->setDrawAsRect(ui->action_Cascading->isChecked());
+    ui->widgetConnections->setDrawAsRect(ui->action_Cascading->isChecked());
+
     ui->centralWidget->layout()->update();
 }
 
@@ -320,6 +365,16 @@ void XView::setupStatusBar() {
     actionGroup->addAction(ui->actionBytes);
     actionGroup->addAction(ui->actionMessage_rate);
     actionGroup->addAction(ui->actionByte_rate);
+
+    layoutGroup = new QActionGroup(ui->menu_Layout);
+    layoutGroup->addAction(ui->action_Horizontal);
+    layoutGroup->addAction(ui->action_Cascading);
+    layoutGroup->setExclusive(true);
+
+    updateGroup = new QActionGroup(ui->menu_Edit);
+    updateGroup->addAction(ui->actionUpdate_all);
+    updateGroup->addAction(ui->actionUpdate_visible);
+    updateGroup->setExclusive(true);
 
     modeToolBar = addToolBar(tr("Modes"));
     modeToolBar->setObjectName("Mode");
@@ -344,25 +399,25 @@ void XView::setupStatusBar() {
 // If there is a current object in a widget, refresh it
 void XView::queryCurrent()
 {
-    if (ui->widgetBindings->current() || bindingsDialog->isVisible())
-        queryBindings();
-    else if (ui->widgetExchanges->current() || exchangesDialog->isVisible())
-        queryExchanges();
-    else if (ui->widgetQueues->current() || queuesDialog->isVisible())
-        queryQueues();
-    else if (ui->widgetSubscriptions->current() || subscriptionsDialog->isVisible())
-        querySubscriptions();
-    else if (ui->widgetSessions->current() || sessionsDialog->isVisible())
-        querySessions();
-    else if (ui->widgetConnections->current() || connectionsDialog->isVisible())
-        queryConnections();
+    if (ui->widgetExchanges->current() && this->exchangesDialog->isHidden())
+        qmf->queryObject(ui->widgetExchanges->getDataAddr(), exchangesDialog);
+    else if (ui->widgetBindings->current() && this->bindingsDialog->isHidden())
+        qmf->queryObject(ui->widgetBindings->getDataAddr(), bindingsDialog);
+    else if (ui->widgetQueues->current() && this->queuesDialog->isHidden())
+        qmf->queryObject(ui->widgetQueues->getDataAddr(), queuesDialog);
+    else if (ui->widgetSubscriptions->current() && this->subscriptionsDialog->isHidden())
+        qmf->queryObject(ui->widgetSubscriptions->getDataAddr(), subscriptionsDialog);
+    else if (ui->widgetSessions->current() && this->sessionsDialog->isHidden())
+        qmf->queryObject(ui->widgetSessions->getDataAddr(), sessionsDialog);
+    else if (ui->widgetConnections->current() && this->connectionsDialog->isHidden())
+        qmf->queryObject(ui->widgetConnections->getDataAddr(), connectionsDialog);
 }
 
 // Send an async query to get the list of objects
 // When the response is received, send an event to the object's dialog
 void XView::queryObjects(const std::string& qmf_class, DialogObjects* dialog)
 {
-    qmf->queryBroker(qmf_class, dialog, dialog->eventType);
+    qmf->queryBroker(qmf_class, dialog);
 }
 
 // SLOT: triggered when Exchange Dialog is displayed
@@ -415,10 +470,46 @@ void XView::queryConnections()
 
 // SLOT: Triggered when a qmf query response is received
 // Send the received event over to the appropriate dialog box
-void XView::dispatchResponse(QObject *target, const qmf::ConsoleEvent& event)
+void XView::dispatchResponse(QObject *target, const qmf::ConsoleEvent& event, bool all)
 {
     DialogObjects *dialog = (DialogObjects *)target;
-    dialog->gotDataEvent(event);
+    dialog->gotDataEvent(event, all);
+}
+
+void XView::updateExchange()
+{
+    if (exchangesDialog->isHidden())
+        qmf->queryObject(ui->widgetExchanges->getDataAddr(), exchangesDialog);
+}
+
+void XView::updateBinding()
+{
+    if (bindingsDialog->isHidden())
+        qmf->queryObject(ui->widgetBindings->getDataAddr(), bindingsDialog);
+}
+
+void XView::updateQueue()
+{
+    if (queuesDialog->isHidden())
+        qmf->queryObject(ui->widgetQueues->getDataAddr(), queuesDialog);
+}
+
+void XView::updateSubscription()
+{
+    if (subscriptionsDialog->isHidden())
+        qmf->queryObject(ui->widgetSubscriptions->getDataAddr(), subscriptionsDialog);
+}
+
+void XView::updateSession()
+{
+    if (sessionsDialog->isHidden())
+        qmf->queryObject(ui->widgetSessions->getDataAddr(), sessionsDialog);
+}
+
+void XView::updateConnection()
+{
+    if (connectionsDialog->isHidden())
+        qmf->queryObject(ui->widgetConnections->getDataAddr(), connectionsDialog);
 }
 
 void XView::setMessageMode()
@@ -474,7 +565,8 @@ XView::~XView()
     settings.setValue("mainWindowGeometry", saveGeometry());
     settings.setValue("mainWindowState", saveState());
     settings.setValue("mainWindowChecks/Charts", ui->actionCharts->isChecked());
-    settings.setValue("mainWindowChecks/Layout", ui->actionCascadingLayout->isChecked());
+    settings.setValue("mainWindowChecks/Layout", ui->action_Cascading->isChecked());
+    settings.setValue("mainWindowChecks/Update", ui->actionUpdate_all->isChecked());
 
     delete openDialog;
     delete aboutDialog;
@@ -489,6 +581,8 @@ XView::~XView()
     delete label_connection_prompt;
 
     delete actionGroup;
+    delete layoutGroup;
+    delete updateGroup;
     delete modeToolBar;
 
     qmf->cancel();

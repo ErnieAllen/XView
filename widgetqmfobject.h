@@ -39,6 +39,7 @@ class WidgetQmfObject : public QWidget
     Q_OBJECT
 
 public:
+
     enum ArrowDirection {
         arrowNone,
         arrowLeft,
@@ -76,7 +77,9 @@ public:
     qmfWidgetList peers;
     WidgetQmfObject *leftBuddy;
     WidgetQmfObject *rightBuddy;
-    QString sectionTitle;
+
+    const qmf::DataAddr& getDataAddr();
+    bool hasData();
 
 public slots:
     void setCurrentObject(const qmf::Data& object);
@@ -87,8 +90,10 @@ public slots:
     void showChart(bool b);
     void setDrawAsRect(bool b);
     void showRelatedButtons(bool);
+    void setUpdateStrategy(bool);
 
 protected:
+    QString sectionTitle;
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
     void focusInEvent ( QFocusEvent * event );
@@ -101,6 +106,7 @@ protected:
     int mid_paint(); // use this as a common mid point for painting
     virtual QString unique_property(bool useKey=false); // allow derived classes to override object name
     void setRelatedText(const std::string&);
+    ArrowDirection arrow() { return _arrow; }
 
     // the columns that are to be displayed in the summary box
     struct Column {
@@ -118,15 +124,19 @@ protected:
     typedef QList<Column> ObjectColumnList;
     ObjectColumnList summaryColumns;
 
-    qmf::Data data;
     RelatedFilterProxyModel *related;
 
     QColor backgroundColor;
     StatMode currentMode;
     QAction *action;
+    bool updateAll;  // current update strategy (all or just the current object)
+
+    // the currently displayed object
+    qmf::Data data;
 
 signals:
-    void needData();
+    void needData();    // send query that gets all objects of this type
+    void needUpdate();  // send query that updated only the current object
 
 private slots:
     void relatedIndexChanged(int index);
@@ -135,6 +145,7 @@ private:
     void setLabelName();
     void fillTableWidget(const qmf::Data& object);
     void resetOthers();
+    void updateComboboxIndex(int i, bool all);
 
     QString value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname);
 

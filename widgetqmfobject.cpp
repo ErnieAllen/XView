@@ -33,6 +33,8 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     QWidget(parent),
     sectionTitle(),
     backgroundColor(200, 200, 200),
+    updateAll(true),
+    data(),
     ui(new Ui::WidgetQmfObject),
     redIcon(":/images/legend-red.png"),
     greenIcon(":/images/legend-green.png"),
@@ -81,13 +83,19 @@ void WidgetQmfObject::setDrawAsRect(bool b)
     drawAsRect = b;
 }
 
+void WidgetQmfObject::setUpdateStrategy(bool b)
+{
+    updateAll = b;
+}
+
+
 void WidgetQmfObject::setRelatedModel(ObjectListModel *model, QWidget *parent)
 {
     related = new RelatedFilterProxyModel(parent);
     related->setDynamicSortFilter(true);
     related->setSourceModel(model);
     ui->comboBox->setModel(related);
-    connect(ui->comboBox, SIGNAL(currentIndexChanged(int)),
+    connect(ui->comboBox, SIGNAL(activated(int)),
             this, SLOT(relatedIndexChanged(int)));
     model->setDuration(duration);
 }
@@ -157,8 +165,6 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
 
 void WidgetQmfObject::focusInEvent ( QFocusEvent * )
 {
-    //setCurrent(true);
-    //emit madeCurrent(objectName());
     update();
     updateGeometry();
 }
@@ -261,6 +267,7 @@ void WidgetQmfObject::keyPressEvent ( QKeyEvent * event )
         row = ui->comboBox->currentIndex();
         if ((ui->comboBox->isVisible()) && (row > 0)) {
             ui->comboBox->setCurrentIndex(row - 1);
+            relatedIndexChanged(row - 1);
         }
         break;
     case Qt::Key_Down:
@@ -268,6 +275,7 @@ void WidgetQmfObject::keyPressEvent ( QKeyEvent * event )
         rows = ui->comboBox->model()->rowCount();
         if ((ui->comboBox->isVisible()) && (row >= 0) && (row < rows - 1)) {
             ui->comboBox->setCurrentIndex(row + 1);
+            relatedIndexChanged(row + 1);
         }
         break;
     case Qt::Key_Enter:
@@ -373,8 +381,8 @@ void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
 
 // SLOT triggered when an automatic background update
 // has completed.
-// Also called after an ohject is made current.
-// If there is a current object, update it's data a
+// Also called after an object is made current.
+// If there is a current object, update it's data and
 // refresh the related widgets
 void WidgetQmfObject::showData(const qmf::Data& object)
 {
@@ -585,12 +593,25 @@ void WidgetQmfObject::initRelatedButtons()
         ui->commandLinkButtonNext->hide();
 }
 
+// Set up the combobox model's filter to only show object related to this object,
+// then send a request to query for all of the objects
 void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget_type, ArrowDirection a)
 {
-    const qpid::types::Variant::Map& attrs(object.getProperties());
+    if (!updateAll)
+        if (hasData() && (arrow() != arrowNone)) {
+            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            emit needUpdate();
+            return;
+        }
 
+    const qpid::types::Variant::Map& attrs(object.getProperties());
     setArrow(a);
     ui->labelName->hide();
+
+    if (ui->labelRelated->text().isEmpty()) {
+        QString indexText = QString("Loading %1").arg(ui->labelRelated->text().toLower());
+        ui->labelIndex->setText(indexText);
+    }
     ui->labelIndex->show();
 
     std::string field = "name";
@@ -614,6 +635,7 @@ void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget
             related->setRelatedData("sessionRef", cname);
         }
         related->clearFilter();
+        qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
         emit needData();
     }
 }
@@ -628,17 +650,22 @@ void WidgetQmfObject::initRelated()
 
         if (ui->comboBox->currentIndex() == -1) {
             if (ui->comboBox->model()->rowCount() > 0) {
-                // setting the index should automatically trigger a relatedIndexChanged
                 ui->comboBox->setCurrentIndex(0);
-                return;
             }
         }
-        relatedIndexChanged(ui->comboBox->currentIndex());
+        updateComboboxIndex(ui->comboBox->currentIndex(), false);
     }
 }
 
 // SLOT called when the current row in the ui->comboBox changes
 void WidgetQmfObject::relatedIndexChanged(int i)
+{
+    // since the user manually changed the item in the combobox,
+    // force the related objects to query all their objects
+    updateComboboxIndex(i, true);
+}
+
+void WidgetQmfObject::updateComboboxIndex(int i, bool all)
 {
     update();
 
@@ -650,13 +677,13 @@ void WidgetQmfObject::relatedIndexChanged(int i)
         ui->comboBox->hide();
         ui->tableWidget->hide();
 
-        // cascade the related object
+        // If this widget has no related objects, all the other widgets to the side won't either
         if (_arrow == arrowLeft)
             if (leftBuddy)
-                leftBuddy->relatedIndexChanged(-1);
+                leftBuddy->updateComboboxIndex(-1, all);
         if (_arrow == arrowRight)
             if (rightBuddy)
-               rightBuddy->relatedIndexChanged(-1);
+               rightBuddy->updateComboboxIndex(-1, all);
         return;
     }
     int rows = ui->comboBox->model()->rowCount();
@@ -669,6 +696,7 @@ void WidgetQmfObject::relatedIndexChanged(int i)
         ui->tableWidget->show();
     }
 
+    // get the data object that the selected row in the combo box referrs to
     QModelIndex source_row = related->mapToSource(related->index(i, 0));
     ObjectListModel *model = (ObjectListModel *)related->sourceModel();
     const qmf::Data& object = model->qmfData(source_row.row());
@@ -681,14 +709,34 @@ void WidgetQmfObject::relatedIndexChanged(int i)
     if (chart)
         showChart(object, model);
 
-    // cascade the related object
-    if (_arrow == arrowLeft)
-        if (leftBuddy)
+    // Tell the other widgets down the chain to show their related objects
+    WidgetQmfObject * buddy;
+    if (_arrow == arrowLeft) {
+        if (leftBuddy) {
+            // if we are here because the user manually changed the combobox,
+            // force all the related widgets to query for all objects
+            if (all && updateAll) {
+                buddy = leftBuddy;
+                while (buddy) {
+                    buddy->setArrow(arrowNone);
+                    buddy = buddy->leftBuddy;
+                }
+            }
             leftBuddy->showRelated(object, objectName(), arrowLeft);
-    if (_arrow == arrowRight)
-        if (rightBuddy)
+        }
+    } else
+    if (_arrow == arrowRight) {
+        if (rightBuddy) {
+            if (all && updateAll) {
+                buddy = rightBuddy;
+                while (buddy) {
+                    buddy->setArrow(arrowNone);
+                    buddy = buddy->rightBuddy;
+                }
+            }
             rightBuddy->showRelated(object, objectName(), arrowRight);
-
+        }
+    }
 }
 
 // SLOT triggered when the actionCharts menu item is toggled / loaded
@@ -750,4 +798,14 @@ QStringList WidgetQmfObject::getSampleProperties()
         ++iter;
     }
     return set.toList();
+}
+
+bool WidgetQmfObject::hasData()
+{
+    return data.isValid();
+}
+
+const qmf::DataAddr& WidgetQmfObject::getDataAddr()
+{
+    return data.getAddr();
 }

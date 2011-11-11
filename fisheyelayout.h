@@ -43,6 +43,8 @@ public slots:
 
 protected:
     int getFocusedItem();
+    int getCurrentItem();
+    void setToolTips(int current, bool set);
     void setTiledGeometry(const QRect &r);
     void startGeometryAnimation(QLayoutItem *o, const QRect& geom);
 

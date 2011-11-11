@@ -107,6 +107,13 @@ QString WidgetExchanges::unique_property()
 
 void WidgetExchanges::showRelated(const qmf::Data& object, const QString &, ArrowDirection a)
 {
+    if (!updateAll)
+        if (this->hasData() && (arrow() != arrowNone)) {
+            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            emit needUpdate();
+            return;
+        }
+
     setArrow(a);
 
     // for exchanges, we should only be asked to show records related to a binding
@@ -117,6 +124,7 @@ void WidgetExchanges::showRelated(const qmf::Data& object, const QString &, Arro
 
     related->setRelatedData("name", exchange.toStdString());
     related->clearFilter();
+    qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
     emit needData();
 
 }

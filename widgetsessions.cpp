@@ -67,6 +67,13 @@ void WidgetSessions::paintEvent(QPaintEvent *e)
 
 void WidgetSessions::showRelated(const qmf::Data& object, const QString &widget_type, ArrowDirection a)
 {
+    if (!updateAll)
+        if (this->hasData() && (arrow() != arrowNone)) {
+            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            emit needUpdate();
+            return;
+        }
+
     setArrow(a);
 
     //we can't go from connection to session
@@ -81,6 +88,7 @@ void WidgetSessions::showRelated(const qmf::Data& object, const QString &widget_
 
     related->setRelatedData("name", session.toStdString());
     related->clearFilter();
+    qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
     emit needData();
 
 }

@@ -81,6 +81,9 @@ void chart::paintEvent(QPaintEvent *e)
     MinMax mm = samplesContainer->minMax(oName, properties.keys(), rate);
     mm.max = (qint32)(mm.max * 1.1 + 1.0);
 
+    if (mm.min > 0)
+        mm.min = 0;
+
     if (mm.min < 0)
         mm.min = (qint32)(mm.min * 1.1 - 1.0);
 

@@ -88,6 +88,13 @@ void WidgetConnections::paintEvent(QPaintEvent *e)
 
 void WidgetConnections::showRelated(const qmf::Data& object, const QString &, ArrowDirection a)
 {
+    if (!updateAll)
+        if (this->hasData() && (arrow() != arrowNone)) {
+            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            emit needUpdate();
+            return;
+        }
+
     setArrow(a);
 
     // for connections, we should only be asked to show records related to a session
@@ -98,6 +105,7 @@ void WidgetConnections::showRelated(const qmf::Data& object, const QString &, Ar
 
     related->setRelatedData("address", connection.toStdString());
     related->clearFilter();
+    qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
     emit needData();
 
 }

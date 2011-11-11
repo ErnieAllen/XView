@@ -47,9 +47,9 @@ public:
     QmfThread(QObject* parent);
     void cancel();
 
-    void queryBroker(const std::string& qmf_class,
-                                QObject* object,
-                                QEvent::Type event_type);
+    void queryBroker(const std::string& qmf_class, QObject* object);
+    void queryObject(const qmf::DataAddr& dataAddr, QObject* object);
+
 public slots:
     void connect_localhost();
     void disconnect();
@@ -63,7 +63,7 @@ signals:
     void doneAddingExchanges(uint);
 
     void qmfError(const QString&);
-    void receivedResponse(QObject *target, const qmf::ConsoleEvent& event);
+    void receivedResponse(QObject *target, const qmf::ConsoleEvent& event, bool all);
     void qmfTimer();
 
 protected:
@@ -95,10 +95,10 @@ private:
     struct Query {
         uint32_t correlator;
         QObject* object;
-        QEvent::Type t;
+        bool all;
 
-        Query(QObject* _o, QEvent::Type _t) : correlator(0),
-            object(_o), t(_t) {}
+        Query(QObject* _o, bool _b) : correlator(0),
+            object(_o), all(_b) {}
     };
     typedef std::deque<Query> query_queue_t;
     query_queue_t query_queue;
