@@ -63,23 +63,20 @@ void WidgetExchanges::paintEvent(QPaintEvent *e)
 
     WidgetQmfObject::paintEvent(e);
 
-    QColor exchangeColor(200, 200, 200);
-    QPen exchangePen(exchangeColor);
-    exchangePen.setWidth(2);
-    QBrush exchangeBrush(Qt::white);
-
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(exchangePen);
-    painter.setBrush(exchangeBrush);
 
-    //int reserved = reservedY();
-    //int h = height() - reserved;
-    //int side = qMin(width(), h);
+    QColor lineColor = getLineColor();
+    QColor fillColor = getFillColor();
+    QPen pen(lineColor);
+    pen.setWidth(2);
+    QBrush brush(fillColor);
+
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(pen);
+    painter.setBrush(brush);
 
     int mid = this->mid_paint();
 
-    // or
     painter.drawRect(0, mid, width(), 10);
 
     painter.save();

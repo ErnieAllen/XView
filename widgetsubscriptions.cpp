@@ -47,18 +47,19 @@ void WidgetSubscriptions::paintEvent(QPaintEvent *e)
     WidgetQmfObject::paintEvent(e);
 
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
 
-    QColor subColor(backgroundColor);
-    QPen   subPen(subColor);
-    subPen.setWidth(2);
-    QBrush subBrush(Qt::white);
+    QColor lineColor = getLineColor();
+    QColor fillColor = getFillColor();
+    QPen pen(lineColor);
+    pen.setWidth(2);
+    QBrush brush(fillColor);
+
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(pen);
+    painter.setBrush(brush);
 
     int mid = mid_paint();
     painter.translate(1, mid + 6);
-
-    painter.setPen(subPen);
-    painter.setBrush(subBrush);
 
     painter.drawPolygon(points, 6);
 }

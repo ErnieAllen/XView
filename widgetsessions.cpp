@@ -48,12 +48,16 @@ void WidgetSessions::paintEvent(QPaintEvent *e)
     WidgetQmfObject::paintEvent(e);
 
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
 
-    QColor color(backgroundColor);
-    QPen   pen(color);
-    QBrush brush(Qt::white);
+    QColor lineColor = getLineColor();
+    QColor fillColor = getFillColor();
+    QPen pen(lineColor);
     pen.setWidth(2);
+    QBrush brush(fillColor);
+
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(pen);
+    painter.setBrush(brush);
 
     int mid = mid_paint();
     painter.translate(1, mid - 10);

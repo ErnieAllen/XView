@@ -107,6 +107,8 @@ protected:
     virtual QString unique_property(bool useKey=false); // allow derived classes to override object name
     void setRelatedText(const std::string&);
     ArrowDirection arrow() { return _arrow; }
+    QColor getLineColor(); // the color to draw the section's background icon (based on focus)
+    QColor getFillColor(); // the color to draw the section's background icon (based on focus)
 
     // the columns that are to be displayed in the summary box
     struct Column {
@@ -146,6 +148,7 @@ private:
     void fillTableWidget(const qmf::Data& object);
     void resetOthers();
     void updateComboboxIndex(int i, bool all);
+    bool reallyHasFocus();
 
     QString value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname);
 

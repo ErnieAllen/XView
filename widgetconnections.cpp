@@ -61,12 +61,14 @@ void WidgetConnections::paintEvent(QPaintEvent *e)
 
     WidgetQmfObject::paintEvent(e);
 
-    QColor color(200, 200, 200);
-    QPen pen(color);
-    pen.setWidth(2);
-    QBrush brush(Qt::white);
-
     QPainter painter(this);
+
+    QColor lineColor = getLineColor();
+    QColor fillColor = getFillColor();
+    QPen pen(lineColor);
+    pen.setWidth(2);
+    QBrush brush(fillColor);
+
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(pen);
     painter.setBrush(brush);

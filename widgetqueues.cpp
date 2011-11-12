@@ -75,18 +75,19 @@ void WidgetQueues::paintEvent(QPaintEvent *e)
     WidgetQmfObject::paintEvent(e);
 
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
 
-    QColor queueColor(backgroundColor);
-    QPen   queuePen(queueColor);
-    QBrush queueBrush(Qt::white);
-    queuePen.setWidth(2);
+    QColor lineColor = getLineColor();
+    QColor fillColor = getFillColor();
+    QPen pen(lineColor);
+    pen.setWidth(2);
+    QBrush brush(fillColor);
+
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(pen);
+    painter.setBrush(brush);
 
     int mid = mid_paint();
     painter.translate(1, mid - 4);
-
-    painter.setPen(queuePen);
-    painter.setBrush(queueBrush);
 
     painter.scale(1.0, 0.6);
     painter.drawRects(queueRects, 6);

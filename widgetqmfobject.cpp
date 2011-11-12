@@ -548,6 +548,29 @@ QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& 
     return QString("--");
 }
 
+bool WidgetQmfObject::reallyHasFocus()
+{
+    return (hasFocus() || ui->commandLinkButtonNext->hasFocus() ||
+        ui->commandLinkButtonPrev->hasFocus() || ui->comboBox->hasFocus() ||
+        ui->pushButton->hasFocus());
+}
+
+QColor WidgetQmfObject::getLineColor()
+{
+    if (reallyHasFocus())
+        return QColor(180, 180, 255);
+    else
+        return QColor(200, 200, 200);
+}
+
+QColor WidgetQmfObject::getFillColor()
+{
+    if (reallyHasFocus())
+        return QColor(250, 250, 255);
+    else
+        return QColor(255, 255, 255);
+}
+
 void WidgetQmfObject::setSectionName(const QString &name)
 {
     sectionTitle = name;
