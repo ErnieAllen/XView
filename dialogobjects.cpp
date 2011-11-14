@@ -114,8 +114,8 @@ void DialogObjects::selected(const QModelIndex &index)
 // Add the objects to the model
 void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event, bool all)
 {
-    uint32_t pcount = event.getDataCount();
-    for (uint32_t idx = 0; idx < pcount; idx++) {
+    quint32 pcount = event.getDataCount();
+    for (quint32 idx = 0; idx < pcount; idx++) {
         objectModel->addObject(event.getData(idx), event.getCorrelator());
     }
     // select 1st item if none are selected
@@ -123,12 +123,22 @@ void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event, bool all)
         // if we just updated all objects, remove the old ones
         if (all)
             objectModel->refresh(event.getCorrelator());
-        if (!(ui->objectListView->selectionModel()->hasSelection()))
-            ui->objectListView->setCurrentIndex(objectModel->index(0, 0));
+        if (!(ui->objectListView->selectionModel()->hasSelection())) {
+            ui->objectListView->setCurrentIndex(ui->objectListView->model()->index(0, 0));
+        }
         dataRefreshed();
         emit finalAdded();
     }
 }
+
+void DialogObjects::setCurrentRow(const QModelIndex& row)
+{
+    // row is the index for the object-model
+    // translate this into the row for the listview
+    QModelIndex prow = proxyModel->mapFromSource(row);
+    ui->objectListView->setCurrentIndex(prow);
+}
+
 /*
 // Handle the query response from the QUERY_OBJECT for qmf objects
 bool DialogObjects::event(QEvent *e)

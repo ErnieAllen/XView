@@ -139,9 +139,12 @@ protected:
 signals:
     void needData();    // send query that gets all objects of this type
     void needUpdate();  // send query that updated only the current object
+    void pivotTo(const QModelIndex&);  // select this row in the associated dialog box
 
 private slots:
     void relatedIndexChanged(int index);
+    void pivot(); // make the current related object the base/root object
+
 
 private:
     void setLabelName();

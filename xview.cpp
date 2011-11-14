@@ -241,6 +241,8 @@ XView::XView(QWidget *parent) :
             ui->widgetExchanges, SLOT(showData(qmf::Data)));
     // after a background update is complete, tell the widget to show related objects
     connect(exchangesDialog, SIGNAL(finalAdded()), ui->widgetExchanges, SLOT(initRelated()));
+    // select the object that was just pivoted on
+    connect(ui->widgetExchanges, SIGNAL(pivotTo(QModelIndex)), exchangesDialog, SLOT(setCurrentRow(QModelIndex)));
 
     bindingsDialog = new DialogObjects(this, "bindings");
     bindingsDialog->initModels("bindingKey");
@@ -253,6 +255,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), this, SLOT(queryBindings()));
     connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), bindingsDialog, SLOT(exec()));
     connect(bindingsDialog, SIGNAL(finalAdded()), ui->widgetBindings, SLOT(initRelated()));
+    connect(ui->widgetBindings, SIGNAL(pivotTo(QModelIndex)), bindingsDialog, SLOT(setCurrentRow(QModelIndex)));
 
     queuesDialog = new DialogObjects(this, "queues");
     queuesDialog->initModels("name");
@@ -265,6 +268,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), this, SLOT(queryQueues()));
     connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), queuesDialog, SLOT(exec()));
     connect(queuesDialog, SIGNAL(finalAdded()), ui->widgetQueues, SLOT(initRelated()));
+    connect(ui->widgetQueues, SIGNAL(pivotTo(QModelIndex)), queuesDialog, SLOT(setCurrentRow(QModelIndex)));
 
     subscriptionsDialog = new DialogObjects(this, "subscriptions");
     subscriptionsDialog->initModels("name");
@@ -277,6 +281,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), this, SLOT(querySubscriptions()));
     connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), subscriptionsDialog, SLOT(exec()));
     connect(subscriptionsDialog, SIGNAL(finalAdded()), ui->widgetSubscriptions, SLOT(initRelated()));
+    connect(ui->widgetSubscriptions, SIGNAL(pivotTo(QModelIndex)), subscriptionsDialog, SLOT(setCurrentRow(QModelIndex)));
 
     sessionsDialog = new DialogObjects(this, "subscriptions");
     sessionsDialog->initModels("name");
@@ -289,6 +294,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetSessions->pushButton(), SIGNAL(clicked()), this, SLOT(querySubscriptions()));
     connect(ui->widgetSessions->pushButton(), SIGNAL(clicked()), sessionsDialog, SLOT(exec()));
     connect(sessionsDialog, SIGNAL(finalAdded()), ui->widgetSessions, SLOT(initRelated()));
+    connect(ui->widgetSessions, SIGNAL(pivotTo(QModelIndex)), sessionsDialog, SLOT(setCurrentRow(QModelIndex)));
 
     connectionsDialog = new DialogObjects(this, "connections");
     connectionsDialog->initModels("address");
@@ -302,6 +308,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetConnections->pushButton(), SIGNAL(clicked()), this, SLOT(queryConnections()));
     connect(ui->widgetConnections->pushButton(), SIGNAL(clicked()), connectionsDialog, SLOT(exec()));
     connect(connectionsDialog, SIGNAL(finalAdded()), ui->widgetConnections, SLOT(initRelated()));
+    connect(ui->widgetConnections, SIGNAL(pivotTo(QModelIndex)), connectionsDialog, SLOT(setCurrentRow(QModelIndex)));
 
     //
     // Create linkages to enable and disable main-window components based on the connection status.

@@ -64,6 +64,9 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     ui->labelIndex->hide();
     _arrow = arrowNone;
     duration = 600;
+
+    ui->toolButton->hide();
+    connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(pivot()));
 }
 
 WidgetQmfObject::~WidgetQmfObject()
@@ -136,6 +139,7 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
     ui->pushButton->move(width() /2 - ui->pushButton->width() / 2, ui->pushButton->y());
     ui->commandLinkButtonPrev->move(0, ui->pushButton->y());
     ui->commandLinkButtonNext->move(width() - ui->commandLinkButtonNext->width(), ui->pushButton->y());
+    ui->toolButton->move(ui->pushButton->x() + ui->pushButton->width() + 2, ui->pushButton->y());
 
     if (_current) {
         ui->labelName->move(0, reservedY());
@@ -343,6 +347,7 @@ void WidgetQmfObject::reset()
     ui->labelName->hide();
     ui->labelRelated->hide();
     ui->labelIndex->hide();
+    ui->toolButton->hide();
 
     related->setRelatedData("", "");
     related->clearFilter();
@@ -363,6 +368,15 @@ void WidgetQmfObject::setCurrentMode(StatMode mode)
         }
     }
 
+
+}
+
+void WidgetQmfObject::pivot()
+{
+    if (_current)
+        return;
+
+    setCurrentObject(data);
 
 }
 
@@ -409,7 +423,6 @@ void WidgetQmfObject::showData(const qmf::Data& object)
         showChart(object, model);
     }
 }
-
 
 void WidgetQmfObject::resetOthers()
 {
@@ -699,6 +712,7 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
         ui->widgetChart->hide();
         ui->comboBox->hide();
         ui->tableWidget->hide();
+        ui->toolButton->hide();
 
         // If this widget has no related objects, all the other widgets to the side won't either
         if (_arrow == arrowLeft)
@@ -710,17 +724,17 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
         return;
     }
     int rows = ui->comboBox->model()->rowCount();
-    int row = ui->comboBox->currentIndex() + 1;
-    if (rows) {
-        ui->comboBox->show();
-        QString indexText = QString("%1 of %2 %3").arg(row).arg(rows).arg(ui->labelRelated->text().toLower());
-        ui->labelIndex->setText(indexText);
-        ui->labelIndex->show();
-        ui->tableWidget->show();
-    }
+
+    ui->comboBox->show();
+    QString indexText = QString("%1 of %2 %3").arg(i+1).arg(rows).arg(ui->labelRelated->text().toLower());
+    ui->labelIndex->setText(indexText);
+    ui->labelIndex->show();
+    ui->tableWidget->show();
+    ui->toolButton->show();
 
     // get the data object that the selected row in the combo box referrs to
     QModelIndex source_row = related->mapToSource(related->index(i, 0));
+    emit pivotTo(source_row);
     ObjectListModel *model = (ObjectListModel *)related->sourceModel();
     const qmf::Data& object = model->qmfData(source_row.row());
 

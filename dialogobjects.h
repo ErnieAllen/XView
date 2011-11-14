@@ -52,6 +52,7 @@ public slots:
     void accept();
     void dataRefreshed();
     void selected(const QModelIndex &index);
+    void setCurrentRow(const QModelIndex& row);
 
 protected:
     void initConnections();
