@@ -121,8 +121,9 @@ void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event, bool all)
     // select 1st item if none are selected
     if (event.isFinal()) {
         // if we just updated all objects, remove the old ones
-        if (all)
+        if (all) {
             objectModel->refresh(event.getCorrelator());
+        }
         if (!(ui->objectListView->selectionModel()->hasSelection())) {
             ui->objectListView->setCurrentIndex(ui->objectListView->model()->index(0, 0));
         }
@@ -169,7 +170,7 @@ void DialogObjects::dataRefreshed()
         QModelIndex filteredIndex = proxyModel->mapToSource(current);
         // if the dialogbox is open, we want to show the updated object details
         objectModel->selected(filteredIndex);
-        emit objectRefreshed(objectModel->getSelected(filteredIndex), objectName());
+        emit objectRefreshed();
     }
 
     // remove any samples that are older than our charting window

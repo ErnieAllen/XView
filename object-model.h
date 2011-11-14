@@ -40,6 +40,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
     std::string fieldValue(int row, const std::string& field);
     const qmf::Data& qmfData(int row);
+    const qmf::Data& find(const qmf::Data& existing);
     void refresh(uint correlator);
     void expireSamples();
     void setSampleProperties(const QStringList& list);
@@ -91,7 +92,7 @@ private:
 
     // list of properties to save for charting
     QStringList sampleProperties;
-
+    qmf::Data invalid;
 };
 
 std::ostream& operator<<(std::ostream& out, const qmf::Data& queue);

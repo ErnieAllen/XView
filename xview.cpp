@@ -237,8 +237,8 @@ XView::XView(QWidget *parent) :
     // when the OK button is pressed on the dialog, set the widgets current object
     connect(exchangesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetExchanges, SLOT(setCurrentObject(qmf::Data)));
-    connect(exchangesDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
-            ui->widgetExchanges, SLOT(showData(qmf::Data)));
+    connect(exchangesDialog, SIGNAL(objectRefreshed()),
+            ui->widgetExchanges, SLOT(objectRefreshed()));
     // after a background update is complete, tell the widget to show related objects
     connect(exchangesDialog, SIGNAL(finalAdded()), ui->widgetExchanges, SLOT(initRelated()));
     // select the object that was just pivoted on
@@ -250,8 +250,8 @@ XView::XView(QWidget *parent) :
     ui->widgetBindings->setRelatedModel(bindingsDialog->listModel(), this);
     connect(bindingsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetBindings, SLOT(setCurrentObject(qmf::Data)));
-    connect(bindingsDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
-            ui->widgetBindings, SLOT(showData(qmf::Data)));
+    connect(bindingsDialog, SIGNAL(objectRefreshed()),
+            ui->widgetBindings, SLOT(objectRefreshed()));
     connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), this, SLOT(queryBindings()));
     connect(ui->widgetBindings->pushButton(), SIGNAL(clicked()), bindingsDialog, SLOT(exec()));
     connect(bindingsDialog, SIGNAL(finalAdded()), ui->widgetBindings, SLOT(initRelated()));
@@ -263,8 +263,8 @@ XView::XView(QWidget *parent) :
     ui->widgetQueues->setRelatedModel(queuesDialog->listModel(), this);
     connect(queuesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetQueues, SLOT(setCurrentObject(qmf::Data)));
-    connect(queuesDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
-            ui->widgetQueues, SLOT(showData(qmf::Data)));
+    connect(queuesDialog, SIGNAL(objectRefreshed()),
+            ui->widgetQueues, SLOT(objectRefreshed()));
     connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), this, SLOT(queryQueues()));
     connect(ui->widgetQueues->pushButton(), SIGNAL(clicked()), queuesDialog, SLOT(exec()));
     connect(queuesDialog, SIGNAL(finalAdded()), ui->widgetQueues, SLOT(initRelated()));
@@ -276,8 +276,8 @@ XView::XView(QWidget *parent) :
     ui->widgetSubscriptions->setRelatedModel(subscriptionsDialog->listModel(), this);
     connect(subscriptionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetSubscriptions, SLOT(setCurrentObject(qmf::Data)));
-    connect(subscriptionsDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
-            ui->widgetSubscriptions, SLOT(showData(qmf::Data)));
+    connect(subscriptionsDialog, SIGNAL(objectRefreshed()),
+            ui->widgetSubscriptions, SLOT(objectRefreshed()));
     connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), this, SLOT(querySubscriptions()));
     connect(ui->widgetSubscriptions->pushButton(), SIGNAL(clicked()), subscriptionsDialog, SLOT(exec()));
     connect(subscriptionsDialog, SIGNAL(finalAdded()), ui->widgetSubscriptions, SLOT(initRelated()));
@@ -289,8 +289,8 @@ XView::XView(QWidget *parent) :
     ui->widgetSessions->setRelatedModel(sessionsDialog->listModel(), this);
     connect(sessionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetSessions, SLOT(setCurrentObject(qmf::Data)));
-    connect(sessionsDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
-            ui->widgetSessions, SLOT(showData(qmf::Data)));
+    connect(sessionsDialog, SIGNAL(objectRefreshed()),
+            ui->widgetSessions, SLOT(objectRefreshed()));
     connect(ui->widgetSessions->pushButton(), SIGNAL(clicked()), this, SLOT(querySubscriptions()));
     connect(ui->widgetSessions->pushButton(), SIGNAL(clicked()), sessionsDialog, SLOT(exec()));
     connect(sessionsDialog, SIGNAL(finalAdded()), ui->widgetSessions, SLOT(initRelated()));
@@ -303,8 +303,8 @@ XView::XView(QWidget *parent) :
     ui->widgetConnections->setRelatedModel(connectionsDialog->listModel(), this);
     connect(connectionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetConnections, SLOT(setCurrentObject(qmf::Data)));
-    connect(connectionsDialog, SIGNAL(objectRefreshed(qmf::Data,QString)),
-            ui->widgetConnections, SLOT(showData(qmf::Data)));
+    connect(connectionsDialog, SIGNAL(objectRefreshed()),
+            ui->widgetConnections, SLOT(objectRefreshed()));
     connect(ui->widgetConnections->pushButton(), SIGNAL(clicked()), this, SLOT(queryConnections()));
     connect(ui->widgetConnections->pushButton(), SIGNAL(clicked()), connectionsDialog, SLOT(exec()));
     connect(connectionsDialog, SIGNAL(finalAdded()), ui->widgetConnections, SLOT(initRelated()));
@@ -402,7 +402,7 @@ void XView::setupStatusBar() {
     modeToolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 }
 
-// SLOT Triggered when the qmf thread has been idle for 2 seconds
+// SLOT Triggered when the qmf thread has been idle for 3 seconds
 // If there is a current object in a widget, refresh it
 void XView::queryCurrent()
 {
@@ -410,7 +410,7 @@ void XView::queryCurrent()
         qmf->queryObject(ui->widgetExchanges->getDataAddr(), exchangesDialog);
     else if (ui->widgetBindings->current() && this->bindingsDialog->isHidden())
         qmf->queryObject(ui->widgetBindings->getDataAddr(), bindingsDialog);
-    else if (ui->widgetQueues->current() && this->queuesDialog->isHidden())
+    else if (ui->widgetQueues->current())
         qmf->queryObject(ui->widgetQueues->getDataAddr(), queuesDialog);
     else if (ui->widgetSubscriptions->current() && this->subscriptionsDialog->isHidden())
         qmf->queryObject(ui->widgetSubscriptions->getDataAddr(), subscriptionsDialog);

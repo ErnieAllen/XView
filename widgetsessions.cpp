@@ -80,12 +80,15 @@ void WidgetSessions::showRelated(const qmf::Data& object, const QString &widget_
 
     setArrow(a);
 
-    //we can't go from connection to session
-    if (widget_type == "widgetConnections")
+    if (widget_type == "widgetConnections") {
+        qpid::types::Variant value = object.getProperty("address");
+        std::string name = value.asString();
+        related->setRelatedData("connectionRef", name);
+        related->clearFilter();
+        emit needData();
         return;
-
-    // for sessions, we should only be asked to show records related to a subscription
-    // so assume the object is a subscription
+    }
+    // the object is a subscription
     qpid::types::Variant value = object.getProperty("sessionRef");
     QString name(value.asMap()["_object_name"].asString().c_str());
     QString session = name.section(':', -1);

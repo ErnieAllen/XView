@@ -360,9 +360,9 @@ void WidgetQmfObject::reset()
 void WidgetQmfObject::setCurrentMode(StatMode mode)
 {
     currentMode = mode;
-    fillTableWidget(data);
+    fillTableWidget();
     if (chart) {
-        if (data) {
+        if (data.isValid()) {
             ObjectListModel *model = (ObjectListModel *)related->sourceModel();
             showChart(data, model);
         }
@@ -376,10 +376,20 @@ void WidgetQmfObject::pivot()
     if (_current)
         return;
 
+    // take the data object this is being displayed
+    // and use it to make this section the current one
     setCurrentObject(data);
 
+    // now select this row in the dialog box's list
+/*
+    int row = ui->comboBox->currentIndex();
+    QModelIndex source_row = related->mapToSource(related->index(row, 0));
+    emit pivotTo(source_row);
+*/
 }
 
+// SLOT triggered when the user click OK on the dialog box to
+// set this section's current object
 void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
 {
     if (!object.isValid())
@@ -395,8 +405,20 @@ void WidgetQmfObject::setCurrentObject(const qmf::Data& object)
 
 // SLOT triggered when an automatic background update
 // has completed.
-// Also called after an object is made current.
-// If there is a current object, update it's data and
+void WidgetQmfObject::objectRefreshed()
+{
+    if (!data.isValid())
+        return;
+    if (!_current)
+        return;
+
+    ObjectListModel *model = (ObjectListModel *)related->sourceModel();
+    qmf::Data obj = model->find(data);
+    if (obj.isValid())
+        showData(obj);
+}
+
+// update this section's data and
 // refresh the related widgets
 void WidgetQmfObject::showData(const qmf::Data& object)
 {
@@ -410,7 +432,8 @@ void WidgetQmfObject::showData(const qmf::Data& object)
     ui->tableWidget->show();
     ui->tableWidget->setRowCount(summaryColumns.size());
 
-    fillTableWidget(object);
+    data = object;
+    fillTableWidget();
 
     if (leftBuddy) {
         leftBuddy->showRelated(object, objectName(), arrowLeft);
@@ -439,12 +462,11 @@ void WidgetQmfObject::resetOthers()
     }
 }
 
-void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
+void WidgetQmfObject::fillTableWidget()
 {
-    if (!object.isValid())
+    if (!data.isValid())
         return;
 
-    data = object;
     setLabelName();
 
     if (chart)
@@ -459,7 +481,7 @@ void WidgetQmfObject::fillTableWidget(const qmf::Data& object)
     int maxModeWidth = 0;
     QFontMetrics fm(ui->tableWidget->font());
 
-    const qpid::types::Variant::Map& props(object.getProperties());
+    const qpid::types::Variant::Map& props(data.getProperties());
     qpid::types::Variant::Map::const_iterator iter;
 
     QList<Column>::const_iterator column_iter = summaryColumns.constBegin();
@@ -734,14 +756,14 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
 
     // get the data object that the selected row in the combo box referrs to
     QModelIndex source_row = related->mapToSource(related->index(i, 0));
-    emit pivotTo(source_row);
     ObjectListModel *model = (ObjectListModel *)related->sourceModel();
     const qmf::Data& object = model->qmfData(source_row.row());
+    data = object;
 
     // show the current stats for this object
     ui->tableWidget->setVisible(true);
     ui->tableWidget->setRowCount(summaryColumns.size());
-    fillTableWidget(object);
+    fillTableWidget();
 
     if (chart)
         showChart(object, model);
@@ -781,17 +803,16 @@ void WidgetQmfObject::showChart(bool b)
 {
     chart = b;
     if (b) {
-        if (data) {
+        if (data.isValid()) {
             ObjectListModel *model = (ObjectListModel *)related->sourceModel();
             ui->widgetChart->show();
+            fillTableWidget();
             showChart(data, model);
         }
     } else {
         ui->widgetChart->clear();
         ui->widgetChart->hide();
     }
-    if (data)
-        fillTableWidget(data);
     // force a resize event so the table is drawn in the correct place
     QResizeEvent event(size(), size());
     QApplication::sendEvent(this, &event);

@@ -25,14 +25,14 @@ using std::endl;
 
 ObjectListModel::ObjectListModel(QObject* parent, std::string unique) :
         QAbstractListModel(parent), uniqueProperty(unique),
-        sampleProperties()
+        sampleProperties(),
+        invalid()
 {
     sampleLife = 600;
 }
 
 void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
 {
-    Q_UNUSED(correlator);
     if (!object.isValid())
         return;
 
@@ -124,6 +124,17 @@ const std::string &ObjectListModel::unique(bool useKey)
     }
 
     return uniqueProperty;
+}
+
+const qmf::Data& ObjectListModel::find(const qmf::Data& existing)
+{
+    const qpid::types::Variant& name = existing.getProperty(uniqueProperty);
+    for (int idx=0; idx<dataList.size(); idx++) {
+        if (name.isEqualTo(dataList.at(idx).getProperty(uniqueProperty))) {
+            return dataList.at(idx);
+        }
+    }
+    return invalid;
 }
 
 QVariant ObjectListModel::data(const QModelIndex &index, int role) const

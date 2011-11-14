@@ -64,7 +64,7 @@ signals:
     // user selected an object
     void setCurrentObject(const qmf::Data&, const QString &);
     // automatic data refresh
-    void objectRefreshed(const qmf::Data&, const QString &);
+    void objectRefreshed();
     void finalAdded();
 
 private:

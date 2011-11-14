@@ -84,7 +84,7 @@ public:
 public slots:
     void setCurrentObject(const qmf::Data& object);
     void setCurrentMode(StatMode);
-    void showData(const qmf::Data& object);
+    void objectRefreshed();
     void setEnabled(bool enabled);
     void initRelated();
     void showChart(bool b);
@@ -148,10 +148,11 @@ private slots:
 
 private:
     void setLabelName();
-    void fillTableWidget(const qmf::Data& object);
+    void fillTableWidget();
     void resetOthers();
     void updateComboboxIndex(int i, bool all);
     bool reallyHasFocus();
+    void showData(const qmf::Data& object);
 
     QString value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname);
 
