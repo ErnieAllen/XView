@@ -93,13 +93,13 @@ void WidgetExchanges::paintEvent(QPaintEvent *e)
 
 }
 
-QString WidgetExchanges::unique_property()
+QString WidgetExchanges::unique_property(bool translate)
 {
     QString name = WidgetQmfObject::unique_property();
-    if (data)
-    //if (data.isValid())
-        if (name.isEmpty())
-            name = QString("Default");
+    if (translate)
+        if (data.isValid())
+            if (name.isEmpty())
+                name = QString("Default");
     return name;
 }
 

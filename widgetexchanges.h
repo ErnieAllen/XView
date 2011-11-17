@@ -33,7 +33,7 @@ public:
 
 protected:
      void paintEvent(QPaintEvent *event);
-     QString unique_property();
+     virtual QString unique_property(bool useKey=false); // allow derived classes to override object name
      void showRelated(const qmf::Data& object, const QString& widget_name, ArrowDirection a);
 
 };
