@@ -96,7 +96,8 @@ void WidgetExchanges::paintEvent(QPaintEvent *e)
 QString WidgetExchanges::unique_property()
 {
     QString name = WidgetQmfObject::unique_property();
-    if (data.isValid())
+    if (data)
+    //if (data.isValid())
         if (name.isEmpty())
             name = QString("Default");
     return name;
@@ -106,7 +107,7 @@ void WidgetExchanges::showRelated(const qmf::Data& object, const QString &, Arro
 {
     if (!updateAll)
         if (this->hasData() && (arrow() != arrowNone)) {
-            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            //qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
             emit needUpdate();
             return;
         }
@@ -121,7 +122,7 @@ void WidgetExchanges::showRelated(const qmf::Data& object, const QString &, Arro
 
     related->setRelatedData("name", exchange.toStdString());
     related->clearFilter();
-    qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
+    //qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
     emit needData();
 
 }

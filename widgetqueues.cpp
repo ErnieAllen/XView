@@ -98,7 +98,7 @@ void WidgetQueues::showRelated(const qmf::Data& object, const QString &, ArrowDi
 {
     if (!updateAll)
         if (this->hasData() && (arrow() != arrowNone)) {
-            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            //qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
             emit needUpdate();
             return;
         }
@@ -113,7 +113,7 @@ void WidgetQueues::showRelated(const qmf::Data& object, const QString &, ArrowDi
 
     related->setRelatedData("name", queue.toStdString());
     related->clearFilter();
-    qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
+    //qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
     emit needData();
 
 }

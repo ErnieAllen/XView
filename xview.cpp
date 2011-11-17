@@ -406,17 +406,17 @@ void XView::setupStatusBar() {
 // If there is a current object in a widget, refresh it
 void XView::queryCurrent()
 {
-    if (ui->widgetExchanges->current() && this->exchangesDialog->isHidden())
+    if (ui->widgetExchanges->current())
         qmf->queryObject(ui->widgetExchanges->getDataAddr(), exchangesDialog);
-    else if (ui->widgetBindings->current() && this->bindingsDialog->isHidden())
+    else if (ui->widgetBindings->current())
         qmf->queryObject(ui->widgetBindings->getDataAddr(), bindingsDialog);
     else if (ui->widgetQueues->current())
         qmf->queryObject(ui->widgetQueues->getDataAddr(), queuesDialog);
-    else if (ui->widgetSubscriptions->current() && this->subscriptionsDialog->isHidden())
+    else if (ui->widgetSubscriptions->current())
         qmf->queryObject(ui->widgetSubscriptions->getDataAddr(), subscriptionsDialog);
-    else if (ui->widgetSessions->current() && this->sessionsDialog->isHidden())
+    else if (ui->widgetSessions->current())
         qmf->queryObject(ui->widgetSessions->getDataAddr(), sessionsDialog);
-    else if (ui->widgetConnections->current() && this->connectionsDialog->isHidden())
+    else if (ui->widgetConnections->current())
         qmf->queryObject(ui->widgetConnections->getDataAddr(), connectionsDialog);
 }
 

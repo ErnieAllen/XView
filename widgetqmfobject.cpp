@@ -43,8 +43,6 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QIcon prev = QIcon(":/images/messages.png");
-
     ui->commandLinkButtonPrev->setIconType(QStyle::SP_ArrowLeft);
     ui->commandLinkButtonNext->setIconType(QStyle::SP_ArrowRight);
 
@@ -657,7 +655,7 @@ void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget
 {
     if (!updateAll)
         if (hasData() && (arrow() != arrowNone)) {
-            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            //qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
             emit needUpdate();
             return;
         }
@@ -693,7 +691,7 @@ void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget
             related->setRelatedData("sessionRef", cname);
         }
         related->clearFilter();
-        qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
+        //qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
         emit needData();
     }
 }
@@ -757,8 +755,7 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
     // get the data object that the selected row in the combo box referrs to
     QModelIndex source_row = related->mapToSource(related->index(i, 0));
     ObjectListModel *model = (ObjectListModel *)related->sourceModel();
-    const qmf::Data& object = model->qmfData(source_row.row());
-    data = object;
+    data = model->qmfData(source_row.row());
 
     // show the current stats for this object
     ui->tableWidget->setVisible(true);
@@ -766,7 +763,7 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
     fillTableWidget();
 
     if (chart)
-        showChart(object, model);
+        showChart(data, model);
 
     // Tell the other widgets down the chain to show their related objects
     WidgetQmfObject * buddy;
@@ -781,7 +778,7 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
                     buddy = buddy->leftBuddy;
                 }
             }
-            leftBuddy->showRelated(object, objectName(), arrowLeft);
+            leftBuddy->showRelated(data, objectName(), arrowLeft);
         }
     } else
     if (_arrow == arrowRight) {
@@ -793,7 +790,7 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
                     buddy = buddy->rightBuddy;
                 }
             }
-            rightBuddy->showRelated(object, objectName(), arrowRight);
+            rightBuddy->showRelated(data, objectName(), arrowRight);
         }
     }
 }

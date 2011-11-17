@@ -73,7 +73,7 @@ void WidgetSessions::showRelated(const qmf::Data& object, const QString &widget_
 {
     if (!updateAll)
         if (this->hasData() && (arrow() != arrowNone)) {
-            qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
+            //qDebug("showRelated: %s needs an update", this->objectName().toStdString().c_str());
             emit needUpdate();
             return;
         }
@@ -95,7 +95,7 @@ void WidgetSessions::showRelated(const qmf::Data& object, const QString &widget_
 
     related->setRelatedData("name", session.toStdString());
     related->clearFilter();
-    qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
+    //qDebug("showRelated: %s needs new data", this->objectName().toStdString().c_str());
     emit needData();
 
 }

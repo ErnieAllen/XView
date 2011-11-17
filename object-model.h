@@ -58,15 +58,13 @@ public:
     typedef QHash<QString, SampleList>::const_iterator const_iterSamples;
 
     const Samples& samples() { return samplesData; }
-    // get the min and max for the Sample list for name
-    MinMax minMax(const QString& name, const QStringList& props, bool isRate);
+    const qmf::Data& getSelected(const QModelIndex &index);
 
 public slots:
     void addObject(const qmf::Data&, uint);
     void connectionChanged(bool isConnected);
     void clear();
     void selected(const QModelIndex &index);
-    const qmf::Data& getSelected(const QModelIndex &index);
 
 signals:
     void objectSelected(const qmf::Data&);
@@ -93,6 +91,8 @@ private:
     // list of properties to save for charting
     QStringList sampleProperties;
     qmf::Data invalid;
+
+    QHash<std::string, qmf::Data&> dataHash;
 };
 
 std::ostream& operator<<(std::ostream& out, const qmf::Data& queue);

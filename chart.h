@@ -44,16 +44,19 @@ protected:
     void paintEvent(QPaintEvent *event);
 
     //void plot_values(const ObjectListModel::Samples& samples, const std::string& prop, const QString& name, const QPointF& mm, int duration);
-    QPointF xy(Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm);
-    QPointF xyRate(Sample& prevSample, Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm);
+    QPointF xy(const Sample& sample, const QString& prop, const QDateTime& tnow);
+    QPointF xyRate(const Sample& prevSample, const Sample& sample, const QString& prop, const QDateTime& tnow);
 
     void drawXAxis(QPainter& painter, int intervals, int step, int duration);
     void drawYAxis(QPainter& painter, int intervals, int step, const MinMax& mm);
 
-    void paintRate(QPainter& painter, MinMax &mm);
-    void paintValue(QPainter& painter, MinMax &mm);
+    typedef QList<QPointF> pointsList;
+    MinMax minMax(QHash<QString, pointsList>& points);
+    void accumulate(QHash<QString, pointsList>& points, const QDateTime& tnow);
+    void paintPoints(QPainter &painter, QHash<QString, pointsList>& points, MinMax &mm);
 
 private:
+
     Ui::chart *ui;
 
     QString fmt_duration(int secs);

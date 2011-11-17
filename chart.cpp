@@ -77,8 +77,14 @@ void chart::paintEvent(QPaintEvent *e)
     if (properties.isEmpty())
         return;
 
+    QDateTime tnow(QDateTime::currentDateTime());
+
     // get the current min and max Y vales so we can draw the y-axis
-    MinMax mm = samplesContainer->minMax(oName, properties.keys(), rate);
+    MinMax mm;
+    QHash<QString, pointsList> points;
+    accumulate(points, tnow);
+    mm = minMax(points);
+
     mm.max = (qint32)(mm.max * 1.1 + 1.0);
 
     if (mm.min > 0)
@@ -94,7 +100,7 @@ void chart::paintEvent(QPaintEvent *e)
         yStep = 3;
 
     QPainter painter(this);
-    //painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::Antialiasing);
 
     drawXAxis(painter, 10, 2, duration);
     drawYAxis(painter, yIntervals, yStep, mm);
@@ -105,178 +111,135 @@ void chart::paintEvent(QPaintEvent *e)
     painter.setPen(pen);
     painter.setOpacity(0.5);
 
-    if (rate)
-        paintRate(painter, mm);
-    else
-        paintValue(painter, mm);
+    paintPoints(painter, points, mm);
 }
 
-void chart::paintValue(QPainter &painter, MinMax &mm)
+MinMax chart::minMax(QHash<QString, pointsList>& points)
 {
-    int w = ui->graph->width();
-    int h = ui->graph->height();
+    MinMax mm = MinMax();
+    QPointF p1;
 
-    QDateTime tnow(QDateTime::currentDateTime());
+    QList<QPointF>::const_iterator head;
+    // for each property line
+    QHash<QString, QColor>::const_iterator iter = properties.constBegin();
+    while (iter != properties.constEnd()) {
+        QString prop = iter.key();
+
+        head = points[prop].constBegin();
+        while (head != points[prop].constEnd()) {
+
+            p1 = *head;
+            qreal r = p1.y();
+            mm.max = qMax(mm.max, r);
+            mm.min = qMin(mm.min, r);
+
+            ++head;
+        }
+        // next property line
+        ++iter;
+    }
+
+    return mm;
+}
+
+void chart::accumulate(QHash<QString, pointsList>& points, const QDateTime& tnow)
+{
     const ObjectListModel::Samples& samples(samplesContainer->samples());
 
     ObjectListModel::const_iterSamples iterHash = samples.constFind(oName);
     // shallow reference to the list
     ObjectListModel::SampleList sampleList = iterHash.value();
-    ObjectListModel::const_iterSampleList iterSamples;
+    ObjectListModel::const_iterSampleList head, tail;
 
-    QPointF p1, p2;
-    bool tick;
-    QPen pen(painter.pen());
-    Sample prevSample;
-
+    points.clear();
     // for each property line
     QHash<QString, QColor>::const_iterator iter = properties.constBegin();
     while (iter != properties.constEnd()) {
 
-        QColor lineColor = QColor(iter.value());
-        lineColor.setAlpha(127);
-        pen.setColor(lineColor);
-        painter.setPen(pen);
-        painter.setBrush(QBrush(lineColor));
         QString prop = iter.key();
+        points[prop].clear();
 
-        tick = true;
-        iterSamples = sampleList.constEnd();
-        if (iterSamples == sampleList.constBegin())
-            break;
+        head = sampleList.constEnd();
+        while (head != sampleList.constBegin()) {
+            --head;
 
-        // backup past the place holder since we are going backwards
-        --iterSamples;
-
-        // get the 1st point for a line segment
-        Sample sample = *iterSamples;
-        p1 = xy(sample, prop, tnow, w, h, duration, mm);
-
-        // loop backwards through the samples
-        while (iterSamples != sampleList.constBegin()) {
-            --iterSamples;
-
-            prevSample = sample;
-            sample = *iterSamples;
-
-            int diff = sample.dateTime().secsTo(prevSample.dateTime());
-            if (diff > 0) {
-                if (tick) {
-                    p2 = xy(sample, prop, tnow, w, h, duration, mm);
-                } else {
-                    p1 = xy(sample, prop, tnow, w, h, duration, mm);
+            if (rate) {
+                tail = head;
+                if (tail != sampleList.constBegin()) {
+                    --tail;
+                    points[prop].append(xyRate(*tail, *head, prop, tnow));
                 }
-                painter.drawLine(p1, p2);
-                tick = !tick;
-            }
+
+            } else
+                points[prop].append(xy(*head, prop, tnow));
         }
         // next property line
         ++iter;
     }
 }
 
-void chart::paintRate(QPainter &painter, MinMax &mm)
+void chart::paintPoints(QPainter &painter, QHash<QString, pointsList>& points, MinMax &mm)
 {
-
-    int w = ui->graph->width();
-    int h = ui->graph->height();
-
-    QDateTime tnow(QDateTime::currentDateTime());
-    const ObjectListModel::Samples& samples(samplesContainer->samples());
-
-    ObjectListModel::const_iterSamples iterHash = samples.constFind(oName);
-    // shallow reference to the list
-    ObjectListModel::SampleList sampleList = iterHash.value();
-    ObjectListModel::const_iterSampleList iterSamples;
-
-    QPointF p1, p2;
-    bool tick;
+    QPointF p1;
     QPen pen(painter.pen());
-    bool rateSkippedFirst = false;
-    Sample prevSample;
+    float _range = mm.max - mm.min;
+    int height = ui->graph->height();
 
+    QList<QPointF>::const_iterator head;
     // for each property line
     QHash<QString, QColor>::const_iterator iter = properties.constBegin();
     while (iter != properties.constEnd()) {
-
-        rateSkippedFirst = false;
-
         QColor lineColor = QColor(iter.value());
         lineColor.setAlpha(127);
         pen.setColor(lineColor);
         painter.setPen(pen);
         painter.setBrush(QBrush(lineColor));
+
         QString prop = iter.key();
 
-        tick = true;
-        iterSamples = sampleList.constEnd();
-        if (iterSamples == sampleList.constBegin())
-            break;
+        head = points[prop].constBegin();
+        while (head != points[prop].constEnd()) {
 
-        // backup past the place holder since we are going backwards
-        --iterSamples;
+            p1 = *head;
+            float prange = p1.y() / _range;
+            if (prange < 0)
+                prange = - prange;
+            float y = height - prange * height + ui->topmargin->height();
+            painter.drawEllipse(p1.x(), y, 1, 1);
 
-        // get the 1st point for a line segment
-        Sample sample = *iterSamples;
-        p1 = xy(sample, prop, tnow, w, h, duration, mm);
-
-        // loop backwards through the samples
-        while (iterSamples != sampleList.constBegin()) {
-            --iterSamples;
-
-            prevSample = sample;
-            sample = *iterSamples;
-
-            int diff = sample.dateTime().secsTo(prevSample.dateTime());
-            if (diff > 0) {
-                if (tick) {
-                    p2 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
-                } else {
-                    p1 = xyRate(prevSample, sample, prop, tnow, w, h, duration, mm);
-                }
-                if (!rateSkippedFirst)
-                    rateSkippedFirst = true;
-                else {
-                    painter.drawLine(p1, p2);
-                }
-                tick = !tick;
-
-            }
+            ++head;
         }
         // next property line
         ++iter;
     }
 }
 
-QPointF chart::xy(Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm)
+QPointF chart::xy(const Sample& sample, const QString& prop, const QDateTime& tnow)
 {
+    int width = ui->graph->width();
+
     float x, y;
     int secs;
     secs = sample.dateTime().secsTo(tnow);
-    qint64 value = sample.data(prop);
+
     x = width - ((float)secs / (float)duration) * width;
-    y = (float)height * (float)((mm.max - value) / (mm.max - mm.min)) + ui->topmargin->height();
+    y = (float)sample.data(prop);
     return QPointF(x, y);
 }
 
-QPointF chart::xyRate(Sample& prevSample, Sample& sample, const QString& prop, const QDateTime& tnow, int width, int height, int duration, const MinMax& mm)
+QPointF chart::xyRate(const Sample& prevSample, const Sample& sample, const QString& prop, const QDateTime& tnow)
 {
+    int width = ui->graph->width();
+
     float x = 0.0, y = 0.0;
-    float elapsed = sample.dateTime().secsTo(prevSample.dateTime());
+    float elapsed = prevSample.dateTime().secsTo(sample.dateTime());
     int secs = sample.dateTime().secsTo(tnow);
 
     qint64 value1 = sample.data(prop);
     qint64 value2 = prevSample.data(prop);
-    qint64 diff = value2 - value1;
-
     if (elapsed) {
         x = width - ((float)secs / (float)duration) * width;
-        float _rate = diff / elapsed;
-        float _range = mm.max - mm.min;
-        float prange = _rate / _range;
-        if (prange < 0)
-            prange = - prange;
-        y = height - prange * height + ui->topmargin->height();
+        y = (value1 - value2) / elapsed;
     }
     return QPointF(x, y);
 }

@@ -138,7 +138,7 @@ void FisheyeLayout::setGeometry(const QRect &r)
     if (list.size() > 1) {
         QRect geom = QRect();
         int xGap = (r.width() * 0.1) / (list.size() - 1);
-        int yGap = (r.height() * 0.2) / (list.size() - 1);
+        int yGap = (r.height() * 0.1) / (list.size() - 1);
         int diff;
         i = 0;
         while (i < list.size()) {

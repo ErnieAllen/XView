@@ -63,6 +63,7 @@ void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
     beginInsertRows(QModelIndex(), last, last);
     dataList.append(o);
     endInsertRows();
+    //dataHash[name.asString()] = o;
 }
 
 void ObjectListModel::refresh(uint correlator)
@@ -263,47 +264,6 @@ void ObjectListModel::expireSamples()
 
         ++iter;
     }
-}
-
-// get the min and max for the given properties in the Sample list for name
-MinMax ObjectListModel::minMax(const QString& name, const QStringList& props, bool isRate)
-{
-    MinMax mm = MinMax();
-    SampleList& list(samplesData[name]);
-
-    QStringList::const_iterator prop = props.constBegin();
-    while (prop != props.constEnd()) {
-        QString p = *prop;
-        ObjectListModel::const_iterSampleList iter = list.constBegin();
-        while (iter != list.constEnd()) {
-            Sample sample1 = *iter;
-            qint64 v1 = sample1.data(p);
-            if (!isRate) {
-                mm.min = qMin(mm.min, (qreal)v1);
-                mm.max = qMax(mm.max, (qreal)v1);
-            } else {
-                QDateTime t1 = sample1.dateTime();
-                ++iter;
-                if (iter != list.constEnd()) {
-                    Sample sample2 = *iter;
-                    qint64 v2 = sample2.data(p);
-                    QDateTime t2 = sample2.dateTime();
-                    int secs = t1.secsTo(t2);
-                    if (secs) {
-                        mm.min = qMin(mm.min, (v2 - v1) / (qreal)secs);
-                        mm.max = qMax(mm.max, (v2 - v1) / (qreal)secs);
-                    }
-
-                }
-                // we don't want to increment iter twice
-                --iter;
-            }
-            ++iter;
-        }
-        ++prop;
-    }
-
-    return mm;
 }
 
 void ObjectListModel::clearSamples()
