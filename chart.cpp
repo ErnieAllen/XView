@@ -113,12 +113,7 @@ void chart::paintEvent(QPaintEvent *e)
     pen.setWidth(3);
     painter.setPen(pen);
 
-    if (rate) {
-        painter.setOpacity(0.5);
-        paintPoints(painter, points, mm);
-    }
-    else
-        paintArea(painter, points, mm);
+    paintArea(painter, points, mm);
 }
 
 MinMax chart::minMax(QHash<QString, pointsList>& points)
@@ -244,7 +239,6 @@ void chart::paintArea(QPainter &painter, QHash<QString, pointsList>& points, Min
         }
         // next property line
         ++iter;
-//break;
     }
 
     painter.setOpacity(1);
