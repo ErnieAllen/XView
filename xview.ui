@@ -167,6 +167,9 @@
      </property>
      <addaction name="actionUpdate_all"/>
      <addaction name="actionUpdate_visible"/>
+     <addaction name="separator"/>
+     <addaction name="actionDraw_area_charts"/>
+     <addaction name="actionDraw_point_charts"/>
     </widget>
     <addaction name="menu_Preferences"/>
    </widget>
@@ -385,6 +388,30 @@
    </property>
    <property name="text">
     <string>Update &amp;visible objects only</string>
+   </property>
+  </action>
+  <action name="actionDraw_area_charts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Draw a&amp;rea charts</string>
+   </property>
+  </action>
+  <action name="actionDraw_line_charts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Draw &amp;line charts</string>
+   </property>
+  </action>
+  <action name="actionDraw_point_charts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Draw &amp;point charts</string>
    </property>
   </action>
  </widget>

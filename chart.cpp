@@ -49,7 +49,7 @@ void chart::clear()
     properties.clear();
 }
 
-void chart::updateChart(bool isRate, ObjectListModel* samples, const QString& name, const QHash<QString, QColor>& props, int dur)
+void chart::updateChart(bool isRate, ObjectListModel* samples, const QString& name, const QHash<QString, QColor>& props, int dur, bool bArea)
 {
     // number of seconds on the x-axis
     duration = dur;
@@ -65,6 +65,9 @@ void chart::updateChart(bool isRate, ObjectListModel* samples, const QString& na
 
     // is this a rate chart
     rate = isRate;
+
+    // is this an area chart
+    area = bArea;
 
     // force a paint
     update();
@@ -85,13 +88,13 @@ void chart::paintEvent(QPaintEvent *e)
     accumulate(points, tnow);
     mm = minMax(points);
 
-    mm.max = (qint32)(mm.max * 1.1 + 1.0);
+    mm.max = (qreal)(mm.max * 1.1 + 1.0);
 
     if (mm.min > 0)
         mm.min = 0;
 
     if (mm.min < 0)
-        mm.min = (qint32)(mm.min * 1.1 - 1.0);
+        mm.min = (qreal)(mm.min * 1.1 - 1.0);
 
     int yIntervals = 6;
     int yStep = 2;
@@ -109,15 +112,18 @@ void chart::paintEvent(QPaintEvent *e)
     pen.setColor(QColor(226, 226, 226));
     pen.setWidth(3);
     painter.setPen(pen);
-    painter.setOpacity(0.5);
 
-    paintPoints(painter, points, mm);
+    if (rate) {
+        painter.setOpacity(0.5);
+        paintPoints(painter, points, mm);
+    }
+    else
+        paintArea(painter, points, mm);
 }
 
 MinMax chart::minMax(QHash<QString, pointsList>& points)
 {
     MinMax mm = MinMax();
-    QPointF p1;
 
     QList<QPointF>::const_iterator head;
     // for each property line
@@ -128,8 +134,7 @@ MinMax chart::minMax(QHash<QString, pointsList>& points)
         head = points[prop].constBegin();
         while (head != points[prop].constEnd()) {
 
-            p1 = *head;
-            qreal r = p1.y();
+            qreal r = (*head).y();
             mm.max = qMax(mm.max, r);
             mm.min = qMin(mm.min, r);
 
@@ -176,6 +181,74 @@ void chart::accumulate(QHash<QString, pointsList>& points, const QDateTime& tnow
         // next property line
         ++iter;
     }
+}
+
+void chart::paintArea(QPainter &painter, QHash<QString, pointsList>& points, MinMax &mm)
+{
+    if (!area) {
+        painter.setOpacity(0.5);
+        paintPoints(painter, points, mm);
+        return;
+    }
+
+    painter.setOpacity(0.5);
+    float _range = mm.max - mm.min;
+    int height = ui->graph->height();
+
+    QPainterPath path;
+    QLinearGradient gradient = QLinearGradient(QPointF(0, 0), QPointF(0, height));
+    QGradientStops stops;
+    stops.append(QGradientStop(0, QColor(Qt::transparent)));
+    stops.append(QGradientStop(1, QColor(Qt::black))); // this gets replaced each line
+    gradient.setStops(stops);
+
+    QPen pen = QPen(QColor(Qt::transparent));
+    painter.setPen(pen);
+
+    QPointF p1;
+    QList<QPointF>::const_iterator head;
+    bool moved = false;
+    int zeroY = (float)height * (float)((mm.max - 0.0) / (mm.max - mm.min)) + ui->topmargin->height();
+
+    // for each property line
+    QHash<QString, QColor>::const_iterator iter = properties.constBegin();
+    while (iter != properties.constEnd()) {
+
+        stops[1].second = QColor(iter.value());
+        gradient.setStops(stops); // setStops replaces all stops. (setColorAt would just add another)
+        painter.setBrush(gradient);
+
+        QString prop = iter.key();
+        moved = false;
+        path = QPainterPath();
+
+        head = points[prop].constBegin();
+        while (head != points[prop].constEnd()) {
+
+            p1 = *head;
+            float prange = p1.y() / _range;
+            if (prange < 0)
+                prange = - prange;
+            float y = height - prange * height + ui->topmargin->height();
+            if (!moved) {
+                moved = true;
+                path.moveTo(p1.x(), zeroY);
+            }
+            path.lineTo(p1.x(), y);
+
+            ++head;
+            if (head == points[prop].constEnd()) {
+                path.lineTo(p1.x(), zeroY);
+                painter.drawPath(path);
+            }
+        }
+        // next property line
+        ++iter;
+//break;
+    }
+
+    painter.setOpacity(1);
+    paintPoints(painter, points, mm);
 }
 
 void chart::paintPoints(QPainter &painter, QHash<QString, pointsList>& points, MinMax &mm)
@@ -290,8 +363,8 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step, const MinMax& 
     int gWidth = ui->graph->width();
     int margin = ui->topmargin->height();
 
-    float gap = (mm.max - mm.min) / (float)intervals;
-    float value;
+    qreal gap = (mm.max - mm.min) / (float)intervals;
+    qreal value;
     QString sValue = QString();
 
     QPen gridPen = QPen(QColor(220, 220, 220, 200));
@@ -309,8 +382,10 @@ void chart::drawYAxis(QPainter& painter, int intervals, int step, const MinMax& 
             painter.drawLine(6, y, gWidth + 3, y);
 
             painter.setPen(textPen);
-            if (value >= 1000000)
-                sValue.sprintf("%.1f1M", (value / 1000000.0));
+            if (value >= 1000000000)
+                sValue.sprintf("%.1fG", (value / 1000000000.0));
+            else if (value >= 1000000)
+                sValue.sprintf("%.1fM", (value / 1000000.0));
             else if (value >= 1000) {
                 sValue.sprintf("%.0fK", (value / 1000.0));
             } else if (gap < 1) {

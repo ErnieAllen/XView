@@ -60,6 +60,7 @@ private:
     QActionGroup*    actionGroup;
     QActionGroup*    layoutGroup;
     QActionGroup*    updateGroup;
+    QActionGroup*    chartGroup;
     QToolBar*        modeToolBar;
 
     QmfThread* qmf;
@@ -93,6 +94,7 @@ private slots:
     void setByteRateMode();
     void toggleLayout();
     void toggleUpdate();
+    void toggleChartType();
 
 };
 

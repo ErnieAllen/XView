@@ -34,6 +34,7 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     sectionTitle(),
     backgroundColor(200, 200, 200),
     updateAll(true),
+    chartType(true),
     data(),
     ui(new Ui::WidgetQmfObject),
     redIcon(":/images/legend-red.png"),
@@ -89,6 +90,11 @@ void WidgetQmfObject::setUpdateStrategy(bool b)
     updateAll = b;
 }
 
+void WidgetQmfObject::setChartType(bool b)
+{
+    chartType = b;
+    showChart(chart);
+}
 
 void WidgetQmfObject::setRelatedModel(ObjectListModel *model, QWidget *parent)
 {
@@ -511,7 +517,7 @@ void WidgetQmfObject::fillTableWidget()
                 ui->tableWidget->setItem(row, col++, newItem);
             }
 
-            newItem = new QTableWidgetItem(value(iter, unique_property()));
+            newItem = new QTableWidgetItem(value(iter, unique_property(), (*column_iter).format));
             newItem->setBackgroundColor(colors[currentMode]);
             newItem->setTextAlignment((*column_iter).alignment);
             maxValWidth = qMax(maxValWidth, fm.width(newItem->text()));
@@ -540,11 +546,16 @@ void WidgetQmfObject::fillTableWidget()
 }
 
 // Generate the value to display in the tableWidget
-QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname)
+QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname, const std::string & format)
 {
+    QString val = QString("--");
     // if we aren't showing a rate, return the value directly
-    if ((currentMode == this->modeMessages) || (currentMode == this->modeBytes))
-        return QString(iter->second.asString().c_str());
+    if ((currentMode == this->modeMessages) || (currentMode == this->modeBytes)) {
+        if (format == "B")
+            return fmtBytes(iter->second);
+        else
+            return QString(iter->second.asString().c_str());
+    }
 
     // we are showing a rate. get the two most recent values
     ObjectListModel *pModel = (ObjectListModel *)related->sourceModel();
@@ -563,7 +574,7 @@ QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& 
             Sample sample1 = *iList;
             // if there is another sample
             --iList;
-            if (iList != sampleList.begin()) {
+            if (iList != sampleList.constBegin()) {
                 // get the previous sample
                 Sample sample2 = *iList;
                 // calculate the change / second
@@ -573,12 +584,12 @@ QString WidgetQmfObject::value(const qpid::types::Variant::Map::const_iterator& 
                     quint64 val2 = sample2.data(iter->first);
                     quint64 delta = val1 - val2;
                     float rate = delta / elapsedSecs;
-                    return QString::number(rate);
+                    val.setNum(rate);
                 }
             }
         }
     }
-    return QString("--");
+    return val;
 }
 
 bool WidgetQmfObject::reallyHasFocus()
@@ -839,7 +850,7 @@ void WidgetQmfObject::showChart(const qmf::Data&, ObjectListModel *model)
     ui->widgetChart->show();
 
     QString name = unique_property();
-    ui->widgetChart->updateChart(isRate, model, name, chartColumns, duration);
+    ui->widgetChart->updateChart(isRate, model, name, chartColumns, duration, chartType);
 
 }
 
@@ -863,4 +874,23 @@ bool WidgetQmfObject::hasData()
 const qmf::DataAddr& WidgetQmfObject::getDataAddr()
 {
     return data.getAddr();
+}
+
+QString WidgetQmfObject::fmtBytes(const qpid::types::Variant& v) const
+{
+    QString sValue;
+    qlonglong value = v.asUint64();
+
+    if (value >= 1000000000)
+        sValue.sprintf("%.2fG", (qreal)(value / 1000000000.0));
+    else if (value >= 1000000)
+        sValue.sprintf("%.1fM", (qreal)(value / 1000000.0));
+    else if (value >= 1000)
+        sValue.sprintf("%.0fK", (qreal)(value / 1000.0));
+    else if (value < 1)
+        sValue.sprintf("%.1f", (qreal)value);
+    else
+        sValue.sprintf("%.0f", (qreal)value);
+
+    return sValue;
 }

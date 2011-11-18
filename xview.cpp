@@ -58,16 +58,24 @@ XView::XView(QWidget *parent) :
         ui->actionUpdate_visible->setChecked(true);
 
     // initialize the widgets to know which update strategy to use
-    ui->widgetExchanges->setUpdateStrategy(ui->actionUpdate_all->isChecked());
-    ui->widgetBindings->setUpdateStrategy(ui->actionUpdate_all->isChecked());
-    ui->widgetQueues->setUpdateStrategy(ui->actionUpdate_all->isChecked());
-    ui->widgetSubscriptions->setUpdateStrategy(ui->actionUpdate_all->isChecked());
-    ui->widgetSessions->setUpdateStrategy(ui->actionUpdate_all->isChecked());
-    ui->widgetConnections->setUpdateStrategy(ui->actionUpdate_all->isChecked());
+    toggleUpdate();
 
     // connect the menu items to the widgets so the widgets know when the update
     // strategy has changed
     connect(ui->actionUpdate_all, SIGNAL(changed()), this, SLOT(toggleUpdate()));
+
+    // restore the checkboxes for the chart type menu items
+    if (settings.value("mainWindowChecks/Chart", true).toBool())
+        ui->actionDraw_area_charts->setChecked(true);
+    else
+        ui->actionDraw_point_charts->setChecked(true);
+
+    // initialize the widgets to know which chart type to use
+    toggleChartType();
+
+    // connect the menu items to the widgets so the widgets know when the update
+    // strategy has changed
+    connect(ui->actionDraw_area_charts, SIGNAL(changed()), this, SLOT(toggleChartType()));
 
     // setup the layout
     FisheyeLayout *fisheyeLayout;
@@ -332,6 +340,16 @@ XView::XView(QWidget *parent) :
     connect(qmf, SIGNAL(isConnected(bool)), connectionsDialog,           SLOT(connectionChanged(bool)));
 }
 
+void XView::toggleChartType()
+{
+    ui->widgetExchanges->setChartType(ui->actionDraw_area_charts->isChecked());
+    ui->widgetBindings->setChartType(ui->actionDraw_area_charts->isChecked());
+    ui->widgetQueues->setChartType(ui->actionDraw_area_charts->isChecked());
+    ui->widgetSubscriptions->setChartType(ui->actionDraw_area_charts->isChecked());
+    ui->widgetSessions->setChartType(ui->actionDraw_area_charts->isChecked());
+    ui->widgetConnections->setChartType(ui->actionDraw_area_charts->isChecked());
+}
+
 void XView::toggleUpdate()
 {
     ui->widgetExchanges->setUpdateStrategy(ui->actionUpdate_all->isChecked());
@@ -382,6 +400,10 @@ void XView::setupStatusBar() {
     updateGroup->addAction(ui->actionUpdate_all);
     updateGroup->addAction(ui->actionUpdate_visible);
     updateGroup->setExclusive(true);
+
+    chartGroup = new QActionGroup(ui->menu_Edit);
+    chartGroup->addAction(ui->actionDraw_area_charts);
+    chartGroup->addAction(ui->actionDraw_point_charts);
 
     modeToolBar = addToolBar(tr("Modes"));
     modeToolBar->setObjectName("Mode");
@@ -574,6 +596,7 @@ XView::~XView()
     settings.setValue("mainWindowChecks/Charts", ui->actionCharts->isChecked());
     settings.setValue("mainWindowChecks/Layout", ui->action_Cascading->isChecked());
     settings.setValue("mainWindowChecks/Update", ui->actionUpdate_all->isChecked());
+    settings.setValue("mainWindowChecks/Chart",   ui->actionDraw_area_charts->isChecked());
 
     delete openDialog;
     delete aboutDialog;
@@ -587,6 +610,7 @@ XView::~XView()
     delete label_connection_status;
     delete label_connection_prompt;
 
+    delete chartGroup;
     delete actionGroup;
     delete layoutGroup;
     delete updateGroup;

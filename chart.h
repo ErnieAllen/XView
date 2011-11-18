@@ -37,7 +37,7 @@ public:
     ~chart();
 
     void clear();
-    void updateChart(bool isRate, ObjectListModel *samples, const QString& name, const QHash<QString, QColor>& props, int duration);
+    void updateChart(bool isRate, ObjectListModel *samples, const QString& name, const QHash<QString, QColor>& props, int duration, bool bArea);
 
 protected:
 
@@ -54,6 +54,7 @@ protected:
     MinMax minMax(QHash<QString, pointsList>& points);
     void accumulate(QHash<QString, pointsList>& points, const QDateTime& tnow);
     void paintPoints(QPainter &painter, QHash<QString, pointsList>& points, MinMax &mm);
+    void paintArea(QPainter &painter, QHash<QString, pointsList>& points, MinMax &mm);
 
 private:
 
@@ -68,6 +69,7 @@ private:
     QString oName;
     int duration;
     bool rate;
+    bool area;
 };
 
 #endif // CHART_H

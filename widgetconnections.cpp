@@ -30,8 +30,8 @@ WidgetConnections::WidgetConnections(QWidget *parent) :
     summaryColumns.append(Column("msgsToClient", "To client / sec", Qt::AlignRight, "N", modeMessageRate, true));
     summaryColumns.append(Column("msgsFromClient", "From client / sec", Qt::AlignRight, "N", modeMessageRate, true, QColor(Qt::green)));
 
-    summaryColumns.append(Column("bytesToClient", "To client", Qt::AlignRight, "N", modeBytes, true));
-    summaryColumns.append(Column("bytesFromClient", "From client", Qt::AlignRight, "N", modeBytes, true, QColor(Qt::green)));
+    summaryColumns.append(Column("bytesToClient", "To client", Qt::AlignRight, "B", modeBytes, true));
+    summaryColumns.append(Column("bytesFromClient", "From client", Qt::AlignRight, "B", modeBytes, true, QColor(Qt::green)));
 
     summaryColumns.append(Column("bytesToClient", "To client / sec", Qt::AlignRight, "N", modeByteRate, true));
     summaryColumns.append(Column("bytesFromClient", "From client / sec", Qt::AlignRight, "N", modeByteRate, true, QColor(Qt::green)));

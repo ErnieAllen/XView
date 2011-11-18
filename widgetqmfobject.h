@@ -91,6 +91,7 @@ public slots:
     void setDrawAsRect(bool b);
     void showRelatedButtons(bool);
     void setUpdateStrategy(bool);
+    void setChartType(bool);
 
 protected:
     QString sectionTitle;
@@ -132,6 +133,7 @@ protected:
     StatMode currentMode;
     QAction *action;
     bool updateAll;  // current update strategy (all or just the current object)
+    bool chartType;  // true->area chart
 
     // the currently displayed object
     qmf::Data data;
@@ -153,8 +155,9 @@ private:
     void updateComboboxIndex(int i, bool all);
     bool reallyHasFocus();
     void showData(const qmf::Data& object);
+    QString fmtBytes(const qpid::types::Variant& v) const;
 
-    QString value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname);
+    QString value(const qpid::types::Variant::Map::const_iterator& iter, const QString& uname, const std::string &);
 
     bool _current; // this section is the primary one, others show related objects to this one
     bool chart;     // should we show the chart
