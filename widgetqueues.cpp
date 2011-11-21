@@ -73,6 +73,7 @@ void WidgetQueues::paintEvent(QPaintEvent *e)
     };
 
     WidgetQmfObject::paintEvent(e);
+    return;
 
     QPainter painter(this);
 

@@ -81,7 +81,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>version 0.9</string>
+    <string>version 1.0</string>
    </property>
   </widget>
   <widget class="QTabWidget" name="tabWidget">

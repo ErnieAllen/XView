@@ -60,6 +60,7 @@ void WidgetConnections::paintEvent(QPaintEvent *e)
     };
 
     WidgetQmfObject::paintEvent(e);
+    return;
 
     QPainter painter(this);
 

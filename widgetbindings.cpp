@@ -40,7 +40,7 @@ void WidgetBindings::paintEvent(QPaintEvent *e)
     QRectF link2(18.0, 3.0, 20.0, 5.0);
 
     WidgetQmfObject::paintEvent(e);
-
+return;
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 

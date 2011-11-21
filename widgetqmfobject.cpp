@@ -129,7 +129,7 @@ QPushButton* WidgetQmfObject::pushButton()
 
 int WidgetQmfObject::reservedY()
 {
-    return  ui->labelName->height() + ui->pushButton->height() + 20;
+    return  ui->pushButton->height() + 4;
 }
 
 int WidgetQmfObject::mid_paint()

@@ -46,6 +46,7 @@ WidgetSessions::~WidgetSessions()
 void WidgetSessions::paintEvent(QPaintEvent *e)
 {
     WidgetQmfObject::paintEvent(e);
+    return;
 
     QPainter painter(this);
 
