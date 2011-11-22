@@ -23,9 +23,11 @@ SET(CMAKE_CXX_FLAGS "-g")
 
 PROJECT(xview)
 FIND_PACKAGE(Qt4 REQUIRED)
+FIND_LIBRARY(qmf2 qmf2)
 
 SET(xview_FORMS
     xview.ui
+    chart.ui
     dialogopen.ui
     dialogabout.ui
     dialogobjects.ui
@@ -33,44 +35,56 @@ SET(xview_FORMS
     )
 
 SET(xview_HEADERS
-    xview.h
-    qmf-thread.h
-    exchange-model.h
-    exchange-details.h
-    dialogopen.h
+    chart.h
+    commandlinkbutton.h
     dialogabout.h
-    widgetbindings.h
-    widgetexchanges.h
-    widgetqueues.h
-    widgetsubscriptions.h
     dialogexchanges.h
-    qmf-event.h
+    dialogobjects.h
+    dialogopen.h
+    exchange-details.h
+    exchange-model.h
+    fisheyelayout.h
     object-details.h
     object-model.h
-    dialogobjects.h
-    widgetqmfobject.h
+    qmf-event.h
+    qmf-thread.h
     related-model.h
+    sample.h
+    widgetbindings.h
+    widgetconnections.h
+    widgetexchanges.h
+    widgetqmfobject.h
+    widgetqueues.h
+    widgetsessions.h
+    widgetsubscriptions.h
+    xview.h
     )
 
 SET(xview_SOURCES
-    main.cpp
-    xview.cpp
-    qmf-thread.cpp
-    exchange-model.cpp
-    exchange-details.cpp
-    dialogopen.cpp
+    chart.cpp
+    commandlinkbutton.cpp
     dialogabout.cpp
-    widgetbindings.cpp
-    widgetexchanges.cpp
-    widgetqueues.cpp
-    widgetsubscriptions.cpp
     dialogexchanges.cpp
-    qmf-event.cpp
+    dialogobjects.cpp
+    dialogopen.cpp
+    exchange-details.cpp
+    exchange-model.cpp
+    fisheyelayout.cpp
+    main.cpp
     object-details.cpp
     object-model.cpp
-    dialogobjects.cpp
-    widgetqmfobject.cpp
+    qmf-event.cpp
+    qmf-thread.cpp
     related-model.cpp
+    sample.cpp
+    widgetbindings.cpp
+    widgetconnections.cpp
+    widgetexchanges.cpp
+    widgetqmfobject.cpp
+    widgetqueues.cpp
+    widgetsessions.cpp
+    widgetsubscriptions.cpp
+    xview.cpp
     )
 
 INCLUDE(${QT_USE_FILE})
