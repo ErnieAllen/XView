@@ -30,18 +30,9 @@ ExchangeListModel::ExchangeListModel(QObject* parent, std::string unique) :
 
 QVariant ExchangeListModel::data(const QModelIndex &index, int role) const
 {
-
-    if (!index.isValid())
-        return QVariant();
-
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    const qmf::Data& exchange = dataList.at(index.row());
-    const qpid::types::Variant& name = exchange.getProperty(uniqueProperty);
-
-    QString n = QString(name.asString().c_str());
-    if (n.isEmpty())
-        n = QString("Default");
-    return n;
+    QVariant name = ObjectListModel::data(index, role);
+    if (role == Qt::DisplayRole && index.column() == 0)
+        if (name.toString().isEmpty())
+            return QString("Default");
+    return name;
 }
