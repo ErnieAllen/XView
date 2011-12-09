@@ -151,6 +151,7 @@ XView::XView(QWidget *parent) :
 
     // make direct connections between the sections to simplify
     // the logistics of showing related objects
+    ui->widgetExchanges->leftBuddy = 0;
     ui->widgetExchanges->rightBuddy = ui->widgetBindings;
     ui->widgetExchanges->peers.append(ui->widgetQueues);
     ui->widgetExchanges->peers.append(ui->widgetSubscriptions);
@@ -182,6 +183,7 @@ XView::XView(QWidget *parent) :
     ui->widgetSessions->peers.append(ui->widgetExchanges);
 
     ui->widgetConnections->leftBuddy = ui->widgetSessions;
+    ui->widgetConnections->rightBuddy = 0;
     ui->widgetConnections->peers.append(ui->widgetQueues);
     ui->widgetConnections->peers.append(ui->widgetBindings);
     ui->widgetConnections->peers.append(ui->widgetExchanges);
@@ -236,8 +238,7 @@ XView::XView(QWidget *parent) :
     // The dialog boxes share the same data-model with the widgets
     // Create the dialog boxes and pass their model to the widgets
     exchangesDialog = new DialogExchanges(this, "exchanges");
-    exchangesDialog->initModels("name");
-    exchangesDialog->listModel()->setSampleProperties(ui->widgetExchanges->getSampleProperties());
+    exchangesDialog->initModels("name", ui->widgetExchanges->getSampleProperties());
     ui->widgetExchanges->setRelatedModel(exchangesDialog->listModel(), this);
     // when the widget's button is clicked, get all the objects and show the dialog box
     connect(ui->widgetExchanges->pushButton(), SIGNAL(clicked()), this, SLOT(queryExchanges()));
@@ -253,8 +254,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetExchanges, SIGNAL(pivotTo(QModelIndex)), exchangesDialog, SLOT(setCurrentRow(QModelIndex)));
 
     bindingsDialog = new DialogObjects(this, "bindings");
-    bindingsDialog->initModels("bindingKey");
-    bindingsDialog->listModel()->setSampleProperties(ui->widgetBindings->getSampleProperties());
+    bindingsDialog->initModels("bindingKey", ui->widgetBindings->getSampleProperties());
     ui->widgetBindings->setRelatedModel(bindingsDialog->listModel(), this);
     connect(bindingsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetBindings, SLOT(setCurrentObject(qmf::Data)));
@@ -266,8 +266,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetBindings, SIGNAL(pivotTo(QModelIndex)), bindingsDialog, SLOT(setCurrentRow(QModelIndex)));
 
     queuesDialog = new DialogObjects(this, "queues");
-    queuesDialog->initModels("name");
-    queuesDialog->listModel()->setSampleProperties(ui->widgetQueues->getSampleProperties());
+    queuesDialog->initModels("name", ui->widgetQueues->getSampleProperties());
     ui->widgetQueues->setRelatedModel(queuesDialog->listModel(), this);
     connect(queuesDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetQueues, SLOT(setCurrentObject(qmf::Data)));
@@ -279,8 +278,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetQueues, SIGNAL(pivotTo(QModelIndex)), queuesDialog, SLOT(setCurrentRow(QModelIndex)));
 
     subscriptionsDialog = new DialogObjects(this, "subscriptions");
-    subscriptionsDialog->initModels("name");
-    subscriptionsDialog->listModel()->setSampleProperties(ui->widgetSubscriptions->getSampleProperties());
+    subscriptionsDialog->initModels("name", ui->widgetSubscriptions->getSampleProperties());
     ui->widgetSubscriptions->setRelatedModel(subscriptionsDialog->listModel(), this);
     connect(subscriptionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetSubscriptions, SLOT(setCurrentObject(qmf::Data)));
@@ -292,8 +290,7 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetSubscriptions, SIGNAL(pivotTo(QModelIndex)), subscriptionsDialog, SLOT(setCurrentRow(QModelIndex)));
 
     sessionsDialog = new DialogObjects(this, "subscriptions");
-    sessionsDialog->initModels("name");
-    sessionsDialog->listModel()->setSampleProperties(ui->widgetSessions->getSampleProperties());
+    sessionsDialog->initModels("name", ui->widgetSessions->getSampleProperties());
     ui->widgetSessions->setRelatedModel(sessionsDialog->listModel(), this);
     connect(sessionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetSessions, SLOT(setCurrentObject(qmf::Data)));
@@ -305,9 +302,8 @@ XView::XView(QWidget *parent) :
     connect(ui->widgetSessions, SIGNAL(pivotTo(QModelIndex)), sessionsDialog, SLOT(setCurrentRow(QModelIndex)));
 
     connectionsDialog = new DialogObjects(this, "connections");
-    connectionsDialog->initModels("address");
+    connectionsDialog->initModels("address", ui->widgetConnections->getSampleProperties());
     connectionsDialog->setKey("remoteProcessName"); // use this field in the object list
-    connectionsDialog->listModel()->setSampleProperties(ui->widgetConnections->getSampleProperties());
     ui->widgetConnections->setRelatedModel(connectionsDialog->listModel(), this);
     connect(connectionsDialog, SIGNAL(setCurrentObject(qmf::Data,QString)),
             ui->widgetConnections, SLOT(setCurrentObject(qmf::Data)));
@@ -338,6 +334,10 @@ XView::XView(QWidget *parent) :
     connect(qmf, SIGNAL(isConnected(bool)), subscriptionsDialog,         SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), sessionsDialog,              SLOT(connectionChanged(bool)));
     connect(qmf, SIGNAL(isConnected(bool)), connectionsDialog,           SLOT(connectionChanged(bool)));
+
+    // always start on the message mode
+    setMessageMode();
+
 }
 
 void XView::toggleChartType()

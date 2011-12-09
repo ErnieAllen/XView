@@ -30,7 +30,7 @@ public:
     explicit DialogExchanges(QWidget *parent = 0, const std::string& name = "exchanges");
     ~DialogExchanges();
 
-    void initModels(std::string unique);
+    void initModels(std::string unique, const QStringList &columnList);
 
 };
 

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -17,22 +17,35 @@
  * under the License.
  */
 
-#include "exchange-model.h"
-#include <iostream>
+#ifndef RELATEDHEADERVIEW_H
+#define RELATEDHEADERVIEW_H
 
-using std::cout;
-using std::endl;
+#include <QHeaderView>
+#include "sample.h"
 
-ExchangeListModel::ExchangeListModel(QObject* parent, std::string unique, const QStringList &columnList) :
-        ObjectListModel(parent, unique, columnList)
+class RelatedHeaderView : public QHeaderView
 {
-}
+    Q_OBJECT
+public:
+    explicit RelatedHeaderView(Qt::Orientation orientation, QWidget *parent = 0);
 
-QVariant ExchangeListModel::data(const QModelIndex &index, int role) const
-{
-    QVariant name = ObjectListModel::data(index, role);
-    if (role == Qt::DisplayRole && index.column() == 0)
-        if (name.toString().isEmpty())
-            return QString("Default");
-    return name;
-}
+    void setColumnInfo(const QList<QColor> & colorList, const QStringList & nl);
+    void setAllColumns(const QStringList & cols);
+    void moveNameColumn();
+
+signals:
+
+public slots:
+
+protected:
+    void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const;
+    int actual2Logical(int col) const;
+
+private:
+    QList<QColor> colorList;
+    QStringList   nameList;
+    QStringList allColumns;
+    bool moved;
+};
+
+#endif // RELATEDHEADERVIEW_H

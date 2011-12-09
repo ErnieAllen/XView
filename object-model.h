@@ -29,21 +29,24 @@
 #include <string>
 #include "sample.h"
 
-class ObjectListModel : public QAbstractListModel {
+class ObjectListModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    ObjectListModel(QObject* parent = 0, std::string unique = "name");
+    ObjectListModel(QObject* parent, std::string unique, const QStringList& columnList);
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+
     std::string fieldValue(int row, const std::string& field);
     const qmf::Data& qmfData(int row);
     const qmf::Data& find(const qmf::Data& existing);
+    MinMax minMax(const std::string & name);
     void refresh(uint correlator);
     void expireSamples();
-    void setSampleProperties(const QStringList& list);
     void setDuration(int duration) { sampleLife = duration; }
     void clearSamples();
     void setKey(const std::string &altKey);

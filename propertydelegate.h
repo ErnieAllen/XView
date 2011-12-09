@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -17,22 +17,32 @@
  * under the License.
  */
 
-#include "exchange-model.h"
-#include <iostream>
+#ifndef PROPERTYDELEGATE_H
+#define PROPERTYDELEGATE_H
 
-using std::cout;
-using std::endl;
+#include <QItemDelegate>
+#include "sample.h" // for MinMax
 
-ExchangeListModel::ExchangeListModel(QObject* parent, std::string unique, const QStringList &columnList) :
-        ObjectListModel(parent, unique, columnList)
+class PropertyDelegate : public QItemDelegate
 {
-}
+    Q_OBJECT
+public:
+    explicit PropertyDelegate(QObject *parent, const QStringList & cols);
 
-QVariant ExchangeListModel::data(const QModelIndex &index, int role) const
-{
-    QVariant name = ObjectListModel::data(index, role);
-    if (role == Qt::DisplayRole && index.column() == 0)
-        if (name.toString().isEmpty())
-            return QString("Default");
-    return name;
-}
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void setColumnInfo(const QList<QColor> & colorList, const QList<MinMax> & mmList, const QStringList & nl);
+
+signals:
+
+public slots:
+
+protected:
+
+private:
+    QList<MinMax> mmList;
+    QList<QColor> colorList;
+    QStringList   nameList;
+    QStringList allColumns;
+};
+
+#endif // PROPERTYDELEGATE_H

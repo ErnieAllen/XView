@@ -29,6 +29,8 @@
 #include <qmf/Data.h>
 #include "related-model.h"
 #include "object-model.h"
+#include "propertydelegate.h"
+#include "relatedheaderview.h"
 
 namespace Ui {
     class WidgetQmfObject;
@@ -169,6 +171,10 @@ private:
     QIcon greenIcon;
     QIcon blueIcon;
     bool drawAsRect; // add a white background and border when the layout is cascading
+
+    PropertyDelegate * propertyDelegate;
+    RelatedHeaderView * relatedHeader;
+
 };
 
 #endif // WIDGETQMFOBJECT_H

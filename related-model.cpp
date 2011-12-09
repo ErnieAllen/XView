@@ -18,6 +18,8 @@
  */
 
 #include "related-model.h"
+#include <QColor>
+#include <QBrush>
 
 RelatedFilterProxyModel::RelatedFilterProxyModel(QObject *parent) :
     QSortFilterProxyModel(parent)
@@ -46,4 +48,17 @@ bool RelatedFilterProxyModel::filterAcceptsRow(int sourceRow,
         return row_val.isEmpty();
     bool accept = row_val.endsWith(value.c_str());
     return accept;
+}
+
+// Return the min and max for this column
+MinMax RelatedFilterProxyModel::minMax(int column)
+{
+    MinMax mm = MinMax();
+    for (int idx=0; idx<rowCount(); idx++) {
+        QModelIndex index = this->mapToSource(this->index(idx, column));
+        qreal val = sourceModel()->data(index).toReal();
+        mm.max = qMax(val, mm.max);
+        mm.min = qMin(val, mm.min);
+    }
+    return mm;
 }

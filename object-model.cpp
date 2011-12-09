@@ -23,12 +23,13 @@
 using std::cout;
 using std::endl;
 
-ObjectListModel::ObjectListModel(QObject* parent, std::string unique) :
-        QAbstractListModel(parent), uniqueProperty(unique),
+ObjectListModel::ObjectListModel(QObject* parent, std::string unique, const QStringList& columnList) :
+        QAbstractTableModel(parent), uniqueProperty(unique),
         sampleProperties(),
         invalid()
 {
     sampleLife = 600;
+    sampleProperties = columnList;
 }
 
 void ObjectListModel::addObject(const qmf::Data& object, uint correlator)
@@ -110,6 +111,11 @@ int ObjectListModel::rowCount(const QModelIndex &parent) const
     return (int) dataList.size();
 }
 
+int ObjectListModel::columnCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent);
+    return sampleProperties.size() + 1;
+}
 
 void ObjectListModel::setKey(const std::string &altKey)
 {
@@ -125,6 +131,27 @@ const std::string &ObjectListModel::unique(bool useKey)
     }
 
     return uniqueProperty;
+}
+
+// Return the min and max for this column
+MinMax ObjectListModel::minMax(const std::string & name)
+{
+    MinMax mm = MinMax();
+    for (int idx=0; idx<dataList.size(); idx++) {
+
+        const qmf::Data& object(dataList[idx]);
+
+        const qpid::types::Variant::Map& props(object.getProperties());
+        qpid::types::Variant::Map::const_iterator iter;
+
+        iter = props.find(name);
+        if (iter != props.end()) {
+            qreal val = (qreal)(*iter).second.asInt64();
+            mm.max = qMax(val, mm.max);
+            mm.min = qMin(val, mm.min);
+        }
+    }
+    return mm;
 }
 
 const qmf::Data& ObjectListModel::find(const qmf::Data& existing)
@@ -144,26 +171,43 @@ QVariant ObjectListModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
+    // we want the entire data object at this row
     if (role == Qt::UserRole) {
         return QVariant(dataList.at(index.row()));
     }
 
-    if (role != Qt::DisplayRole)
+    if (role != Qt::DisplayRole && role != Qt::ToolTipRole)
         return QVariant();
 
-    const qmf::Data& object= dataList.at(index.row());
+    const qmf::Data& object(dataList[index.row()]);
+    //const qmf::Data& object = dataList.at(index.row());
 
     const qpid::types::Variant::Map& props(object.getProperties());
     qpid::types::Variant::Map::const_iterator iter;
 
-    iter = props.find(dataKey);
-    if (iter == props.end()) {
-        iter = props.find(uniqueProperty);
+    // for the "name" column, we will show either the key (prefered) or the unique field
+    if (index.column() == 0) {
+        iter = props.find(dataKey);
+        if (iter == props.end()) {
+            iter = props.find(uniqueProperty);
+        }
+
+        if (iter != props.end())
+            return QString((*iter).second.asString().c_str());
+
+        return QString();
     }
-
-    if (iter != props.end())
-        return QString((*iter).second.asString().c_str());
-
+    // for the value columns (shown in the related table) return the numeric value
+    int col = index.column() - 1;
+    std::string prop = sampleProperties.at(col).toStdString();
+    iter = props.find(prop);
+    if (iter != props.end()) {
+        if (role == Qt::DisplayRole)
+            return QVariant((qreal)(*iter).second.asInt64());
+        else {
+            return QString("%1 %2").arg(prop.c_str()).arg((*iter).second.asInt64());
+        }
+    }
     return QString();
 }
 
@@ -188,9 +232,14 @@ const qmf::Data& ObjectListModel::qmfData(int row)
 
 QVariant ObjectListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (section == 0) {
-        if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
-            return QString("List");
+    if (role == Qt::DisplayRole) {
+        if (orientation == Qt::Horizontal) {
+            if (section == 0) {
+                if (dataKey == "")
+                    return QString(uniqueProperty.c_str());
+                else
+                    return QString(dataKey.c_str());
+            }
         }
     }
     return QVariant();
@@ -229,11 +278,6 @@ std::ostream& operator<<(std::ostream& out, const qmf::Data& object)
         out << " </properties>\n";
     }
     return out;
-}
-
-void ObjectListModel::setSampleProperties(const QStringList& list)
-{
-    sampleProperties = list;
 }
 
 void ObjectListModel::addSample(const qmf::Data& object, const qpid::types::Variant& name)

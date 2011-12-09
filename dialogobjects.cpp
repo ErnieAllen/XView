@@ -38,9 +38,9 @@ DialogObjects::DialogObjects(QWidget *parent, const std::string& name) :
     restoreSettings();
 }
 
-void DialogObjects::initModels(std::string unique)
+void DialogObjects::initModels(std::string unique, const QStringList &columnList)
 {
-    objectModel = new ObjectListModel(this, unique);
+    objectModel = new ObjectListModel(this, unique, columnList);
     objectDetailsModel = new ObjectDetailsModel(this);
 
     initConnections();
@@ -118,12 +118,13 @@ void DialogObjects::gotDataEvent(const qmf::ConsoleEvent& event, bool all)
     for (quint32 idx = 0; idx < pcount; idx++) {
         objectModel->addObject(event.getData(idx), event.getCorrelator());
     }
-    // select 1st item if none are selected
+    // this was the last batch of objects for this timer/event
     if (event.isFinal()) {
         // if we just updated all objects, remove the old ones
         if (all) {
             objectModel->refresh(event.getCorrelator());
         }
+        // select 1st item if none are selected
         if (!(ui->objectListView->selectionModel()->hasSelection())) {
             ui->objectListView->setCurrentIndex(ui->objectListView->model()->index(0, 0));
         }

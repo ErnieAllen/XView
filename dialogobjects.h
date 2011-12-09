@@ -42,7 +42,7 @@ public:
     //bool event(QEvent *e);
     QEvent::Type eventType;
 
-    void initModels(std::string unique);
+    void initModels(std::string unique, const QStringList &columnList);
     void setKey(const QString &altKey);
     ObjectListModel *listModel() { return objectModel; }
 

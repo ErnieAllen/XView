@@ -33,7 +33,9 @@ SOURCES += main.cpp\
     widgetsessions.cpp \
     commandlinkbutton.cpp \
     widgetconnections.cpp \
-    fisheyelayout.cpp
+    fisheyelayout.cpp \
+    propertydelegate.cpp \
+    relatedheaderview.cpp
 
 HEADERS  += xview.h \
     qmf-thread.h \
@@ -57,7 +59,9 @@ HEADERS  += xview.h \
     widgetsessions.h \
     commandlinkbutton.h \
     widgetconnections.h \
-    fisheyelayout.h
+    fisheyelayout.h \
+    propertydelegate.h \
+    relatedheaderview.h
 
 FORMS    += xview.ui \
     dialogopen.ui \

@@ -32,10 +32,10 @@ DialogExchanges::~DialogExchanges()
 {
 }
 
-void DialogExchanges::initModels(std::string unique)
+void DialogExchanges::initModels(std::string unique, const QStringList &columnList)
 {
     // these will be deleted in the base class' destructor
-    objectModel = new ExchangeListModel(this, unique);
+    objectModel = new ExchangeListModel(this, unique, columnList);
     objectDetailsModel = new ExchangeDetailsModel(this);
 
     initConnections();

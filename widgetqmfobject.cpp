@@ -31,25 +31,33 @@ const QColor WidgetQmfObject::colors[] = {
 
 WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     QWidget(parent),
+    peers(),
+    leftBuddy(),
+    rightBuddy(),
     sectionTitle(),
     backgroundColor(200, 200, 200),
+    currentMode(modeMessages),
+    action(),
     updateAll(true),
     chartType(true),
     data(),
+    _current(false),
+    chart(false),
+    _arrow(arrowNone),
     ui(new Ui::WidgetQmfObject),
+    duration(600),
     redIcon(":/images/legend-red.png"),
     greenIcon(":/images/legend-green.png"),
     blueIcon(":/images/legend-blue.png"),
-    drawAsRect(false)
+    drawAsRect(false),
+    propertyDelegate(),
+    relatedHeader()
 {
     ui->setupUi(this);
 
     ui->commandLinkButtonPrev->setIconType(QStyle::SP_ArrowLeft);
     ui->commandLinkButtonNext->setIconType(QStyle::SP_ArrowRight);
 
-    _current = false;
-    chart = false;
-    currentMode = modeMessages;
     ui->tableWidget->setColumnCount(2);
     QGraphicsDropShadowEffect* shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(4);
@@ -61,8 +69,6 @@ WidgetQmfObject::WidgetQmfObject(QWidget *parent) :
     ui->comboBox->hide();
     ui->labelRelated->hide();
     ui->labelIndex->hide();
-    _arrow = arrowNone;
-    duration = 600;
 
     ui->toolButton->hide();
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(pivot()));
@@ -73,6 +79,10 @@ WidgetQmfObject::~WidgetQmfObject()
     delete ui;
     if (related)
         delete related;
+    if (propertyDelegate)
+        delete propertyDelegate;
+    if (relatedHeader)
+        delete relatedHeader;
 }
 
 void WidgetQmfObject::setRelatedText(const std::string& name)
@@ -98,13 +108,38 @@ void WidgetQmfObject::setChartType(bool b)
 
 void WidgetQmfObject::setRelatedModel(ObjectListModel *model, QWidget *parent)
 {
+    // the related model filters the main model down to just
+    // those object that are related
     related = new RelatedFilterProxyModel(parent);
-    related->setDynamicSortFilter(true);
+    related->setDynamicSortFilter(false);
     related->setSourceModel(model);
+
+    // the comboBox uses the related model
     ui->comboBox->setModel(related);
     connect(ui->comboBox, SIGNAL(activated(int)),
             this, SLOT(relatedIndexChanged(int)));
+
+    // the samples kept by the main model should only live this long
     model->setDuration(duration);
+
+    // For the related popup table, draw the columns with custom pixmaps
+    // instead of text values
+    propertyDelegate = new PropertyDelegate(this, getSampleProperties());
+    ui->tableView->setItemDelegate(propertyDelegate);
+
+
+    // For the related popup table, draw the column headers with custom icons
+    relatedHeader = new RelatedHeaderView(Qt::Horizontal, ui->tableView);
+    relatedHeader->setSortIndicatorShown(false);
+    relatedHeader->setStretchLastSection(false);
+    relatedHeader->setCascadingSectionResizes(false);
+    relatedHeader->setClickable(true);
+    relatedHeader->setMovable(false);
+    relatedHeader->setAllColumns(getSampleProperties());
+    ui->tableView->setHorizontalHeader(relatedHeader);
+
+    // For the related combobox, show a custom table instead of the default list
+    ui->comboBox->setView(ui->tableView);
 }
 
 void WidgetQmfObject::setEnabled(bool enabled)
@@ -372,7 +407,19 @@ void WidgetQmfObject::setCurrentMode(StatMode mode)
         }
     }
 
-
+    QSet<QString> set;
+    QList<Column>::const_iterator iter = summaryColumns.constBegin();
+    while (iter != summaryColumns.constEnd()) {
+        if ((*iter).chart && (*iter).mode == currentMode)
+            set.insert(QString((*iter).name.c_str()));
+        ++iter;
+    }
+    QStringList currentColumns = set.toList();
+    QStringList sampleProperties = getSampleProperties();
+    for (int index=0; index<sampleProperties.size(); ++index) {
+        ui->tableView->setColumnHidden(index + 1, !currentColumns.contains(sampleProperties.at(index)));
+        ui->tableView->horizontalHeader()->resizeSection(index, 20);
+    }
 }
 
 void WidgetQmfObject::pivot()
@@ -420,6 +467,7 @@ void WidgetQmfObject::objectRefreshed()
     qmf::Data obj = model->find(data);
     if (obj.isValid())
         showData(obj);
+
 }
 
 // update this section's data and
@@ -707,7 +755,7 @@ void WidgetQmfObject::showRelated(const qmf::Data& object, const QString &widget
     }
 }
 
-// SLOT triggered when the dialog's finalAdded signal is fired
+// SLOT triggered when the data model's finalAdded signal is fired
 // All the rows in the data table are ready.
 // If we are showing a related object, make sure a row in
 // our comboBox is selected
@@ -722,6 +770,39 @@ void WidgetQmfObject::initRelated()
         }
         updateComboboxIndex(ui->comboBox->currentIndex(), false);
     }
+
+    relatedHeader->moveNameColumn();
+
+    // Tell the property delegate for the related popup table
+    // what the min/max/color values are for each data column
+    // currently being displayed
+    QList<QColor> colorList;
+    QList<MinMax> mmList;
+    QStringList   nameList;
+    QStringList sampleProperties = getSampleProperties();
+
+    QList<Column>::const_iterator column_iter = summaryColumns.constBegin();
+
+    // loop through all the columns we might want to display
+    // and accumulate info about the visible columns
+    int idx = 0;
+    while (column_iter != summaryColumns.constEnd()) {
+        if ((*column_iter).mode == currentMode && (*column_iter).chart) {
+            // accumulate all the columns for this object/chart mode
+            colorList.append((*column_iter).color);
+            QString colName((*column_iter).name.c_str());
+            mmList.append(related->minMax(sampleProperties.indexOf(colName)+1));
+            nameList.append(colName);
+            relatedHeader->resizeSection(idx + 1, 20);
+            ++idx;
+        }
+        ++column_iter;
+    }
+    // send the accumulated info over to the column property delegate and header
+    propertyDelegate->setColumnInfo(colorList, mmList, nameList);
+    relatedHeader->setColumnInfo(colorList, nameList);
+
+    relatedHeader->setResizeMode(0, QHeaderView::Stretch);
 }
 
 // SLOT called when the current row in the ui->comboBox changes
@@ -747,14 +828,24 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
 
         // If this widget has no related objects, all the other widgets to the side won't either
         if (_arrow == arrowLeft)
-            if (leftBuddy)
+            if (leftBuddy) {
+                if (leftBuddy->arrow() == arrowNone)
+                    leftBuddy->setArrow(_arrow);
                 leftBuddy->updateComboboxIndex(-1, all);
+            }
         if (_arrow == arrowRight)
-            if (rightBuddy)
-               rightBuddy->updateComboboxIndex(-1, all);
-        return;
+            if (rightBuddy) {
+                if (rightBuddy->arrow() == arrowNone)
+                    rightBuddy->setArrow(_arrow);
+                rightBuddy->updateComboboxIndex(-1, all);
+           }
+           return;
     }
     int rows = ui->comboBox->model()->rowCount();
+
+    // in case the user clicked on a numeric column in the popup tableview
+    // reset the text shown in the combobox to the 1st column
+    ui->comboBox->setCurrentIndex(i);
 
     ui->comboBox->show();
     QString indexText = QString("%1 of %2 %3").arg(i+1).arg(rows).arg(ui->labelRelated->text().toLower());
@@ -856,6 +947,16 @@ void WidgetQmfObject::showChart(const qmf::Data&, ObjectListModel *model)
 
 QStringList WidgetQmfObject::getSampleProperties()
 {
+    QList<QString> cList;
+    QList<Column>::const_iterator iter = summaryColumns.constBegin();
+    while (iter != summaryColumns.constEnd()) {
+        QString col((*iter).name.c_str());
+        if (!cList.contains(col))
+            cList.append(col);
+        ++iter;
+    }
+    return cList;
+/*
     QSet<QString> set;
     QList<Column>::const_iterator iter = summaryColumns.constBegin();
     while (iter != summaryColumns.constEnd()) {
@@ -864,6 +965,7 @@ QStringList WidgetQmfObject::getSampleProperties()
         ++iter;
     }
     return set.toList();
+*/
 }
 
 bool WidgetQmfObject::hasData()

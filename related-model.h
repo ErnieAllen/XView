@@ -30,6 +30,8 @@ public:
     explicit RelatedFilterProxyModel(QObject *parent = 0);
 
     void setRelatedData( const std::string& field, const std::string& value);
+    MinMax minMax(int column);
+
     void clearFilter() { invalidateFilter(); }
 
 protected:
@@ -42,6 +44,7 @@ public slots:
 private:
     std::string field;
     std::string value;
+
 };
 
 #endif // RELATEDMODEL_H

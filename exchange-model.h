@@ -26,7 +26,7 @@ class ExchangeListModel : public ObjectListModel {
     Q_OBJECT
 
 public:
-    ExchangeListModel(QObject* parent = 0, std::string unique = "name");
+    ExchangeListModel(QObject* parent, std::string unique, const QStringList &columnList);
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 };
