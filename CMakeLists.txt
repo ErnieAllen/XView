@@ -46,9 +46,11 @@ SET(xview_HEADERS
     fisheyelayout.h
     object-details.h
     object-model.h
+    propertydelegate.h
     qmf-event.h
     qmf-thread.h
     related-model.h
+    relatedheaderview.h
     sample.h
     widgetbindings.h
     widgetconnections.h
@@ -73,9 +75,11 @@ SET(xview_SOURCES
     main.cpp
     object-details.cpp
     object-model.cpp
+    propertydelegate.cpp
     qmf-event.cpp
     qmf-thread.cpp
     related-model.cpp
+    relatedheaderview.cpp
     sample.cpp
     widgetbindings.cpp
     widgetconnections.cpp
