@@ -51,14 +51,16 @@ void PropertyDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
         qreal val = index.model()->data(index, Qt::DisplayRole).toReal();
         float percent;
         if (mm.max > 0)
-            percent = val * 100.0 / mm.max;
+            percent = val / mm.max;
         else
-            percent = 100.0;
+            percent = 1.0;
 
-        //qDebug("property: colName:%s  val:%f  percent: %f max:%f  rect.width():%i", colName.toStdString().c_str(), (float)val, percent, (float)mm.max, option.rect.width());
         int width = percent * option.rect.width();
         if (percent > 0.0 && width < 1)
             width = 1;
+
+        //qDebug("property: colName:%s  val:%f  percent: %f max:%f  rect.width():%i  width:%i", colName.toStdString().c_str(), (float)val, percent, (float)mm.max, option.rect.width(), width);
+
         painter->fillRect(option.rect.x(), option.rect.y() + option.rect.height() / 2 - 8, width, 16, QBrush(color));
     } else {
         qDebug("*** can't find column %s", colName.toStdString().c_str());
