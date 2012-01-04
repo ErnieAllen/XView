@@ -133,27 +133,6 @@ const std::string &ObjectListModel::unique(bool useKey)
     return uniqueProperty;
 }
 
-// Return the min and max for this column
-MinMax ObjectListModel::minMax(const std::string & name)
-{
-    MinMax mm = MinMax();
-    for (int idx=0; idx<dataList.size(); idx++) {
-
-        const qmf::Data& object(dataList[idx]);
-
-        const qpid::types::Variant::Map& props(object.getProperties());
-        qpid::types::Variant::Map::const_iterator iter;
-
-        iter = props.find(name);
-        if (iter != props.end()) {
-            qreal val = (qreal)(*iter).second.asInt64();
-            mm.max = qMax(val, mm.max);
-            mm.min = qMin(val, mm.min);
-        }
-    }
-    return mm;
-}
-
 const qmf::Data& ObjectListModel::find(const qmf::Data& existing)
 {
     const qpid::types::Variant& name = existing.getProperty(uniqueProperty);

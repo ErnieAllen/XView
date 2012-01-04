@@ -61,40 +61,6 @@ WidgetQueues::~WidgetQueues()
 {
 }
 
-void WidgetQueues::paintEvent(QPaintEvent *e)
-{
-    QRectF queueRects[] = {
-        QRect(0.0, 0.0, width()-12*5, 30.0),
-        QRect(width()-12*5, 0.0, 12, 30.0),
-        QRect(width()-12*4, 0.0, 12, 30.0),
-        QRect(width()-12*3, 0.0, 12, 30.0),
-        QRect(width()-12*2, 0.0, 12, 30.0),
-        QRect(width()-12,   0.0, 10, 30.0)
-    };
-
-    WidgetQmfObject::paintEvent(e);
-    return;
-
-    QPainter painter(this);
-
-    QColor lineColor = getLineColor();
-    QColor fillColor = getFillColor();
-    QPen pen(lineColor);
-    pen.setWidth(2);
-    QBrush brush(fillColor);
-
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(pen);
-    painter.setBrush(brush);
-
-    int mid = mid_paint();
-    painter.translate(1, mid - 4);
-
-    painter.scale(1.0, 0.6);
-    painter.drawRects(queueRects, 6);
-
-}
-
 void WidgetQueues::showRelated(const qmf::Data& object, const QString &, ArrowDirection a)
 {
     if (!updateAll)

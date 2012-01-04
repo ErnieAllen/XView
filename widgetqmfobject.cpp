@@ -201,7 +201,6 @@ void WidgetQmfObject::resizeEvent(QResizeEvent *)
     if (chart) {
         ui->widgetChart->resize(width() - 20, ui->widgetChart->height());
         ui->widgetChart->move(width() / 2 - ui->widgetChart->width() / 2, ui->comboBox->y() + ui->comboBox->height() + 46);
-        //ui->widgetChart->move(width() / 2 - ui->widgetChart->width() / 2, ui->tableWidget->y() + ui->tableWidget->height() + 4);
         ui->tableWidget->move(width() / 2 - ui->tableWidget->width() / 2, ui->widgetChart->y() + ui->widgetChart->height() + 6);
     }
 }
@@ -860,7 +859,6 @@ void WidgetQmfObject::updateComboboxIndex(int i, bool all)
     data = model->qmfData(source_row.row());
 
     // show the current stats for this object
-    ui->tableWidget->setVisible(true);
     ui->tableWidget->setRowCount(summaryColumns.size());
     fillTableWidget();
 

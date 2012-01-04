@@ -28,12 +28,11 @@ class WidgetBindings : public WidgetQmfObject
 
 public:
     explicit WidgetBindings(QWidget *parent = 0);
-    ~WidgetBindings();
 
 public slots:
 
 protected:
-    void paintEvent(QPaintEvent *event);
+
 };
 
 #endif // WIDGETBINDINGS_H

@@ -43,33 +43,6 @@ WidgetSessions::~WidgetSessions()
 {
 }
 
-void WidgetSessions::paintEvent(QPaintEvent *e)
-{
-    WidgetQmfObject::paintEvent(e);
-    return;
-
-    QPainter painter(this);
-
-    QColor lineColor = getLineColor();
-    QColor fillColor = getFillColor();
-    QPen pen(lineColor);
-    pen.setWidth(2);
-    QBrush brush(fillColor);
-
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(pen);
-    painter.setBrush(brush);
-
-    int mid = mid_paint();
-    painter.translate(1, mid - 10);
-
-    painter.setPen(pen);
-    painter.setBrush(brush);
-
-    painter.drawRoundedRect(0, 5, width()-4, 20, 9, 9);
-
-}
-
 void WidgetSessions::showRelated(const qmf::Data& object, const QString &widget_type, ArrowDirection a)
 {
     if (!updateAll)

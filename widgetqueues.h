@@ -31,7 +31,6 @@ public:
     ~WidgetQueues();
 
 protected:
-     void paintEvent(QPaintEvent *event);
      void showRelated(const qmf::Data& object, const QString& widget_name, ArrowDirection a);
 
 };

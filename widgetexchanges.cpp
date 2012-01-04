@@ -48,52 +48,6 @@ WidgetExchanges::~WidgetExchanges()
 {
 }
 
-void WidgetExchanges::paintEvent(QPaintEvent *e)
-{
-    // points that define an arrow
-    static const QPoint arrowPoints[] = {
-        QPoint(10,  -10),
-        QPoint(30, -10),
-        QPoint(30, -20),
-        QPoint(40,  0),
-        QPoint(30,  20),
-        QPoint(30,  10),
-        QPoint(10,   10)
-    };
-
-    WidgetQmfObject::paintEvent(e);
-    return;
-
-    QPainter painter(this);
-
-    QColor lineColor = getLineColor();
-    QColor fillColor = getFillColor();
-    QPen pen(lineColor);
-    pen.setWidth(2);
-    QBrush brush(fillColor);
-
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(pen);
-    painter.setBrush(brush);
-
-    int mid = this->mid_paint();
-
-    painter.drawRect(0, mid, width(), 10);
-
-    painter.save();
-    painter.translate(width() / 2, mid + 5);
-    painter.rotate(45);
-    painter.scale(0.5, 0.5);
-    for (int i=0; i<4; i++) {
-        painter.drawPolygon(arrowPoints,  sizeof( arrowPoints ) / sizeof( arrowPoints[0] ));
-        painter.rotate(90);
-    }
-    painter.restore();
-    //int radius = 18;
-    //painter.drawEllipse(width()/2 - radius, mid - radius, radius * 2, radius * 2);
-
-}
-
 QString WidgetExchanges::unique_property(bool translate)
 {
     QString name = WidgetQmfObject::unique_property();

@@ -43,52 +43,6 @@ WidgetConnections::~WidgetConnections()
 {
 }
 
-void WidgetConnections::paintEvent(QPaintEvent *e)
-{
-    // points that define an arrow
-    static const QPoint monitorPoints[] = {
-        QPoint(4,  -10),
-        QPoint(26, -10),
-        QPoint(26,  10),
-        QPoint(4,   10)
-    };
-    static const QPoint keyPoints[] = {
-        QPoint(4,  -6),
-        QPoint(26, -6),
-        QPoint(30,  6),
-        QPoint(0,   6)
-    };
-
-    WidgetQmfObject::paintEvent(e);
-    return;
-
-    QPainter painter(this);
-
-    QColor lineColor = getLineColor();
-    QColor fillColor = getFillColor();
-    QPen pen(lineColor);
-    pen.setWidth(2);
-    QBrush brush(fillColor);
-
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(pen);
-    painter.setBrush(brush);
-
-    int mid = mid_paint();
-
-    painter.drawRect(0, mid, width(), 10);
-
-    painter.save();
-
-    painter.translate(width() / 2 - 15, mid);
-    painter.drawPolygon(monitorPoints,  sizeof( monitorPoints ) / sizeof( monitorPoints[0] ));
-
-    painter.translate(0, 10);
-    painter.drawPolygon(keyPoints,  sizeof( keyPoints ) / sizeof( keyPoints[0] ));
-
-    painter.restore();
-}
-
 void WidgetConnections::showRelated(const qmf::Data& object, const QString &, ArrowDirection a)
 {
     if (!updateAll)

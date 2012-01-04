@@ -32,35 +32,3 @@ WidgetSubscriptions::WidgetSubscriptions(QWidget *parent) :
 WidgetSubscriptions::~WidgetSubscriptions()
 {
 }
-
-void WidgetSubscriptions::paintEvent(QPaintEvent *e)
-{
-    QPointF points[6] = {
-        QPointF(0.0, 0.0),
-        QPointF(10.0, -10.0),
-        QPointF(width()-10.0, -10.0),
-        QPointF(width()-2, 0.0),
-        QPointF(width()-10.0, 10.0),
-        QPointF(10.0, 10.0)
-    };
-
-    WidgetQmfObject::paintEvent(e);
-    return;
-
-    QPainter painter(this);
-
-    QColor lineColor = getLineColor();
-    QColor fillColor = getFillColor();
-    QPen pen(lineColor);
-    pen.setWidth(2);
-    QBrush brush(fillColor);
-
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(pen);
-    painter.setBrush(brush);
-
-    int mid = mid_paint();
-    painter.translate(1, mid + 6);
-
-    painter.drawPolygon(points, 6);
-}

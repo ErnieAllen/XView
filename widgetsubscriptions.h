@@ -31,7 +31,6 @@ public:
     ~WidgetSubscriptions();
 
 protected:
-     void paintEvent(QPaintEvent *event);
 
  };
 

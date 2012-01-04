@@ -31,7 +31,6 @@ public:
     ~WidgetConnections();
 
 protected:
-     void paintEvent(QPaintEvent *event);
      void showRelated(const qmf::Data& object, const QString &, ArrowDirection a);
 
     // override object name in case remoteProcessName is absent

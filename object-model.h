@@ -44,7 +44,6 @@ public:
     std::string fieldValue(int row, const std::string& field);
     const qmf::Data& qmfData(int row);
     const qmf::Data& find(const qmf::Data& existing);
-    MinMax minMax(const std::string & name);
     void refresh(uint correlator);
     void expireSamples();
     void setDuration(int duration) { sampleLife = duration; }
