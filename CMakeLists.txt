@@ -47,7 +47,6 @@ SET(xview_HEADERS
     object-details.h
     object-model.h
     propertydelegate.h
-    qmf-event.h
     qmf-thread.h
     related-model.h
     relatedheaderview.h
@@ -76,7 +75,6 @@ SET(xview_SOURCES
     object-details.cpp
     object-model.cpp
     propertydelegate.cpp
-    qmf-event.cpp
     qmf-thread.cpp
     related-model.cpp
     relatedheaderview.cpp

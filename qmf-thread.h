@@ -34,7 +34,6 @@
 #include <qmf/Data.h>
 #include <sstream>
 #include <deque>
-#include "qmf-event.h"
 
 static QModelIndex defaultIndex;
 

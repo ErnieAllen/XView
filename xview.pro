@@ -22,7 +22,6 @@ SOURCES += main.cpp\
     widgetqueues.cpp \
     widgetsubscriptions.cpp \
     dialogexchanges.cpp \
-    qmf-event.cpp \
     object-details.cpp \
     object-model.cpp \
     dialogobjects.cpp \
@@ -48,7 +47,6 @@ HEADERS  += xview.h \
     widgetqueues.h \
     widgetsubscriptions.h \
     dialogexchanges.h \
-    qmf-event.h \
     object-details.h \
     object-model.h \
     dialogobjects.h \

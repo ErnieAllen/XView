@@ -25,7 +25,7 @@
 #include <QSortFilterProxyModel>
 #include "object-model.h"
 #include "object-details.h"
-#include "qmf-event.h"
+#include <qmf/ConsoleEvent.h>
 
 namespace Ui {
     class DialogObjects;
@@ -38,9 +38,6 @@ class DialogObjects : public QDialog
 public:
     explicit DialogObjects(QWidget *parent = 0, const std::string &s = "");
     ~DialogObjects();
-
-    //bool event(QEvent *e);
-    QEvent::Type eventType;
 
     void initModels(std::string unique, const QStringList &columnList);
     void setKey(const QString &altKey);

@@ -32,7 +32,6 @@ DialogObjects::DialogObjects(QWidget *parent, const std::string& name) :
     title += qname;
     ui->labelPrompt->setText(tr(title.toStdString().c_str()));
 
-    eventType = QEvent::Type(QEvent::registerEventType());
     this->setObjectName(QString(name.c_str()));
 
     restoreSettings();
@@ -141,28 +140,6 @@ void DialogObjects::setCurrentRow(const QModelIndex& row)
     ui->objectListView->setCurrentIndex(prow);
 }
 
-/*
-// Handle the query response from the QUERY_OBJECT for qmf objects
-bool DialogObjects::event(QEvent *e)
-{
-    QmfEvent* ce = (QmfEvent*)e;
-    if (e->type() == eventType) {
-
-        uint32_t pcount = ce->cevent.getDataCount();
-        for (uint32_t idx = 0; idx < pcount; idx++) {
-            objectModel->addObject(ce->cevent.getData(idx), ce->cevent.getCorrelator());
-        }
-        // select 1st item if none are selected
-        if (ce->cevent.isFinal()) {
-            if (!(ui->objectListView->selectionModel()->hasSelection()))
-                ui->objectListView->setCurrentIndex(objectModel->index(0, 0));
-            emit finalAdded();
-        }
-        return true;
-    }
-    return QDialog::event(e);
-}
-*/
 void DialogObjects::dataRefreshed()
 {
     QModelIndex current = ui->objectListView->selectionModel()->currentIndex();
