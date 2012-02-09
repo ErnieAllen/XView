@@ -21,7 +21,7 @@ cmake_minimum_required(VERSION 2.6)
 
 SET(CMAKE_CXX_FLAGS "-g")
 
-PROJECT(xview)
+PROJECT(qpid-xbroker)
 FIND_PACKAGE(Qt4 REQUIRED)
 FIND_LIBRARY(qmf2 qmf2)
 
@@ -99,5 +99,7 @@ QT4_WRAP_UI(xview_FORMS_HEADERS ${xview_FORMS})
 QT4_WRAP_CPP(xview_HEADERS_MOC ${xview_HEADERS})
 QT4_ADD_RESOURCES(xview_RESOURCES_RCC ${xview_RESOURCES})
 
-ADD_EXECUTABLE(xview ${xview_SOURCES} ${xview_HEADERS_MOC} ${xview_FORMS_HEADERS} ${xview_RESOURCES_RCC})
-TARGET_LINK_LIBRARIES(xview ${QT_LIBRARIES} qmf2 qpidmessaging qpidtypes)
+ADD_EXECUTABLE(qpid-xbroker ${xview_SOURCES} ${xview_HEADERS_MOC} ${xview_FORMS_HEADERS} ${xview_RESOURCES_RCC})
+TARGET_LINK_LIBRARIES(qpid-xbroker ${QT_LIBRARIES} qmf2 qpidmessaging qpidtypes)
+
+INSTALL (TARGETS qpid-xbroker RUNTIME DESTINATION bin)

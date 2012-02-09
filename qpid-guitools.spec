@@ -5,7 +5,7 @@ Summary:        GUI utilities for Red Hat MRG qpid
 
 License:        ASL 2.0
 URL:            http://eallen.fedorapeople.org/
-Source0:        http://eallen.fedorapeople.org/qpid-guitools.tar.gz
+Source0:        http://eallen.fedorapeople.org/qpid-guitools-1.0.0.tar.bz2
 Group:          System Environment/Libraries
 
 BuildRequires:  qt4-devel
@@ -29,20 +29,21 @@ information about qpid brokers, queues, messages, exchanges, etc.
 %cmake qpid-guitools
 make %{?_smp_mflags}
 
-
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}%_bindir
-cp xview %{buildroot}%_bindir/qpid-gbroker
+make install DESTDIR=%{buildroot}
 cp qpid-guitools/README.txt .
+
+%clean
+rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%_bindir/qpid-gbroker
+%_bindir/qpid-xbroker
 %doc README.txt
 
 %changelog
 
 * Fri Jan 13 2012 Ernie Allen <eallen@redhat.com> 1.0.0-1
-- Initial version containing /usr/bin/xview
+- Initial version containing /usr/bin/qpid-xbroker
 
