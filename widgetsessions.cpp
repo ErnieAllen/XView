@@ -24,13 +24,13 @@ WidgetSessions::WidgetSessions(QWidget *parent) :
     WidgetQmfObject(parent)
 {
     this->setSectionName(QString("Sessions"));
-    summaryColumns.append(Column("framesOutstanding", "frames", Qt::AlignRight, "N", modeMessages, true));
+    summaryColumns.append(Column("unackedMessages", "unAcked", Qt::AlignRight, "N", modeMessages, true));
     summaryColumns.append(Column("TxnCount", "transactions", Qt::AlignRight, "N", modeMessages, true, QColor(Qt::green)));
     summaryColumns.append(Column("TxnStarts", "starts", Qt::AlignRight, "N", modeMessages));
     summaryColumns.append(Column("TxnCommits", "commits", Qt::AlignRight, "N", modeMessages));
     summaryColumns.append(Column("TxnRejects", "rejects", Qt::AlignRight, "N", modeMessages));
 
-    summaryColumns.append(Column("framesOutstanding", "frames", Qt::AlignRight, "N", modeMessageRate, true));
+    summaryColumns.append(Column("unackedMessages", "unAcked", Qt::AlignRight, "N", modeMessageRate, true));
     summaryColumns.append(Column("TxnCount", "transactions", Qt::AlignRight, "N", modeMessageRate, true, QColor(Qt::green)));
     summaryColumns.append(Column("TxnStarts", "starts", Qt::AlignRight, "N", modeMessageRate));
     summaryColumns.append(Column("TxnCommits", "commits", Qt::AlignRight, "N", modeMessageRate));
